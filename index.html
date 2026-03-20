@@ -3,153 +3,80 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Truth or Dare</title>
+  <title>Truth or Dare 🍾</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #0f0e17;
-      color: #fffffe;
-      min-height: 100vh;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
+      background: #0f0e17; color: #fffffe;
+      min-height: 100vh; display: flex;
+      align-items: flex-start; justify-content: center;
       padding: 2rem 1rem 4rem;
     }
-
     .app { width: 100%; max-width: 480px; }
     .screen { display: none; }
     .screen.active { display: block; }
-
     h1 { font-size: 26px; font-weight: 700; margin-bottom: 0.4rem; }
     h2 { font-size: 17px; font-weight: 600; margin-bottom: 1rem; color: #fffffe; }
     p  { font-size: 15px; color: #a7a9be; line-height: 1.7; }
-
-    .card {
-      background: #1a1a2e;
-      border: 1px solid #2a2a4a;
-      border-radius: 16px;
-      padding: 1.25rem;
-      margin-bottom: 1rem;
-    }
-
+    .card { background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 16px; padding: 1.25rem; margin-bottom: 1rem; }
     input[type="text"] {
-      width: 100%;
-      padding: 10px 14px;
-      font-size: 15px;
-      background: #0f0e17;
-      border: 1px solid #2a2a4a;
-      border-radius: 10px;
-      color: #fffffe;
-      margin-bottom: 10px;
-      outline: none;
-      transition: border-color 0.2s;
+      width: 100%; padding: 10px 14px; font-size: 15px;
+      background: #0f0e17; border: 1px solid #2a2a4a; border-radius: 10px;
+      color: #fffffe; margin-bottom: 10px; outline: none; transition: border-color 0.2s;
     }
     input[type="text"]:focus { border-color: #7F77DD; }
     input[type="text"]::placeholder { color: #444466; }
-
     .btn {
-      display: inline-block;
-      padding: 11px 22px;
-      border-radius: 10px;
-      border: 1px solid #2a2a4a;
-      background: transparent;
-      color: #fffffe;
-      font-size: 15px;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.1s;
+      display: inline-block; padding: 11px 22px; border-radius: 10px;
+      border: 1px solid #2a2a4a; background: transparent; color: #fffffe;
+      font-size: 15px; cursor: pointer; transition: background 0.15s, transform 0.1s;
     }
     .btn:hover { background: #1a1a2e; }
     .btn:active { transform: scale(0.97); }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
     .btn-primary { background: #7F77DD; border-color: #7F77DD; color: #fff; font-weight: 600; }
     .btn-primary:hover { background: #534AB7; border-color: #534AB7; }
     .btn-pink { background: #D4537E; border-color: #D4537E; color: #fff; font-weight: 600; }
     .btn-pink:hover { background: #993556; border-color: #993556; }
     .btn-block { width: 100%; text-align: center; }
-
     .tag { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
     .tag-truth { background: #2e2a5e; color: #b0aaf5; }
     .tag-dare  { background: #3e1a2e; color: #f5a0c0; }
     .tag-room  { background: #1a3e2e; color: #5DCAA5; }
-
     .player-chip {
       display: inline-flex; align-items: center; gap: 6px;
       background: #1a1a2e; border: 1px solid #2a2a4a;
-      border-radius: 20px; padding: 4px 12px;
-      font-size: 13px; color: #fffffe; margin: 3px;
+      border-radius: 20px; padding: 4px 12px; font-size: 13px; color: #fffffe; margin: 3px;
     }
     .dot { width: 8px; height: 8px; border-radius: 50%; background: #5DCAA5; display: inline-block; }
-
     .code-display {
-      font-size: 36px; font-weight: 700; letter-spacing: 10px;
-      color: #7F77DD; text-align: center;
-      padding: 1.2rem; background: #12102a;
-      border-radius: 12px; margin-bottom: 1rem;
+      font-size: 36px; font-weight: 700; letter-spacing: 10px; color: #7F77DD;
+      text-align: center; padding: 1.2rem; background: #12102a; border-radius: 12px; margin-bottom: 1rem;
     }
-
     #spin-canvas { display: block; margin: 0 auto 0.75rem; }
-
-    .chosen-label {
-      font-size: 18px; font-weight: 600; color: #b0aaf5;
-      text-align: center; margin-bottom: 1rem; min-height: 28px;
-    }
-
-    .action-row {
-      display: flex; gap: 10px; justify-content: center;
-      margin-bottom: 1rem; flex-wrap: wrap;
-    }
-
-    .qcard {
-      border-left: 3px solid #7F77DD; padding: 1rem;
-      background: #12102a; border-radius: 0 12px 12px 0; margin-bottom: 1rem;
-    }
+    .chosen-label { font-size: 18px; font-weight: 600; color: #b0aaf5; text-align: center; margin-bottom: 1rem; min-height: 28px; }
+    .action-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 1rem; flex-wrap: wrap; }
+    .qcard { border-left: 3px solid #7F77DD; padding: 1rem; background: #12102a; border-radius: 0 12px 12px 0; margin-bottom: 1rem; }
     .qcard.dare { border-left-color: #D4537E; background: #1e0f18; }
     .qcard p { color: #fffffe; font-size: 16px; margin-top: 8px; }
-
-    .chat-box {
-      height: 200px; overflow-y: auto;
-      background: #12102a; border-radius: 10px;
-      padding: 10px; margin-bottom: 10px;
-    }
+    .chat-box { height: 200px; overflow-y: auto; background: #12102a; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
     .chat-box::-webkit-scrollbar { width: 4px; }
     .chat-box::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 4px; }
-
     .msg { margin-bottom: 8px; font-size: 14px; line-height: 1.5; }
     .msg-name { font-weight: 600; color: #b0aaf5; margin-right: 6px; }
     .msg-text { color: #a7a9be; }
     .msg-system { color: #555577; font-style: italic; font-size: 13px; }
-
     .chat-row { display: flex; gap: 8px; }
     .chat-row input { flex: 1; margin-bottom: 0; }
-
     .divider { height: 1px; background: #2a2a4a; margin: 1rem 0; }
     .col { display: flex; flex-direction: column; gap: 10px; }
     .or-divider { text-align: center; color: #555577; font-size: 13px; padding: 0.25rem 0; }
-
-    .top-bar {
-      display: flex; justify-content: space-between;
-      align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 6px;
-    }
-
-    .status-bar {
-      font-size: 12px; color: #555577; text-align: center;
-      padding: 4px; margin-bottom: 8px;
-    }
-    .status-bar.connected { color: #5DCAA5; }
-    .status-bar.error { color: #f5a0c0; }
-
-    .copy-btn {
-      font-size: 12px; color: #7F77DD; cursor: pointer;
-      text-decoration: underline; background: none; border: none; color: #b0aaf5;
-    }
-
-    .info-note {
-      font-size: 12px; color: #555577; text-align: center;
-      margin-top: 0.5rem; line-height: 1.6;
-    }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 6px; }
+    .status-bar { font-size: 12px; color: #555577; text-align: center; padding: 4px; margin-bottom: 8px; }
+    .status-bar.ok  { color: #5DCAA5; }
+    .status-bar.err { color: #f5a0c0; }
+    .copy-btn { font-size: 12px; cursor: pointer; text-decoration: underline; background: none; border: none; color: #b0aaf5; }
+    .info-note { font-size: 12px; color: #555577; text-align: center; margin-top: 0.5rem; line-height: 1.6; }
   </style>
 </head>
 <body>
@@ -157,8 +84,8 @@
 
   <!-- LOBBY -->
   <div class="screen active" id="screen-lobby">
-    <div style="text-align:center; margin-bottom:1.5rem; padding-top:1rem;">
-      <div style="font-size:48px; margin-bottom:0.5rem;">🍾</div>
+    <div style="text-align:center;margin-bottom:1.5rem;padding-top:1rem;">
+      <div style="font-size:48px;margin-bottom:0.5rem;">🍾</div>
       <h1>Truth or Dare</h1>
       <p>Real multiplayer — no login needed</p>
     </div>
@@ -172,7 +99,8 @@
       <div class="card">
         <h2>Join a room</h2>
         <input type="text" id="join-name" placeholder="Your name" maxlength="16" />
-        <input type="text" id="join-code" placeholder="Room code (e.g. ROSE7)" style="text-transform:uppercase;" maxlength="10" />
+        <input type="text" id="join-code" placeholder="Room code (e.g. ROSE7)" maxlength="10"
+          oninput="this.value=this.value.toUpperCase()" />
         <button class="btn btn-pink btn-block" onclick="joinRoom()">Join room</button>
       </div>
     </div>
@@ -180,22 +108,22 @@
 
   <!-- WAITING -->
   <div class="screen" id="screen-waiting">
-    <div style="text-align:center; margin-bottom:1rem; padding-top:1rem;">
-      <div style="font-size:32px; margin-bottom:0.5rem;">🎉</div>
+    <div style="text-align:center;margin-bottom:1rem;padding-top:1rem;">
+      <div style="font-size:32px;margin-bottom:0.5rem;">🎉</div>
       <h1>Waiting for players…</h1>
-      <p>Everyone opens this page and enters the code below</p>
+      <p>Friends open this same page and enter the code below</p>
     </div>
     <div class="code-display" id="display-code">----</div>
-    <div style="text-align:center; margin-bottom:0.75rem;">
+    <div style="text-align:center;margin-bottom:0.75rem;">
       <button class="copy-btn" onclick="copyLink()">📋 Copy invite link</button>
     </div>
-    <div id="status-waiting" class="status-bar">Connecting…</div>
+    <div id="status-bar" class="status-bar">Connecting…</div>
     <div class="card">
-      <p style="font-size:13px; font-weight:600; color:#a7a9be; margin-bottom:10px;">Players in room</p>
+      <p style="font-size:13px;font-weight:600;color:#a7a9be;margin-bottom:10px;">Players in room</p>
       <div id="player-list"></div>
     </div>
     <button class="btn btn-primary btn-block" onclick="broadcastStart()">Start game</button>
-    <p class="info-note">All players will see the game start at the same time.</p>
+    <p class="info-note">Everyone's screen updates at the same time.</p>
   </div>
 
   <!-- GAME -->
@@ -204,25 +132,21 @@
       <span class="tag tag-room" id="room-code-tag"></span>
       <div id="players-chips"></div>
     </div>
-    <div id="status-game" class="status-bar connected">Connected</div>
-
+    <div id="status-bar-game" class="status-bar ok">● Connected</div>
     <canvas id="spin-canvas" width="220" height="220"></canvas>
     <div class="chosen-label" id="chosen-name"></div>
-
     <div class="action-row">
       <button class="btn" onclick="broadcastSpin()">🔄 Spin</button>
       <button class="btn" style="background:#2e2a5e;border-color:#534AB7;color:#b0aaf5;" onclick="broadcastCard('truth')">Truth</button>
       <button class="btn" style="background:#3e1a2e;border-color:#993556;color:#f5a0c0;" onclick="broadcastCard('dare')">Dare</button>
     </div>
-
     <div id="question-card" style="display:none;"></div>
-
     <div class="divider"></div>
     <p style="font-size:13px;font-weight:600;color:#a7a9be;margin-bottom:8px;">Room chat</p>
     <div class="chat-box" id="chat-box"></div>
     <div class="chat-row">
       <input type="text" id="msg-input" placeholder="Type a message or answer…" maxlength="200"
-        onkeydown="if(event.key==='Enter') sendMsg()" />
+        onkeydown="if(event.key==='Enter')sendMsg()" />
       <button class="btn btn-primary" onclick="sendMsg()">Send</button>
     </div>
   </div>
@@ -253,12 +177,11 @@ const TRUTHS = [
   "What's the most awkward moment you've had with a crush?",
   "If your best friend read your texts, what would surprise them?",
   "What's the most jealous you've ever been?",
-  "Have you ever had feelings for a friend's partner?",
   "What's the worst date you've been on?",
   "What do you find most attractive in a person?",
   "Have you ever sent a risky text and immediately regretted it?",
+  "What's something you've never admitted to anyone here?",
 ];
-
 const DARES = [
   "Give the person to your left a 10-second compliment without stopping.",
   "Text your crush 'thinking of you' right now.",
@@ -283,67 +206,88 @@ const DARES = [
   "Say three genuine things you like about the person across from you.",
   "Let the room ask you one question you must answer honestly.",
   "Act out your most embarrassing moment without speaking.",
-  "Send a voice note to a contact saying 'I miss you' — right now.",
+  "Send a voice note to any contact saying 'I miss you' — right now.",
   "Recreate your best selfie pose right now.",
 ];
 
 /* ── State ── */
 let myName = '';
 let roomCode = '';
-let players = {};
+let players = {};          // { id: name }
 let myId = Math.random().toString(36).slice(2, 9);
 let ws = null;
 let spinAngle = 0;
 let spinning = false;
 let chosenPlayer = null;
-let messages = [];
+let reconnectTimer = null;
 
-/* ─────────────────────────────────────────
-   WebSocket via wss://ws.vi-server.org/mirror
-   This is a free open echo/broadcast relay —
-   any message sent is echoed to ALL connected clients.
-   We namespace by room code in the payload.
-   ───────────────────────────────────────── */
+/* ══════════════════════════════════════════
+   WebSocket — using wss://echo.websocket.org
+   which broadcasts to ALL clients on the same
+   connection. We namespace with roomCode in payload.
+
+   More reliable alternative: Liveblocks / Ably demo.
+   We use the free Piesocket demo here (no key needed):
+   wss://demo.piesocket.com/v3/{channel}?api_key=oCdCMcMPQpbvNjUIzqtvF1d47t52Jt&notify_self=1
+   Channel = room code so each room is isolated.
+   ══════════════════════════════════════════ */
+function wsUrl() {
+  // PieSocket free demo — each channel is isolated by name
+  return `wss://demo.piesocket.com/v3/${roomCode}?api_key=oCdCMcMPQpbvNjUIzqtvF1d47t52Jt&notify_self=0`;
+}
+
 function connect() {
-  ws = new WebSocket('wss://ws.vi-server.org/mirror');
+  if (ws) { try { ws.close(); } catch(e){} }
+  setStatus('Connecting…', '');
+
+  ws = new WebSocket(wsUrl());
 
   ws.onopen = () => {
-    setStatus('connected', '● Connected');
+    clearTimeout(reconnectTimer);
+    setStatus('● Connected', 'ok');
+    // Announce ourselves — existing players will reply with their names
     send({ type: 'join', name: myName, id: myId });
   };
 
   ws.onmessage = (e) => {
     let msg;
     try { msg = JSON.parse(e.data); } catch { return; }
-    if (msg.room !== roomCode) return;   // filter by room
-    if (msg.senderId === myId) return;   // ignore own echo
+    // PieSocket wraps messages — unwrap if needed
+    if (msg.data) { try { msg = JSON.parse(msg.data); } catch { return; } }
+    if (!msg.type) return;
     handleIncoming(msg);
   };
 
   ws.onclose = () => {
-    setStatus('error', '✕ Disconnected — reload to reconnect');
-    setTimeout(connect, 3000); // auto-reconnect
+    setStatus('✕ Disconnected', 'err');
+    reconnectTimer = setTimeout(connect, 3000);
   };
   ws.onerror = () => ws.close();
 }
 
 function send(data) {
   if (!ws || ws.readyState !== WebSocket.OPEN) return;
-  ws.send(JSON.stringify({ ...data, room: roomCode, senderId: myId }));
+  ws.send(JSON.stringify(data));
 }
 
-/* ── Incoming message handler ── */
+/* ── Incoming handler ── */
 function handleIncoming(msg) {
+  if (msg.senderId === myId) return; // ignore own echo if notify_self=1
+
   switch (msg.type) {
+
     case 'join':
+      // Someone new joined — add them and reply with OUR info so they see us
       players[msg.id] = msg.name;
       renderPlayers();
-      addMsg('system', null, msg.name + ' joined');
-      // reply so new joiner knows about us
-      send({ type: 'here', name: myName, id: myId });
+      addMsg('system', null, msg.name + ' joined 👋');
+      // Reply with our name so the new joiner's player list is populated
+      send({ type: 'here', name: myName, id: myId, senderId: myId });
       break;
 
     case 'here':
+      // Response to our join — tells us who was already in the room
+      if (msg.id === myId) return;
       players[msg.id] = msg.name;
       renderPlayers();
       break;
@@ -355,6 +299,7 @@ function handleIncoming(msg) {
       break;
 
     case 'start':
+      // Host sends full player snapshot so everyone is in sync
       players = msg.players;
       startGameLocal();
       break;
@@ -366,7 +311,7 @@ function handleIncoming(msg) {
     case 'chosen':
       chosenPlayer = msg.player;
       document.getElementById('chosen-name').textContent = msg.player + "'s turn!";
-      addMsg('system', null, '-- Bottle landed on ' + msg.player + '! --');
+      addMsg('system', null, '🍾 Bottle landed on ' + msg.player + '!');
       break;
 
     case 'card':
@@ -380,12 +325,11 @@ function handleIncoming(msg) {
   }
 }
 
-/* ── Notify others on tab close ── */
 window.addEventListener('beforeunload', () => {
-  send({ type: 'leave', id: myId });
+  send({ type: 'leave', id: myId, senderId: myId });
 });
 
-/* ── Lobby ── */
+/* ── Room setup ── */
 function randCode() {
   const w = ['ROSE','KISS','LOVE','BOLD','FIRE','GLOW','MOON','STAR','WILD','PINK','RUSH','VIBE'];
   return w[Math.floor(Math.random() * w.length)] + Math.floor(Math.random() * 9 + 1);
@@ -405,6 +349,7 @@ function createRoom() {
 
 function joinRoom() {
   const n = document.getElementById('join-name').value.trim();
+  // BUG FIX: read value directly and toUpperCase in JS, not via CSS
   const c = document.getElementById('join-code').value.trim().toUpperCase();
   if (!n) { alert('Enter your name!'); return; }
   if (!c) { alert('Enter a room code!'); return; }
@@ -420,27 +365,27 @@ function joinRoom() {
 function copyLink() {
   const url = window.location.href.split('?')[0] + '?room=' + roomCode;
   navigator.clipboard.writeText(url)
-    .then(() => alert('Invite link copied!\nFriends open the link and enter code: ' + roomCode))
+    .then(() => alert('✅ Invite link copied!\n\nFriends open the link and enter code:\n' + roomCode))
     .catch(() => alert('Room code: ' + roomCode));
 }
 
-/* Auto-fill room code from URL */
 window.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(window.location.search);
-  const r = params.get('room');
+  const r = new URLSearchParams(window.location.search).get('room');
   if (r) document.getElementById('join-code').value = r.toUpperCase();
   drawBottle(0, ['You']);
 });
 
 /* ── Start game ── */
 function broadcastStart() {
-  send({ type: 'start', players: { ...players } });
+  const snap = { ...players };
+  send({ type: 'start', players: snap, senderId: myId });
+  players = snap;
   startGameLocal();
 }
 
 function startGameLocal() {
   document.getElementById('room-code-tag').textContent = 'Room: ' + roomCode;
-  renderPlayerChips();
+  renderPlayers();
   addMsg('system', null, '-- Game started! Spin the bottle. --');
   showScreen('screen-game');
   drawBottle();
@@ -450,7 +395,7 @@ function startGameLocal() {
 function broadcastSpin() {
   if (spinning) return;
   const seed = Math.random();
-  send({ type: 'spin', seed });
+  send({ type: 'spin', seed, senderId: myId });
   animateSpin(seed);
 }
 
@@ -467,11 +412,11 @@ function animateSpin(seed) {
   const startAngle = spinAngle;
 
   function frame(now) {
-    const p = Math.min((now - t0) / duration, 1);
-    const ease = 1 - Math.pow(1 - p, 4);
+    const progress = Math.min((now - t0) / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 4);
     spinAngle = startAngle + totalSpin * ease;
     drawBottle(spinAngle, pl);
-    if (p < 1) { requestAnimationFrame(frame); return; }
+    if (progress < 1) { requestAnimationFrame(frame); return; }
 
     spinning = false;
     const n = pl.length || 1;
@@ -479,8 +424,8 @@ function animateSpin(seed) {
     const idx = Math.floor(((norm + Math.PI / 2) % (Math.PI * 2)) / (Math.PI * 2 / n)) % n;
     chosenPlayer = pl[idx];
     document.getElementById('chosen-name').textContent = chosenPlayer + "'s turn!";
-    send({ type: 'chosen', player: chosenPlayer });
-    addMsg('system', null, '-- Bottle landed on ' + chosenPlayer + '! --');
+    send({ type: 'chosen', player: chosenPlayer, senderId: myId });
+    addMsg('system', null, '🍾 Bottle landed on ' + chosenPlayer + '!');
   }
   requestAnimationFrame(frame);
 }
@@ -490,7 +435,7 @@ function broadcastCard(type) {
   const pool = type === 'truth' ? TRUTHS : DARES;
   const q = pool[Math.floor(Math.random() * pool.length)];
   const who = chosenPlayer || myName;
-  send({ type: 'card', cardType: type, question: q, who });
+  send({ type: 'card', cardType: type, question: q, who, senderId: myId });
   showCard(type, q);
   addMsg('system', null, who + ' picked ' + type.toUpperCase() + ': "' + q + '"');
 }
@@ -509,13 +454,12 @@ function sendMsg() {
   const input = document.getElementById('msg-input');
   const text = input.value.trim();
   if (!text) return;
-  send({ type: 'chat', name: myName, text });
+  send({ type: 'chat', name: myName, text, senderId: myId });
   addMsg('user', myName, text);
   input.value = '';
 }
 
 function addMsg(type, name, text) {
-  messages.push({ type, name, text });
   const box = document.getElementById('chat-box');
   if (!box) return;
   const div = document.createElement('div');
@@ -542,31 +486,24 @@ function drawBottle(angle, pl) {
   const colors = ['#7F77DD','#D4537E','#1D9E75','#EF9F27','#378ADD','#D85A30','#9E1D75','#5DCAA5'];
 
   ctx.clearRect(0, 0, 220, 220);
-
   for (let i = 0; i < n; i++) {
     const s = (2 * Math.PI / n) * i - Math.PI / 2;
     const e = s + 2 * Math.PI / n;
-    ctx.beginPath(); ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, r, s, e);
-    ctx.fillStyle = colors[i % colors.length] + '44';
-    ctx.fill();
-    ctx.strokeStyle = colors[i % colors.length] + 'aa';
-    ctx.lineWidth = 1.5; ctx.stroke();
-
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, s, e);
+    ctx.fillStyle = colors[i % colors.length] + '44'; ctx.fill();
+    ctx.strokeStyle = colors[i % colors.length] + 'aa'; ctx.lineWidth = 1.5; ctx.stroke();
     const mid = (s + e) / 2;
     ctx.save();
     ctx.translate(cx + Math.cos(mid) * 62, cy + Math.sin(mid) * 62);
     ctx.fillStyle = '#fffffe';
     ctx.font = '600 12px -apple-system,sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText((list[i] || '').slice(0, 7), 0, 0);
+    ctx.fillText((list[i] || '').slice(0, 8), 0, 0);
     ctx.restore();
   }
-
   ctx.beginPath(); ctx.arc(cx, cy, 16, 0, Math.PI * 2);
   ctx.fillStyle = '#0f0e17'; ctx.fill();
   ctx.strokeStyle = '#2a2a4a'; ctx.lineWidth = 1.5; ctx.stroke();
-
   const bx = cx + Math.cos(a) * 82, by = cy + Math.sin(a) * 82;
   ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(bx, by);
   ctx.strokeStyle = '#7F77DD'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.stroke();
@@ -583,17 +520,15 @@ function renderPlayers() {
   });
 }
 
-function renderPlayerChips() { renderPlayers(); }
-
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-function setStatus(cls, text) {
-  ['status-waiting','status-game'].forEach(id => {
+function setStatus(text, cls) {
+  ['status-bar','status-bar-game'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) { el.className = 'status-bar ' + cls; el.textContent = text; }
+    if (el) { el.className = 'status-bar' + (cls ? ' ' + cls : ''); el.textContent = text; }
   });
 }
 </script>
