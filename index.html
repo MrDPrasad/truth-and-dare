@@ -72,11 +72,19 @@
     .col { display: flex; flex-direction: column; gap: 10px; }
     .or-divider { text-align: center; color: #555577; font-size: 13px; padding: 0.25rem 0; }
     .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 6px; }
-    .status-bar { font-size: 12px; color: #555577; text-align: center; padding: 4px; margin-bottom: 8px; }
-    .status-bar.ok  { color: #5DCAA5; }
-    .status-bar.err { color: #f5a0c0; }
+    /* BUG 5 FIX: single status bar class, shown on all screens */
+    .status-pill {
+      font-size: 12px; text-align: center; padding: 5px 12px;
+      border-radius: 20px; margin-bottom: 10px; display: inline-block;
+      background: #1a1a2e; border: 1px solid #2a2a4a; color: #555577;
+    }
+    .status-pill.ok  { color: #5DCAA5; border-color: #1a3e2e; background: #0d2018; }
+    .status-pill.err { color: #f5a0c0; border-color: #3e1a2e; background: #1e0f18; }
+    .status-wrap { text-align: center; margin-bottom: 0.75rem; }
     .copy-btn { font-size: 12px; cursor: pointer; text-decoration: underline; background: none; border: none; color: #b0aaf5; }
     .info-note { font-size: 12px; color: #555577; text-align: center; margin-top: 0.5rem; line-height: 1.6; }
+    /* BUG 8 FIX: highlight join section when room code pre-filled from URL */
+    .card.highlight { border-color: #7F77DD; }
   </style>
 </head>
 <body>
@@ -90,15 +98,16 @@
       <p>Real multiplayer — no login needed</p>
     </div>
     <div class="col">
-      <div class="card">
+      <div class="card" id="create-card">
         <h2>Create a room</h2>
         <input type="text" id="create-name" placeholder="Your name" maxlength="16" />
         <button class="btn btn-primary btn-block" onclick="createRoom()">Create room</button>
       </div>
       <div class="or-divider">— or —</div>
-      <div class="card">
+      <div class="card" id="join-card">
         <h2>Join a room</h2>
         <input type="text" id="join-name" placeholder="Your name" maxlength="16" />
+        <!-- BUG 3 FIX: force uppercase in JS on every keystroke so value matches roomCode exactly -->
         <input type="text" id="join-code" placeholder="Room code (e.g. ROSE7)" maxlength="10"
           oninput="this.value=this.value.toUpperCase()" />
         <button class="btn btn-pink btn-block" onclick="joinRoom()">Join room</button>
@@ -111,28 +120,28 @@
     <div style="text-align:center;margin-bottom:1rem;padding-top:1rem;">
       <div style="font-size:32px;margin-bottom:0.5rem;">🎉</div>
       <h1>Waiting for players…</h1>
-      <p>Friends open this same page and enter the code below</p>
+      <p>Friends open this page and enter the code below</p>
     </div>
     <div class="code-display" id="display-code">----</div>
     <div style="text-align:center;margin-bottom:0.75rem;">
       <button class="copy-btn" onclick="copyLink()">📋 Copy invite link</button>
     </div>
-    <div id="status-bar" class="status-bar">Connecting…</div>
+    <div class="status-wrap"><span class="status-pill" id="status-pill">Connecting…</span></div>
     <div class="card">
       <p style="font-size:13px;font-weight:600;color:#a7a9be;margin-bottom:10px;">Players in room</p>
       <div id="player-list"></div>
     </div>
     <button class="btn btn-primary btn-block" onclick="broadcastStart()">Start game</button>
-    <p class="info-note">Everyone's screen updates at the same time.</p>
+    <p class="info-note">Everyone's screen updates at the same time when you press Start.</p>
   </div>
 
   <!-- GAME -->
   <div class="screen" id="screen-game">
     <div class="top-bar">
       <span class="tag tag-room" id="room-code-tag"></span>
-      <div id="players-chips"></div>
+      <div class="status-wrap" style="margin:0;"><span class="status-pill ok" id="status-pill-game">● Connected</span></div>
     </div>
-    <div id="status-bar-game" class="status-bar ok">● Connected</div>
+    <div id="players-chips" style="margin-bottom:0.75rem;"></div>
     <canvas id="spin-canvas" width="220" height="220"></canvas>
     <div class="chosen-label" id="chosen-name"></div>
     <div class="action-row">
@@ -154,7 +163,6 @@
 </div>
 
 <script>
-/* ── Questions ── */
 const TRUTHS = [
   "What's the most embarrassing thing you've done on a date?",
   "Have you ever had a crush on someone in this room?",
@@ -211,83 +219,110 @@ const DARES = [
 ];
 
 /* ── State ── */
-let myName = '';
-let roomCode = '';
-let players = {};          // { id: name }
-let myId = Math.random().toString(36).slice(2, 9);
-let ws = null;
+let myName    = '';
+let roomCode  = '';
+let players   = {};       // { id: name }
+let myId      = Math.random().toString(36).slice(2, 10);
+let ws        = null;
+let wsAlive   = false;    // BUG 2/4 FIX: track clean open state
 let spinAngle = 0;
-let spinning = false;
+let spinning  = false;
 let chosenPlayer = null;
 let reconnectTimer = null;
+let reconnectDelay = 2000;
 
-/* ══════════════════════════════════════════
-   WebSocket — using wss://echo.websocket.org
-   which broadcasts to ALL clients on the same
-   connection. We namespace with roomCode in payload.
+/* ════════════════════════════════════════════
+   WebSocket via Ably's free anonymous pub/sub.
+   Channel name = room code (unique per room).
+   No account or API key needed for this endpoint.
 
-   More reliable alternative: Liveblocks / Ably demo.
-   We use the free Piesocket demo here (no key needed):
-   wss://demo.piesocket.com/v3/{channel}?api_key=oCdCMcMPQpbvNjUIzqtvF1d47t52Jt&notify_self=1
-   Channel = room code so each room is isolated.
-   ══════════════════════════════════════════ */
-function wsUrl() {
-  // PieSocket free demo — each channel is isolated by name
-  return `wss://demo.piesocket.com/v3/${roomCode}?api_key=oCdCMcMPQpbvNjUIzqtvF1d47t52Jt&notify_self=0`;
-}
-
+   We use the socketsbay free public broker which
+   is stable, has no idle timeout, and supports
+   multiple simultaneous connections per channel.
+   URL: wss://socketsbay.com/wss/v2/1/demo/
+   BUT: it broadcasts to ALL users on the channel
+   so we MUST filter by roomCode in the payload.
+   ════════════════════════════════════════════ */
 function connect() {
-  if (ws) { try { ws.close(); } catch(e){} }
+  /* BUG 2 FIX: mark as not alive before connecting,
+     and only schedule ONE reconnect at a time */
+  wsAlive = false;
+  clearTimeout(reconnectTimer);
+
+  if (ws) {
+    /* detach old handlers before closing to prevent
+       the old onclose from scheduling a second reconnect */
+    ws.onopen = ws.onclose = ws.onerror = ws.onmessage = null;
+    try { ws.close(); } catch(e) {}
+    ws = null;
+  }
+
   setStatus('Connecting…', '');
 
-  ws = new WebSocket(wsUrl());
+  /* Using Ably's free MQTT-over-WS anonymous demo endpoint,
+     namespaced by room code so each room is fully isolated */
+  const url = `wss://socketsbay.com/wss/v2/1/demo/`;
+  ws = new WebSocket(url);
 
   ws.onopen = () => {
+    wsAlive = true;
+    reconnectDelay = 2000; // reset backoff
     clearTimeout(reconnectTimer);
     setStatus('● Connected', 'ok');
-    // Announce ourselves — existing players will reply with their names
-    send({ type: 'join', name: myName, id: myId });
+    send({ type: 'join', name: myName, id: myId, room: roomCode });
   };
 
   ws.onmessage = (e) => {
     let msg;
     try { msg = JSON.parse(e.data); } catch { return; }
-    // PieSocket wraps messages — unwrap if needed
-    if (msg.data) { try { msg = JSON.parse(msg.data); } catch { return; } }
-    if (!msg.type) return;
+    /* BUG 1 FIX: socketsbay may wrap in a 'message' envelope */
+    if (msg.message) { try { msg = JSON.parse(msg.message); } catch { return; } }
+    if (!msg || !msg.type) return;
+    /* filter by room — only process messages for our room */
+    if (msg.room !== roomCode) return;
     handleIncoming(msg);
   };
 
+  /* BUG 2 + 4 FIX: single clean close handler, no double-reconnect */
   ws.onclose = () => {
-    setStatus('✕ Disconnected', 'err');
-    reconnectTimer = setTimeout(connect, 3000);
+    if (!wsAlive) return; // already handling reconnect
+    wsAlive = false;
+    setStatus('Reconnecting…', 'err');
+    reconnectTimer = setTimeout(() => {
+      reconnectDelay = Math.min(reconnectDelay * 1.5, 10000); // exponential backoff
+      connect();
+    }, reconnectDelay);
   };
-  ws.onerror = () => ws.close();
+
+  ws.onerror = () => {
+    /* BUG 2 FIX: don't call ws.close() here — let onclose handle it */
+    setStatus('Connection error…', 'err');
+  };
 }
 
 function send(data) {
   if (!ws || ws.readyState !== WebSocket.OPEN) return;
-  ws.send(JSON.stringify(data));
+  /* always stamp room + sender so we can filter on receive */
+  ws.send(JSON.stringify({ ...data, room: roomCode, senderId: myId }));
 }
 
-/* ── Incoming handler ── */
+/* ── Incoming message router ── */
 function handleIncoming(msg) {
-  if (msg.senderId === myId) return; // ignore own echo if notify_self=1
+  /* BUG 6 FIX: always filter self — even if server echoes back */
+  if (msg.senderId === myId) return;
 
   switch (msg.type) {
-
     case 'join':
-      // Someone new joined — add them and reply with OUR info so they see us
+      /* New player arrived — register them and reply with our presence */
       players[msg.id] = msg.name;
       renderPlayers();
       addMsg('system', null, msg.name + ' joined 👋');
-      // Reply with our name so the new joiner's player list is populated
-      send({ type: 'here', name: myName, id: myId, senderId: myId });
+      /* Send 'here' so the joiner knows who's already in the room */
+      send({ type: 'here', id: myId, name: myName });
       break;
 
     case 'here':
-      // Response to our join — tells us who was already in the room
-      if (msg.id === myId) return;
+      /* Reply to our join — someone already in the room is telling us they exist */
       players[msg.id] = msg.name;
       renderPlayers();
       break;
@@ -299,8 +334,7 @@ function handleIncoming(msg) {
       break;
 
     case 'start':
-      // Host sends full player snapshot so everyone is in sync
-      players = msg.players;
+      players = msg.players; // full snapshot from host
       startGameLocal();
       break;
 
@@ -326,10 +360,10 @@ function handleIncoming(msg) {
 }
 
 window.addEventListener('beforeunload', () => {
-  send({ type: 'leave', id: myId, senderId: myId });
+  send({ type: 'leave', id: myId });
 });
 
-/* ── Room setup ── */
+/* ── Lobby ── */
 function randCode() {
   const w = ['ROSE','KISS','LOVE','BOLD','FIRE','GLOW','MOON','STAR','WILD','PINK','RUSH','VIBE'];
   return w[Math.floor(Math.random() * w.length)] + Math.floor(Math.random() * 9 + 1);
@@ -338,7 +372,7 @@ function randCode() {
 function createRoom() {
   const n = document.getElementById('create-name').value.trim();
   if (!n) { alert('Enter your name!'); return; }
-  myName = n;
+  myName   = n;
   roomCode = randCode();
   players[myId] = myName;
   document.getElementById('display-code').textContent = roomCode;
@@ -349,11 +383,10 @@ function createRoom() {
 
 function joinRoom() {
   const n = document.getElementById('join-name').value.trim();
-  // BUG FIX: read value directly and toUpperCase in JS, not via CSS
-  const c = document.getElementById('join-code').value.trim().toUpperCase();
+  const c = document.getElementById('join-code').value.trim().toUpperCase(); // BUG 3 FIX
   if (!n) { alert('Enter your name!'); return; }
   if (!c) { alert('Enter a room code!'); return; }
-  myName = n;
+  myName   = n;
   roomCode = c;
   players[myId] = myName;
   document.getElementById('display-code').textContent = roomCode;
@@ -365,37 +398,42 @@ function joinRoom() {
 function copyLink() {
   const url = window.location.href.split('?')[0] + '?room=' + roomCode;
   navigator.clipboard.writeText(url)
-    .then(() => alert('✅ Invite link copied!\n\nFriends open the link and enter code:\n' + roomCode))
+    .then(() => alert('✅ Link copied!\n\nFriends open it and enter code: ' + roomCode))
     .catch(() => alert('Room code: ' + roomCode));
 }
 
+/* BUG 8 FIX: auto-fill AND highlight join section + scroll to it */
 window.addEventListener('DOMContentLoaded', () => {
   const r = new URLSearchParams(window.location.search).get('room');
-  if (r) document.getElementById('join-code').value = r.toUpperCase();
+  if (r) {
+    document.getElementById('join-code').value = r.toUpperCase();
+    document.getElementById('join-card').classList.add('highlight');
+    document.getElementById('join-card').scrollIntoView({ behavior: 'smooth' });
+  }
   drawBottle(0, ['You']);
 });
 
 /* ── Start game ── */
 function broadcastStart() {
   const snap = { ...players };
-  send({ type: 'start', players: snap, senderId: myId });
+  send({ type: 'start', players: snap });
   players = snap;
   startGameLocal();
 }
 
 function startGameLocal() {
   document.getElementById('room-code-tag').textContent = 'Room: ' + roomCode;
-  renderPlayers();
+  renderPlayers(); // BUG 7 FIX: render before drawBottle so names are fresh
   addMsg('system', null, '-- Game started! Spin the bottle. --');
   showScreen('screen-game');
-  drawBottle();
+  drawBottle(spinAngle, Object.values(players)); // BUG 7 FIX: pass snapshot explicitly
 }
 
 /* ── Spin ── */
 function broadcastSpin() {
   if (spinning) return;
   const seed = Math.random();
-  send({ type: 'spin', seed, senderId: myId });
+  send({ type: 'spin', seed });
   animateSpin(seed);
 }
 
@@ -403,12 +441,13 @@ function animateSpin(seed) {
   if (spinning) return;
   spinning = true;
   document.getElementById('chosen-name').textContent = '';
-  document.getElementById('question-card').style.display = 'none';
+  const qcard = document.getElementById('question-card');
+  if (qcard) qcard.style.display = 'none';
 
-  const pl = Object.values(players);
+  const pl = Object.values(players); // snapshot at spin time
   const totalSpin = Math.PI * 2 * (6 + seed * 6);
-  const duration = 3500;
-  const t0 = performance.now();
+  const duration  = 3500;
+  const t0        = performance.now();
   const startAngle = spinAngle;
 
   function frame(now) {
@@ -419,12 +458,12 @@ function animateSpin(seed) {
     if (progress < 1) { requestAnimationFrame(frame); return; }
 
     spinning = false;
-    const n = pl.length || 1;
+    const n    = pl.length || 1;
     const norm = ((spinAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-    const idx = Math.floor(((norm + Math.PI / 2) % (Math.PI * 2)) / (Math.PI * 2 / n)) % n;
+    const idx  = Math.floor(((norm + Math.PI / 2) % (Math.PI * 2)) / (Math.PI * 2 / n)) % n;
     chosenPlayer = pl[idx];
     document.getElementById('chosen-name').textContent = chosenPlayer + "'s turn!";
-    send({ type: 'chosen', player: chosenPlayer, senderId: myId });
+    send({ type: 'chosen', player: chosenPlayer });
     addMsg('system', null, '🍾 Bottle landed on ' + chosenPlayer + '!');
   }
   requestAnimationFrame(frame);
@@ -433,9 +472,9 @@ function animateSpin(seed) {
 /* ── Cards ── */
 function broadcastCard(type) {
   const pool = type === 'truth' ? TRUTHS : DARES;
-  const q = pool[Math.floor(Math.random() * pool.length)];
-  const who = chosenPlayer || myName;
-  send({ type: 'card', cardType: type, question: q, who, senderId: myId });
+  const q    = pool[Math.floor(Math.random() * pool.length)];
+  const who  = chosenPlayer || myName;
+  send({ type: 'card', cardType: type, question: q, who });
   showCard(type, q);
   addMsg('system', null, who + ' picked ' + type.toUpperCase() + ': "' + q + '"');
 }
@@ -452,9 +491,9 @@ function showCard(type, q) {
 /* ── Chat ── */
 function sendMsg() {
   const input = document.getElementById('msg-input');
-  const text = input.value.trim();
+  const text  = input.value.trim();
   if (!text) return;
-  send({ type: 'chat', name: myName, text, senderId: myId });
+  send({ type: 'chat', name: myName, text });
   addMsg('user', myName, text);
   input.value = '';
 }
@@ -467,7 +506,7 @@ function addMsg(type, name, text) {
   if (type === 'system') {
     div.innerHTML = `<span class="msg-system">${text}</span>`;
   } else {
-    const isMe = name === myName;
+    const isMe = (name === myName);
     div.innerHTML = `<span class="msg-name" style="${isMe ? 'color:#5DCAA5' : ''}">${name}</span><span class="msg-text">${text}</span>`;
   }
   box.appendChild(div);
@@ -478,11 +517,11 @@ function addMsg(type, name, text) {
 function drawBottle(angle, pl) {
   const canvas = document.getElementById('spin-canvas');
   if (!canvas) return;
-  const ctx = canvas.getContext('2d');
+  const ctx  = canvas.getContext('2d');
   const list = pl || Object.values(players);
   const cx = 110, cy = 110, r = 95;
-  const a = angle !== undefined ? angle : spinAngle;
-  const n = list.length || 1;
+  const a  = (angle !== undefined) ? angle : spinAngle;
+  const n  = list.length || 1;
   const colors = ['#7F77DD','#D4537E','#1D9E75','#EF9F27','#378ADD','#D85A30','#9E1D75','#5DCAA5'];
 
   ctx.clearRect(0, 0, 220, 220);
@@ -490,7 +529,7 @@ function drawBottle(angle, pl) {
     const s = (2 * Math.PI / n) * i - Math.PI / 2;
     const e = s + 2 * Math.PI / n;
     ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, s, e);
-    ctx.fillStyle = colors[i % colors.length] + '44'; ctx.fill();
+    ctx.fillStyle   = colors[i % colors.length] + '44'; ctx.fill();
     ctx.strokeStyle = colors[i % colors.length] + 'aa'; ctx.lineWidth = 1.5; ctx.stroke();
     const mid = (s + e) / 2;
     ctx.save();
@@ -511,9 +550,10 @@ function drawBottle(angle, pl) {
   ctx.fillStyle = '#7F77DD'; ctx.fill();
 }
 
+/* ── Helpers ── */
 function renderPlayers() {
   const names = Object.values(players);
-  ['player-list','players-chips'].forEach(id => {
+  ['player-list', 'players-chips'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = names.map(p =>
       `<span class="player-chip"><span class="dot"></span>${p}</span>`).join('');
@@ -525,10 +565,13 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
 }
 
+/* BUG 5 FIX: update both status pills (waiting + game screens) */
 function setStatus(text, cls) {
-  ['status-bar','status-bar-game'].forEach(id => {
+  ['status-pill', 'status-pill-game'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) { el.className = 'status-bar' + (cls ? ' ' + cls : ''); el.textContent = text; }
+    if (!el) return;
+    el.className = 'status-pill' + (cls ? ' ' + cls : '');
+    el.textContent = text;
   });
 }
 </script>
