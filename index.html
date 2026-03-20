@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Truth or Dare 🍾</title>
+  <script src="https://cdn.jsdelivr.net/npm/ably@1.2.45/ably.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -19,11 +20,16 @@
     h1 { font-size: 26px; font-weight: 700; margin-bottom: 0.4rem; }
     h2 { font-size: 17px; font-weight: 600; margin-bottom: 1rem; color: #fffffe; }
     p  { font-size: 15px; color: #a7a9be; line-height: 1.7; }
-    .card { background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 16px; padding: 1.25rem; margin-bottom: 1rem; }
+    .card {
+      background: #1a1a2e; border: 1px solid #2a2a4a;
+      border-radius: 16px; padding: 1.25rem; margin-bottom: 1rem;
+    }
+    .card.highlight { border-color: #7F77DD; }
     input[type="text"] {
       width: 100%; padding: 10px 14px; font-size: 15px;
-      background: #0f0e17; border: 1px solid #2a2a4a; border-radius: 10px;
-      color: #fffffe; margin-bottom: 10px; outline: none; transition: border-color 0.2s;
+      background: #0f0e17; border: 1px solid #2a2a4a;
+      border-radius: 10px; color: #fffffe; margin-bottom: 10px;
+      outline: none; transition: border-color 0.2s;
     }
     input[type="text"]:focus { border-color: #7F77DD; }
     input[type="text"]::placeholder { color: #444466; }
@@ -31,6 +37,7 @@
       display: inline-block; padding: 11px 22px; border-radius: 10px;
       border: 1px solid #2a2a4a; background: transparent; color: #fffffe;
       font-size: 15px; cursor: pointer; transition: background 0.15s, transform 0.1s;
+      font-family: inherit;
     }
     .btn:hover { background: #1a1a2e; }
     .btn:active { transform: scale(0.97); }
@@ -39,27 +46,51 @@
     .btn-pink { background: #D4537E; border-color: #D4537E; color: #fff; font-weight: 600; }
     .btn-pink:hover { background: #993556; border-color: #993556; }
     .btn-block { width: 100%; text-align: center; }
-    .tag { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .tag {
+      display: inline-block; font-size: 11px; padding: 3px 10px;
+      border-radius: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+    }
     .tag-truth { background: #2e2a5e; color: #b0aaf5; }
     .tag-dare  { background: #3e1a2e; color: #f5a0c0; }
     .tag-room  { background: #1a3e2e; color: #5DCAA5; }
     .player-chip {
       display: inline-flex; align-items: center; gap: 6px;
       background: #1a1a2e; border: 1px solid #2a2a4a;
-      border-radius: 20px; padding: 4px 12px; font-size: 13px; color: #fffffe; margin: 3px;
+      border-radius: 20px; padding: 4px 12px;
+      font-size: 13px; color: #fffffe; margin: 3px;
     }
     .dot { width: 8px; height: 8px; border-radius: 50%; background: #5DCAA5; display: inline-block; }
     .code-display {
       font-size: 36px; font-weight: 700; letter-spacing: 10px; color: #7F77DD;
-      text-align: center; padding: 1.2rem; background: #12102a; border-radius: 12px; margin-bottom: 1rem;
+      text-align: center; padding: 1.2rem; background: #12102a;
+      border-radius: 12px; margin-bottom: 1rem;
     }
+    .status-wrap { text-align: center; margin-bottom: 0.75rem; }
+    .status-pill {
+      font-size: 12px; padding: 4px 14px; border-radius: 20px;
+      display: inline-block; background: #1a1a2e; border: 1px solid #2a2a4a; color: #555577;
+    }
+    .status-pill.ok  { color: #5DCAA5; border-color: #1a3e2e; background: #0d2018; }
+    .status-pill.err { color: #f5a0c0; border-color: #3e1a2e; background: #1e0f18; }
     #spin-canvas { display: block; margin: 0 auto 0.75rem; }
-    .chosen-label { font-size: 18px; font-weight: 600; color: #b0aaf5; text-align: center; margin-bottom: 1rem; min-height: 28px; }
-    .action-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 1rem; flex-wrap: wrap; }
-    .qcard { border-left: 3px solid #7F77DD; padding: 1rem; background: #12102a; border-radius: 0 12px 12px 0; margin-bottom: 1rem; }
+    .chosen-label {
+      font-size: 18px; font-weight: 600; color: #b0aaf5;
+      text-align: center; margin-bottom: 1rem; min-height: 28px;
+    }
+    .action-row {
+      display: flex; gap: 10px; justify-content: center;
+      margin-bottom: 1rem; flex-wrap: wrap;
+    }
+    .qcard {
+      border-left: 3px solid #7F77DD; padding: 1rem;
+      background: #12102a; border-radius: 0 12px 12px 0; margin-bottom: 1rem;
+    }
     .qcard.dare { border-left-color: #D4537E; background: #1e0f18; }
     .qcard p { color: #fffffe; font-size: 16px; margin-top: 8px; }
-    .chat-box { height: 200px; overflow-y: auto; background: #12102a; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+    .chat-box {
+      height: 200px; overflow-y: auto; background: #12102a;
+      border-radius: 10px; padding: 10px; margin-bottom: 10px;
+    }
     .chat-box::-webkit-scrollbar { width: 4px; }
     .chat-box::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 4px; }
     .msg { margin-bottom: 8px; font-size: 14px; line-height: 1.5; }
@@ -71,20 +102,15 @@
     .divider { height: 1px; background: #2a2a4a; margin: 1rem 0; }
     .col { display: flex; flex-direction: column; gap: 10px; }
     .or-divider { text-align: center; color: #555577; font-size: 13px; padding: 0.25rem 0; }
-    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 6px; }
-    /* BUG 5 FIX: single status bar class, shown on all screens */
-    .status-pill {
-      font-size: 12px; text-align: center; padding: 5px 12px;
-      border-radius: 20px; margin-bottom: 10px; display: inline-block;
-      background: #1a1a2e; border: 1px solid #2a2a4a; color: #555577;
+    .top-bar {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 6px;
     }
-    .status-pill.ok  { color: #5DCAA5; border-color: #1a3e2e; background: #0d2018; }
-    .status-pill.err { color: #f5a0c0; border-color: #3e1a2e; background: #1e0f18; }
-    .status-wrap { text-align: center; margin-bottom: 0.75rem; }
-    .copy-btn { font-size: 12px; cursor: pointer; text-decoration: underline; background: none; border: none; color: #b0aaf5; }
+    .copy-btn {
+      font-size: 12px; cursor: pointer; text-decoration: underline;
+      background: none; border: none; color: #b0aaf5; font-family: inherit;
+    }
     .info-note { font-size: 12px; color: #555577; text-align: center; margin-top: 0.5rem; line-height: 1.6; }
-    /* BUG 8 FIX: highlight join section when room code pre-filled from URL */
-    .card.highlight { border-color: #7F77DD; }
   </style>
 </head>
 <body>
@@ -98,7 +124,7 @@
       <p>Real multiplayer — no login needed</p>
     </div>
     <div class="col">
-      <div class="card" id="create-card">
+      <div class="card">
         <h2>Create a room</h2>
         <input type="text" id="create-name" placeholder="Your name" maxlength="16" />
         <button class="btn btn-primary btn-block" onclick="createRoom()">Create room</button>
@@ -107,7 +133,6 @@
       <div class="card" id="join-card">
         <h2>Join a room</h2>
         <input type="text" id="join-name" placeholder="Your name" maxlength="16" />
-        <!-- BUG 3 FIX: force uppercase in JS on every keystroke so value matches roomCode exactly -->
         <input type="text" id="join-code" placeholder="Room code (e.g. ROSE7)" maxlength="10"
           oninput="this.value=this.value.toUpperCase()" />
         <button class="btn btn-pink btn-block" onclick="joinRoom()">Join room</button>
@@ -139,7 +164,7 @@
   <div class="screen" id="screen-game">
     <div class="top-bar">
       <span class="tag tag-room" id="room-code-tag"></span>
-      <div class="status-wrap" style="margin:0;"><span class="status-pill ok" id="status-pill-game">● Connected</span></div>
+      <span class="status-pill ok" id="status-pill-game">● Connected</span>
     </div>
     <div id="players-chips" style="margin-bottom:0.75rem;"></div>
     <canvas id="spin-canvas" width="220" height="220"></canvas>
@@ -161,8 +186,8 @@
   </div>
 
 </div>
-
 <script>
+/* ── Questions ── */
 const TRUTHS = [
   "What's the most embarrassing thing you've done on a date?",
   "Have you ever had a crush on someone in this room?",
@@ -174,7 +199,7 @@ const TRUTHS = [
   "Have you ever fallen for someone you shouldn't have?",
   "What's one thing you've never told anyone in this room?",
   "Who was your first love and what happened?",
-  "What's your most embarrassing text sent to the wrong person?",
+  "What's the most embarrassing text you sent to the wrong person?",
   "What's the wildest thing you've done to impress someone?",
   "If you could date any celebrity, who and why?",
   "What's something you secretly find attractive?",
@@ -219,149 +244,108 @@ const DARES = [
 ];
 
 /* ── State ── */
-let myName    = '';
-let roomCode  = '';
-let players   = {};       // { id: name }
-let myId      = Math.random().toString(36).slice(2, 10);
-let ws        = null;
-let wsAlive   = false;    // BUG 2/4 FIX: track clean open state
-let spinAngle = 0;
-let spinning  = false;
+const ABLY_KEY = 'WlQ7-A.qBT12w:ld1tzQTBh6QJZwTcs4lfThrKJffzlb7FpjOQzuppOmk';
+let myName       = '';
+let roomCode     = '';
+let players      = {};        // { clientId: name }
+let myClientId   = '';        // assigned by Ably
+let ably         = null;
+let channel      = null;
+let spinAngle    = 0;
+let spinning     = false;
 let chosenPlayer = null;
-let reconnectTimer = null;
-let reconnectDelay = 2000;
 
-/* ════════════════════════════════════════════
-   WebSocket via Ably's free anonymous pub/sub.
-   Channel name = room code (unique per room).
-   No account or API key needed for this endpoint.
-
-   We use the socketsbay free public broker which
-   is stable, has no idle timeout, and supports
-   multiple simultaneous connections per channel.
-   URL: wss://socketsbay.com/wss/v2/1/demo/
-   BUT: it broadcasts to ALL users on the channel
-   so we MUST filter by roomCode in the payload.
-   ════════════════════════════════════════════ */
-function connect() {
-  /* BUG 2 FIX: mark as not alive before connecting,
-     and only schedule ONE reconnect at a time */
-  wsAlive = false;
-  clearTimeout(reconnectTimer);
-
-  if (ws) {
-    /* detach old handlers before closing to prevent
-       the old onclose from scheduling a second reconnect */
-    ws.onopen = ws.onclose = ws.onerror = ws.onmessage = null;
-    try { ws.close(); } catch(e) {}
-    ws = null;
-  }
-
+/* ── Ably connect ── */
+function connectAbly(onReady) {
   setStatus('Connecting…', '');
 
-  /* Using Ably's free MQTT-over-WS anonymous demo endpoint,
-     namespaced by room code so each room is fully isolated */
-  const url = `wss://socketsbay.com/wss/v2/1/demo/`;
-  ws = new WebSocket(url);
+  ably = new Ably.Realtime({
+    key: ABLY_KEY,
+    clientId: 'player-' + Math.random().toString(36).slice(2, 9),
+  });
 
-  ws.onopen = () => {
-    wsAlive = true;
-    reconnectDelay = 2000; // reset backoff
-    clearTimeout(reconnectTimer);
+  ably.connection.on('connected', () => {
+    myClientId = ably.connection.id;
     setStatus('● Connected', 'ok');
-    send({ type: 'join', name: myName, id: myId, room: roomCode });
-  };
+    onReady();
+  });
 
-  ws.onmessage = (e) => {
-    let msg;
-    try { msg = JSON.parse(e.data); } catch { return; }
-    /* BUG 1 FIX: socketsbay may wrap in a 'message' envelope */
-    if (msg.message) { try { msg = JSON.parse(msg.message); } catch { return; } }
-    if (!msg || !msg.type) return;
-    /* filter by room — only process messages for our room */
-    if (msg.room !== roomCode) return;
-    handleIncoming(msg);
-  };
-
-  /* BUG 2 + 4 FIX: single clean close handler, no double-reconnect */
-  ws.onclose = () => {
-    if (!wsAlive) return; // already handling reconnect
-    wsAlive = false;
-    setStatus('Reconnecting…', 'err');
-    reconnectTimer = setTimeout(() => {
-      reconnectDelay = Math.min(reconnectDelay * 1.5, 10000); // exponential backoff
-      connect();
-    }, reconnectDelay);
-  };
-
-  ws.onerror = () => {
-    /* BUG 2 FIX: don't call ws.close() here — let onclose handle it */
-    setStatus('Connection error…', 'err');
-  };
+  ably.connection.on('disconnected', () => setStatus('Reconnecting…', 'err'));
+  ably.connection.on('suspended',    () => setStatus('Connection lost…', 'err'));
+  ably.connection.on('failed',       () => setStatus('Failed to connect', 'err'));
+  ably.connection.on('connected',    () => setStatus('● Connected', 'ok'));
 }
 
-function send(data) {
-  if (!ws || ws.readyState !== WebSocket.OPEN) return;
-  /* always stamp room + sender so we can filter on receive */
-  ws.send(JSON.stringify({ ...data, room: roomCode, senderId: myId }));
+function subscribeChannel(code) {
+  channel = ably.channels.get('tord-' + code);
+
+  /* subscribe to all messages on this room channel */
+  channel.subscribe((msg) => {
+    const data = msg.data;
+    /* ignore our own messages — Ably echoes them back */
+    if (msg.clientId === ably.auth.clientId) return;
+    handleIncoming(data);
+  });
+
+  /* presence — know who is in the channel */
+  channel.presence.subscribe('enter', (member) => {
+    const { name, id } = member.data;
+    players[id] = name;
+    renderPlayers();
+    addMsg('system', null, name + ' joined 👋');
+  });
+
+  channel.presence.subscribe('leave', (member) => {
+    const name = players[member.data.id] || 'Someone';
+    delete players[member.data.id];
+    renderPlayers();
+    addMsg('system', null, name + ' left');
+  });
+
+  /* enter presence with our name so others know we're here */
+  channel.presence.enter({ name: myName, id: myClientId });
+
+  /* get everyone already in the channel */
+  channel.presence.get((err, members) => {
+    if (err || !members) return;
+    members.forEach(m => {
+      if (m.data && m.data.id !== myClientId) {
+        players[m.data.id] = m.data.name;
+      }
+    });
+    renderPlayers();
+  });
 }
 
-/* ── Incoming message router ── */
-function handleIncoming(msg) {
-  /* BUG 6 FIX: always filter self — even if server echoes back */
-  if (msg.senderId === myId) return;
+function publish(type, data) {
+  if (!channel) return;
+  channel.publish(type, { ...data, _from: myClientId });
+}
 
-  switch (msg.type) {
-    case 'join':
-      /* New player arrived — register them and reply with our presence */
-      players[msg.id] = msg.name;
-      renderPlayers();
-      addMsg('system', null, msg.name + ' joined 👋');
-      /* Send 'here' so the joiner knows who's already in the room */
-      send({ type: 'here', id: myId, name: myName });
-      break;
-
-    case 'here':
-      /* Reply to our join — someone already in the room is telling us they exist */
-      players[msg.id] = msg.name;
-      renderPlayers();
-      break;
-
-    case 'leave':
-      addMsg('system', null, (players[msg.id] || 'Someone') + ' left');
-      delete players[msg.id];
-      renderPlayers();
-      break;
-
+/* ── Incoming handler ── */
+function handleIncoming(data) {
+  switch (data.type) {
     case 'start':
-      players = msg.players; // full snapshot from host
+      players = data.players;
       startGameLocal();
       break;
-
     case 'spin':
-      animateSpin(msg.seed);
+      animateSpin(data.seed);
       break;
-
     case 'chosen':
-      chosenPlayer = msg.player;
-      document.getElementById('chosen-name').textContent = msg.player + "'s turn!";
-      addMsg('system', null, '🍾 Bottle landed on ' + msg.player + '!');
+      chosenPlayer = data.player;
+      document.getElementById('chosen-name').textContent = data.player + "'s turn!";
+      addMsg('system', null, '🍾 Bottle landed on ' + data.player + '!');
       break;
-
     case 'card':
-      showCard(msg.cardType, msg.question);
-      addMsg('system', null, msg.who + ' picked ' + msg.cardType.toUpperCase() + ': "' + msg.question + '"');
+      showCard(data.cardType, data.question);
+      addMsg('system', null, data.who + ' picked ' + data.cardType.toUpperCase() + ': "' + data.question + '"');
       break;
-
     case 'chat':
-      addMsg('user', msg.name, msg.text);
+      addMsg('user', data.name, data.text);
       break;
   }
 }
-
-window.addEventListener('beforeunload', () => {
-  send({ type: 'leave', id: myId });
-});
 
 /* ── Lobby ── */
 function randCode() {
@@ -374,66 +358,73 @@ function createRoom() {
   if (!n) { alert('Enter your name!'); return; }
   myName   = n;
   roomCode = randCode();
-  players[myId] = myName;
   document.getElementById('display-code').textContent = roomCode;
-  renderPlayers();
   showScreen('screen-waiting');
-  connect();
+  connectAbly(() => {
+    players[myClientId] = myName;
+    renderPlayers();
+    subscribeChannel(roomCode);
+  });
 }
 
 function joinRoom() {
   const n = document.getElementById('join-name').value.trim();
-  const c = document.getElementById('join-code').value.trim().toUpperCase(); // BUG 3 FIX
+  const c = document.getElementById('join-code').value.trim().toUpperCase();
   if (!n) { alert('Enter your name!'); return; }
   if (!c) { alert('Enter a room code!'); return; }
   myName   = n;
   roomCode = c;
-  players[myId] = myName;
   document.getElementById('display-code').textContent = roomCode;
-  renderPlayers();
   showScreen('screen-waiting');
-  connect();
+  connectAbly(() => {
+    players[myClientId] = myName;
+    renderPlayers();
+    subscribeChannel(roomCode);
+  });
 }
 
 function copyLink() {
   const url = window.location.href.split('?')[0] + '?room=' + roomCode;
   navigator.clipboard.writeText(url)
-    .then(() => alert('✅ Link copied!\n\nFriends open it and enter code: ' + roomCode))
+    .then(() => alert('✅ Link copied!\n\nFriends open the link — the code fills automatically.\nCode: ' + roomCode))
     .catch(() => alert('Room code: ' + roomCode));
 }
 
-/* BUG 8 FIX: auto-fill AND highlight join section + scroll to it */
 window.addEventListener('DOMContentLoaded', () => {
   const r = new URLSearchParams(window.location.search).get('room');
   if (r) {
     document.getElementById('join-code').value = r.toUpperCase();
     document.getElementById('join-card').classList.add('highlight');
-    document.getElementById('join-card').scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => document.getElementById('join-card').scrollIntoView({ behavior: 'smooth' }), 100);
   }
   drawBottle(0, ['You']);
+});
+
+window.addEventListener('beforeunload', () => {
+  if (channel) channel.presence.leave();
 });
 
 /* ── Start game ── */
 function broadcastStart() {
   const snap = { ...players };
-  send({ type: 'start', players: snap });
+  publish('game', { type: 'start', players: snap });
   players = snap;
   startGameLocal();
 }
 
 function startGameLocal() {
   document.getElementById('room-code-tag').textContent = 'Room: ' + roomCode;
-  renderPlayers(); // BUG 7 FIX: render before drawBottle so names are fresh
+  renderPlayers();
   addMsg('system', null, '-- Game started! Spin the bottle. --');
   showScreen('screen-game');
-  drawBottle(spinAngle, Object.values(players)); // BUG 7 FIX: pass snapshot explicitly
+  drawBottle(spinAngle, Object.values(players));
 }
 
 /* ── Spin ── */
 function broadcastSpin() {
   if (spinning) return;
   const seed = Math.random();
-  send({ type: 'spin', seed });
+  publish('game', { type: 'spin', seed });
   animateSpin(seed);
 }
 
@@ -444,10 +435,10 @@ function animateSpin(seed) {
   const qcard = document.getElementById('question-card');
   if (qcard) qcard.style.display = 'none';
 
-  const pl = Object.values(players); // snapshot at spin time
-  const totalSpin = Math.PI * 2 * (6 + seed * 6);
-  const duration  = 3500;
-  const t0        = performance.now();
+  const pl         = Object.values(players);
+  const totalSpin  = Math.PI * 2 * (6 + seed * 6);
+  const duration   = 3500;
+  const t0         = performance.now();
   const startAngle = spinAngle;
 
   function frame(now) {
@@ -463,7 +454,7 @@ function animateSpin(seed) {
     const idx  = Math.floor(((norm + Math.PI / 2) % (Math.PI * 2)) / (Math.PI * 2 / n)) % n;
     chosenPlayer = pl[idx];
     document.getElementById('chosen-name').textContent = chosenPlayer + "'s turn!";
-    send({ type: 'chosen', player: chosenPlayer });
+    publish('game', { type: 'chosen', player: chosenPlayer });
     addMsg('system', null, '🍾 Bottle landed on ' + chosenPlayer + '!');
   }
   requestAnimationFrame(frame);
@@ -474,7 +465,7 @@ function broadcastCard(type) {
   const pool = type === 'truth' ? TRUTHS : DARES;
   const q    = pool[Math.floor(Math.random() * pool.length)];
   const who  = chosenPlayer || myName;
-  send({ type: 'card', cardType: type, question: q, who });
+  publish('game', { type: 'card', cardType: type, question: q, who });
   showCard(type, q);
   addMsg('system', null, who + ' picked ' + type.toUpperCase() + ': "' + q + '"');
 }
@@ -493,7 +484,7 @@ function sendMsg() {
   const input = document.getElementById('msg-input');
   const text  = input.value.trim();
   if (!text) return;
-  send({ type: 'chat', name: myName, text });
+  publish('game', { type: 'chat', name: myName, text });
   addMsg('user', myName, text);
   input.value = '';
 }
@@ -506,7 +497,7 @@ function addMsg(type, name, text) {
   if (type === 'system') {
     div.innerHTML = `<span class="msg-system">${text}</span>`;
   } else {
-    const isMe = (name === myName);
+    const isMe = name === myName;
     div.innerHTML = `<span class="msg-name" style="${isMe ? 'color:#5DCAA5' : ''}">${name}</span><span class="msg-text">${text}</span>`;
   }
   box.appendChild(div);
@@ -520,7 +511,7 @@ function drawBottle(angle, pl) {
   const ctx  = canvas.getContext('2d');
   const list = pl || Object.values(players);
   const cx = 110, cy = 110, r = 95;
-  const a  = (angle !== undefined) ? angle : spinAngle;
+  const a  = angle !== undefined ? angle : spinAngle;
   const n  = list.length || 1;
   const colors = ['#7F77DD','#D4537E','#1D9E75','#EF9F27','#378ADD','#D85A30','#9E1D75','#5DCAA5'];
 
@@ -553,7 +544,7 @@ function drawBottle(angle, pl) {
 /* ── Helpers ── */
 function renderPlayers() {
   const names = Object.values(players);
-  ['player-list', 'players-chips'].forEach(id => {
+  ['player-list','players-chips'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = names.map(p =>
       `<span class="player-chip"><span class="dot"></span>${p}</span>`).join('');
@@ -565,9 +556,8 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
 }
 
-/* BUG 5 FIX: update both status pills (waiting + game screens) */
 function setStatus(text, cls) {
-  ['status-pill', 'status-pill-game'].forEach(id => {
+  ['status-pill','status-pill-game'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     el.className = 'status-pill' + (cls ? ' ' + cls : '');
