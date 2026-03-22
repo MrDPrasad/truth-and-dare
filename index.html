@@ -1,594 +1,1009 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Truth or Dare 🍾</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            bg:      '#0f0e17',
-            surface: '#1a1a2e',
-            border:  '#2a2a4a',
-            muted:   '#a7a9be',
-            hint:    '#444466',
-            purple:  { DEFAULT:'#7F77DD', dark:'#534AB7', light:'#b0aaf5', bg:'#2e2a5e' },
-            pink:    { DEFAULT:'#D4537E', dark:'#993556', light:'#f5a0c0', bg:'#3e1a2e' },
-            green:   { DEFAULT:'#5DCAA5', bg:'#0d2018', border:'#1a3e2e' },
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    body { background: #0f0e17; color: #fffffe; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-    .screen { display: none; }
-    .screen.active { display: block; }
-    input::placeholder { color: #444466; }
-    input:focus { outline: none; border-color: #7F77DD; }
-    #spin-canvas { display: block; margin: 0 auto; }
-    .chat-box::-webkit-scrollbar { width: 4px; }
-    .chat-box::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 4px; }
-  </style>
-</head>
-<body class="min-h-screen flex items-start justify-center px-4 py-10">
-<div class="w-full max-w-md pb-16">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#7F77DD"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="TruthDare"/>
+<link rel="manifest" href="manifest.json"/>
+<title>Truth or Dare 🍾</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:#0f0e17;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
 
-  <!-- ═══════════ LOBBY ═══════════ -->
-  <div class="screen active" id="screen-lobby">
-    <div class="text-center mb-8">
-      <div class="text-6xl mb-2">🍾</div>
-      <h1 class="text-3xl font-bold mb-1">Truth or Dare</h1>
-      <p class="text-muted text-sm">Real multiplayer · No login needed</p>
+/* screens */
+.pg{display:none;position:fixed;inset:0;flex-direction:column;background:#0f0e17;z-index:1;}
+.pg.on{display:flex;}
+
+/* scrollable */
+.sy{overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.sy::-webkit-scrollbar{width:3px;}
+.sy::-webkit-scrollbar-thumb{background:#2a2a4a;border-radius:4px;}
+
+/* inputs */
+input,textarea,button{font-family:inherit;border:none;background:none;}
+input::placeholder,textarea::placeholder{color:#444466;}
+input:focus,textarea:focus{outline:none;}
+textarea{resize:none;}
+
+/* safe areas */
+.pt-safe{padding-top:env(safe-area-inset-top,0px);}
+.pb-safe{padding-bottom:env(safe-area-inset-bottom,12px);}
+
+/* animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.fade-up{animation:fadeUp .25s ease forwards;}
+
+@keyframes blink{0%,80%,100%{opacity:0;}40%{opacity:1;}}
+.td{display:inline-block;width:5px;height:5px;border-radius:50%;background:#a7a9be;animation:blink 1.2s infinite;margin:0 1px;vertical-align:middle;}
+.td:nth-child(2){animation-delay:.15s;}.td:nth-child(3){animation-delay:.3s;}
+
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.pulse{animation:pulse 2s infinite;}
+
+@keyframes ring{0%{box-shadow:0 0 0 0 rgba(212,83,126,.6);}100%{box-shadow:0 0 0 14px rgba(212,83,126,0);}}
+.ringing{animation:ring .8s infinite;}
+
+@keyframes wave{0%,100%{height:6px;}50%{height:20px;}}
+.wb{width:3px;border-radius:2px;background:#7F77DD;animation:wave .7s infinite ease-in-out;}
+.wb:nth-child(2){animation-delay:.1s;}.wb:nth-child(3){animation-delay:.2s;}.wb:nth-child(4){animation-delay:.3s;}
+
+/* bubbles */
+.bm{background:#2e2a5e;border-radius:16px 16px 4px 16px;}
+.bt{background:#1a1a2e;border-radius:16px 16px 16px 4px;}
+
+/* tab underline */
+.tab-on{color:#7F77DD;border-bottom:2px solid #7F77DD;}
+.tab-off{color:#555577;}
+
+/* install banner slide up */
+@keyframes slideUp{from{transform:translateY(110%);}to{transform:translateY(0);}}
+.slide-up{animation:slideUp .35s ease;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════
+     INSTALL BANNER
+═══════════════════════════════════ -->
+<div id="install-banner" class="hidden fixed bottom-0 left-0 right-0 z-50 pb-safe px-4 pb-4 slide-up">
+  <div style="background:#1a1a2e;border:1px solid #7F77DD;border-radius:20px;padding:16px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <span style="font-size:36px;">🍾</span>
+      <div style="flex:1;">
+        <p style="font-weight:600;font-size:15px;">Install Truth or Dare</p>
+        <p style="font-size:12px;color:#a7a9be;margin-top:2px;">Play anytime · Works offline · Like a real app</p>
+      </div>
+      <button onclick="dismissInstall()" style="color:#555577;font-size:20px;padding:4px;">✕</button>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button id="install-btn" onclick="doInstall()"
+        style="flex:1;background:#7F77DD;color:#fff;font-weight:600;border-radius:12px;padding:12px;font-size:14px;">
+        📲 Install App
+      </button>
+      <button onclick="dismissInstall()"
+        style="flex:1;border:1px solid #2a2a4a;color:#a7a9be;border-radius:12px;padding:12px;font-size:14px;">
+        Not now
+      </button>
+    </div>
+    <div id="ios-tip" style="display:none;margin-top:10px;background:#12102a;border-radius:12px;padding:10px;text-align:center;font-size:12px;color:#a7a9be;">
+      Tap <strong style="color:#fff;">Share</strong> → <strong style="color:#fff;">Add to Home Screen</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     CALL OVERLAY
+═══════════════════════════════════ -->
+<div id="call-overlay" style="display:none;position:fixed;inset:0;z-index:80;background:#0a0918;flex-direction:column;align-items:center;justify-content:space-between;padding:60px 24px 48px;">
+  <!-- top -->
+  <div style="text-align:center;">
+    <p id="call-status" style="color:#a7a9be;font-size:13px;margin-bottom:8px;">Connecting…</p>
+    <h2 style="font-size:24px;font-weight:700;margin-bottom:4px;">Voice Call</h2>
+    <p id="call-room" style="color:#a7a9be;font-size:13px;"></p>
+  </div>
+  <!-- avatars -->
+  <div id="call-avatars" style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;width:100%;"></div>
+  <!-- hidden audio elements -->
+  <div id="remote-audios"></div>
+  <!-- controls -->
+  <div style="display:flex;gap:24px;align-items:center;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+      <button id="mute-btn" onclick="toggleMute()"
+        style="width:60px;height:60px;border-radius:50%;background:#1a1a2e;border:1px solid #2a2a4a;font-size:24px;display:flex;align-items:center;justify-content:center;">
+        🎤
+      </button>
+      <span style="font-size:11px;color:#555577;">Mute</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+      <button onclick="endCall()"
+        style="width:72px;height:72px;border-radius:50%;background:#D4537E;font-size:28px;display:flex;align-items:center;justify-content:center;">
+        📵
+      </button>
+      <span style="font-size:11px;color:#555577;">End</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+      <button id="spk-btn" onclick="toggleSpeaker()"
+        style="width:60px;height:60px;border-radius:50%;background:#1a1a2e;border:1px solid #2a2a4a;font-size:24px;display:flex;align-items:center;justify-content:center;">
+        🔊
+      </button>
+      <span style="font-size:11px;color:#555577;">Speaker</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PAGE 1 — LOBBY
+═══════════════════════════════════ -->
+<div class="pg on" id="pg-lobby">
+  <div class="sy flex-1 pt-safe" style="padding:0 16px 32px;">
+    <!-- header -->
+    <div style="text-align:center;padding:40px 0 28px;">
+      <div style="font-size:56px;margin-bottom:8px;">🍾</div>
+      <h1 style="font-size:28px;font-weight:800;margin-bottom:4px;">Truth or Dare</h1>
+      <p style="color:#a7a9be;font-size:13px;">Multiplayer · Voice calls · Real-time</p>
     </div>
 
-    <!-- Create -->
-    <div class="bg-surface border border-border rounded-2xl p-5 mb-3">
-      <h2 class="text-lg font-semibold mb-4">Create a room</h2>
-      <input id="create-name" type="text" maxlength="16" placeholder="Your name"
-        class="w-full bg-bg border border-border rounded-xl px-4 py-3 text-sm text-white mb-3" />
+    <!-- create -->
+    <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:20px;margin-bottom:12px;">
+      <p style="font-weight:600;font-size:15px;margin-bottom:14px;">Create a room</p>
+      <input id="cn" type="text" maxlength="16" placeholder="Your name"
+        style="width:100%;background:#0f0e17;border:1px solid #2a2a4a;border-radius:12px;padding:12px 16px;font-size:15px;color:#fff;margin-bottom:12px;display:block;"/>
       <button onclick="createRoom()"
-        class="w-full bg-purple text-white font-semibold rounded-xl py-3 text-sm hover:bg-purple-dark transition">
+        style="width:100%;background:#7F77DD;color:#fff;font-weight:600;border-radius:12px;padding:14px;font-size:15px;">
         Create room
       </button>
     </div>
 
-    <div class="text-center text-hint text-xs my-3">— or —</div>
+    <div style="text-align:center;color:#444466;font-size:12px;margin:12px 0;">— or —</div>
 
-    <!-- Join -->
-    <div class="bg-surface border border-border rounded-2xl p-5" id="join-card">
-      <h2 class="text-lg font-semibold mb-4">Join a room</h2>
-      <input id="join-name" type="text" maxlength="16" placeholder="Your name"
-        class="w-full bg-bg border border-border rounded-xl px-4 py-3 text-sm text-white mb-3" />
-      <input id="join-code" type="text" maxlength="10" placeholder="Room code (e.g. ROSE7)"
+    <!-- join -->
+    <div id="join-card" style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:20px;">
+      <p style="font-weight:600;font-size:15px;margin-bottom:14px;">Join a room</p>
+      <input id="jn" type="text" maxlength="16" placeholder="Your name"
+        style="width:100%;background:#0f0e17;border:1px solid #2a2a4a;border-radius:12px;padding:12px 16px;font-size:15px;color:#fff;margin-bottom:10px;display:block;"/>
+      <input id="jc" type="text" maxlength="10" placeholder="Room code (e.g. ROSE7)"
         oninput="this.value=this.value.toUpperCase()"
-        class="w-full bg-bg border border-border rounded-xl px-4 py-3 text-sm text-white mb-3" />
+        style="width:100%;background:#0f0e17;border:1px solid #2a2a4a;border-radius:12px;padding:12px 16px;font-size:15px;color:#fff;margin-bottom:12px;display:block;"/>
       <button onclick="joinRoom()"
-        class="w-full bg-pink text-white font-semibold rounded-xl py-3 text-sm hover:bg-pink-dark transition">
+        style="width:100%;background:#D4537E;color:#fff;font-weight:600;border-radius:12px;padding:14px;font-size:15px;">
         Join room
       </button>
     </div>
   </div>
+</div>
 
-  <!-- ═══════════ WAITING ═══════════ -->
-  <div class="screen" id="screen-waiting">
-    <div class="text-center mb-6 pt-2">
-      <div class="text-4xl mb-2">🎉</div>
-      <h1 class="text-2xl font-bold mb-1">Waiting for players…</h1>
-      <p class="text-muted text-sm">Share the code below with your friends</p>
+<!-- ═══════════════════════════════════
+     PAGE 2 — WAITING
+═══════════════════════════════════ -->
+<div class="pg" id="pg-wait">
+  <div class="sy flex-1 pt-safe" style="padding:0 16px 32px;">
+    <div style="text-align:center;padding:32px 0 20px;">
+      <div style="font-size:40px;margin-bottom:8px;">🎉</div>
+      <h1 style="font-size:24px;font-weight:700;margin-bottom:4px;">Waiting for players…</h1>
+      <p style="color:#a7a9be;font-size:13px;">Share the code below with friends</p>
     </div>
 
-    <!-- Room code -->
-    <div class="bg-surface border border-border rounded-2xl p-5 text-center mb-3">
-      <p class="text-xs text-muted mb-2 uppercase tracking-widest">Room Code</p>
-      <div id="display-code" class="text-4xl font-bold tracking-[10px] text-purple mb-3">----</div>
-      <button onclick="copyLink()" class="text-purple-light text-xs underline cursor-pointer bg-transparent border-none">
-        📋 Copy invite link
-      </button>
+    <!-- code -->
+    <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:20px;text-align:center;margin-bottom:12px;">
+      <p style="font-size:11px;color:#a7a9be;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">Room Code</p>
+      <div id="dcode" style="font-size:40px;font-weight:800;letter-spacing:10px;color:#7F77DD;margin-bottom:12px;">----</div>
+      <button onclick="copyLink()" style="color:#b0aaf5;font-size:13px;text-decoration:underline;">📋 Copy invite link</button>
     </div>
 
-    <!-- Status -->
-    <div class="text-center mb-3">
-      <span id="status-pill" class="text-xs px-3 py-1 rounded-full bg-surface border border-border text-hint">
-        Connecting…
-      </span>
+    <!-- status -->
+    <div style="text-align:center;margin-bottom:12px;">
+      <span id="spill" style="font-size:12px;padding:4px 14px;border-radius:20px;background:#1a1a2e;border:1px solid #2a2a4a;color:#555577;">Connecting…</span>
     </div>
 
-    <!-- Players -->
-    <div class="bg-surface border border-border rounded-2xl p-5 mb-3">
-      <p class="text-xs font-semibold text-muted mb-3 uppercase tracking-widest">Players in room</p>
-      <div id="player-list" class="flex flex-wrap gap-2"></div>
+    <!-- players -->
+    <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:16px;margin-bottom:16px;">
+      <p style="font-size:11px;font-weight:600;color:#a7a9be;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Players in room</p>
+      <div id="plist" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
     </div>
 
     <button onclick="broadcastStart()"
-      class="w-full bg-purple text-white font-semibold rounded-xl py-3 text-sm hover:bg-purple-dark transition">
+      style="width:100%;background:#7F77DD;color:#fff;font-weight:600;border-radius:14px;padding:15px;font-size:15px;margin-bottom:8px;">
       Start game
     </button>
-    <p class="text-center text-hint text-xs mt-2">Everyone's screen updates at the same time.</p>
+    <p style="text-align:center;font-size:12px;color:#444466;">Everyone's screen updates at the same time</p>
   </div>
-
-  <!-- ═══════════ GAME ═══════════ -->
-  <div class="screen" id="screen-game">
-    <!-- Top bar -->
-    <div class="flex items-center justify-between mb-3">
-      <span id="room-code-tag"
-        class="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-green-bg border border-green-border text-green">
-      </span>
-      <span id="status-pill-game"
-        class="text-xs px-3 py-1 rounded-full bg-green-bg border border-green-border text-green">
-        ● Connected
-      </span>
-    </div>
-
-    <!-- Player chips -->
-    <div id="players-chips" class="flex flex-wrap gap-2 mb-4"></div>
-
-    <!-- Bottle canvas -->
-    <canvas id="spin-canvas" width="220" height="220" class="mb-2"></canvas>
-
-    <!-- Chosen -->
-    <div id="chosen-name" class="text-center text-purple-light font-semibold text-lg mb-4 min-h-[28px]"></div>
-
-    <!-- Actions -->
-    <div class="flex gap-3 justify-center flex-wrap mb-4">
-      <button onclick="broadcastSpin()"
-        class="border border-border rounded-xl px-5 py-2.5 text-sm hover:bg-surface transition">
-        🔄 Spin
-      </button>
-      <button onclick="broadcastCard('truth')"
-        class="bg-purple-bg border border-purple text-purple-light rounded-xl px-5 py-2.5 text-sm hover:opacity-80 transition">
-        Truth
-      </button>
-      <button onclick="broadcastCard('dare')"
-        class="bg-pink-bg border border-pink text-pink-light rounded-xl px-5 py-2.5 text-sm hover:opacity-80 transition">
-        Dare
-      </button>
-    </div>
-
-    <!-- Question card -->
-    <div id="question-card" class="hidden mb-4"></div>
-
-    <!-- Chat -->
-    <div class="border-t border-border pt-4">
-      <p class="text-xs font-semibold text-muted uppercase tracking-widest mb-3">Room chat</p>
-      <div id="chat-box" class="chat-box h-48 overflow-y-auto bg-surface rounded-xl p-3 mb-3 space-y-2"></div>
-      <div class="flex gap-2">
-        <input id="msg-input" type="text" maxlength="200" placeholder="Type a message or answer…"
-          onkeydown="if(event.key==='Enter')sendMsg()"
-          class="flex-1 bg-bg border border-border rounded-xl px-4 py-2.5 text-sm text-white" />
-        <button onclick="sendMsg()"
-          class="bg-purple text-white font-semibold rounded-xl px-4 py-2.5 text-sm hover:bg-purple-dark transition">
-          Send
-        </button>
-      </div>
-    </div>
-  </div>
-
 </div>
 
-<!-- Firebase SDKs (compat version — works in plain HTML, no bundler needed) -->
+<!-- ═══════════════════════════════════
+     PAGE 3 — GAME
+═══════════════════════════════════ -->
+<div class="pg" id="pg-game">
+
+  <!-- ── TOP HEADER ── -->
+  <div class="pt-safe" style="background:#1a1a2e;border-bottom:1px solid #2a2a4a;padding:0 16px;flex-shrink:0;">
+    <!-- row 1: room + status + call btn -->
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 0 6px;">
+      <span id="rtag" style="font-size:12px;font-weight:700;color:#b0aaf5;background:#2e2a5e;border-radius:20px;padding:3px 10px;"></span>
+      <span id="spill2" style="font-size:11px;padding:3px 10px;border-radius:20px;background:#0d2018;border:1px solid #1a3e2e;color:#5DCAA5;">● Live</span>
+      <div style="flex:1;"></div>
+      <button onclick="startCall()"
+        style="display:flex;align-items:center;gap:6px;background:#0d2018;border:1px solid #1a3e2e;color:#5DCAA5;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600;">
+        📞 Call
+      </button>
+    </div>
+    <!-- row 2: player chips with online dots -->
+    <div id="pchips" style="display:flex;flex-wrap:wrap;gap:6px;padding-bottom:8px;"></div>
+    <!-- row 3: tabs -->
+    <div style="display:flex;gap:0;border-top:1px solid #2a2a4a;">
+      <button id="tb1" onclick="showTab(1)"
+        style="flex:1;padding:10px;font-size:14px;font-weight:500;border-bottom:2px solid #7F77DD;color:#7F77DD;">
+        🎮 Game
+      </button>
+      <button id="tb2" onclick="showTab(2)"
+        style="flex:1;padding:10px;font-size:14px;font-weight:500;border-bottom:2px solid transparent;color:#555577;">
+        💬 Chat
+      </button>
+    </div>
+  </div>
+
+  <!-- ── GAME TAB ── -->
+  <div id="t1" class="sy flex-1" style="padding:16px;display:flex;flex-direction:column;gap:16px;">
+
+    <!-- spin wheel -->
+    <div style="display:flex;flex-direction:column;align-items:center;">
+      <canvas id="spin-canvas" width="220" height="220" style="transition:transform .15s;display:block;"></canvas>
+      <div id="cname" style="color:#b0aaf5;font-size:17px;font-weight:600;margin-top:8px;min-height:26px;text-align:center;"></div>
+    </div>
+
+    <!-- action buttons -->
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="doSpin()"
+        style="border:1px solid #2a2a4a;border-radius:14px;padding:10px 18px;font-size:14px;color:#fff;background:#12102a;">
+        🔄 Spin
+      </button>
+      <button onclick="doCard('truth')"
+        style="border:1px solid #7F77DD;border-radius:14px;padding:10px 18px;font-size:14px;color:#b0aaf5;background:#2e2a5e;">
+        🎲 Truth
+      </button>
+      <button onclick="doCard('dare')"
+        style="border:1px solid #D4537E;border-radius:14px;padding:10px 18px;font-size:14px;color:#f5a0c0;background:#3e1a2e;">
+        🎲 Dare
+      </button>
+    </div>
+
+    <!-- active question card -->
+    <div id="qcard" style="display:none;"></div>
+
+    <!-- custom question -->
+    <div style="background:#1a1a2e;border:1px solid #3a2c0f;border-radius:18px;padding:16px;">
+      <p style="font-size:11px;font-weight:700;color:#EF9F27;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">✏️ Send your own question</p>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button id="ct1" onclick="setCT('truth')"
+          style="flex:1;border-radius:10px;padding:9px;font-size:13px;font-weight:600;background:#7F77DD;border:1px solid #7F77DD;color:#fff;">
+          Truth
+        </button>
+        <button id="ct2" onclick="setCT('dare')"
+          style="flex:1;border-radius:10px;padding:9px;font-size:13px;font-weight:600;background:transparent;border:1px solid #2a2a4a;color:#555577;">
+          Dare
+        </button>
+      </div>
+      <textarea id="cq" rows="2" maxlength="200" placeholder="Type your own truth question…"
+        style="width:100%;background:#0f0e17;border:1px solid #2a2a4a;border-radius:12px;padding:12px 16px;font-size:14px;color:#fff;margin-bottom:10px;"></textarea>
+      <button onclick="sendCQ()"
+        style="width:100%;background:#EF9F27;color:#000;font-weight:700;border-radius:12px;padding:13px;font-size:14px;">
+        Send to everyone 🚀
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ── CHAT TAB ── -->
+  <div id="t2" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
+
+    <!-- messages -->
+    <div id="chatbox" class="sy flex-1" style="padding:12px 16px;display:flex;flex-direction:column;gap:8px;"></div>
+
+    <!-- typing bar -->
+    <div style="padding:0 16px;min-height:18px;display:flex;align-items:center;">
+      <span id="ttyp" style="font-size:12px;color:#a7a9be;"></span>
+    </div>
+
+    <!-- INPUT BAR -->
+    <div class="pb-safe" style="background:#1a1a2e;border-top:1px solid #2a2a4a;padding:10px 12px;flex-shrink:0;">
+
+      <!-- top row: text + buttons -->
+      <div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:8px;">
+        <!-- text input -->
+        <div style="flex:1;background:#0f0e17;border:1px solid #2a2a4a;border-radius:22px;padding:10px 16px;display:flex;align-items:center;min-height:44px;">
+          <input id="mi" type="text" maxlength="300" placeholder="Message…"
+            oninput="onTyping()" onkeydown="if(event.key==='Enter')sendMsg()"
+            style="flex:1;background:transparent;font-size:15px;color:#fff;"/>
+        </div>
+        <!-- PTT voice note button -->
+        <div style="position:relative;flex-shrink:0;">
+          <button id="ptt"
+            onmousedown="startRec(event)" onmouseup="stopRec(event)"
+            ontouchstart="startRec(event)" ontouchend="stopRec(event)"
+            style="width:44px;height:44px;border-radius:50%;background:#7F77DD;font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .1s;">
+            🎤
+          </button>
+        </div>
+        <!-- send button -->
+        <button onclick="sendMsg()"
+          style="width:44px;height:44px;border-radius:50%;background:#7F77DD;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          ➤
+        </button>
+      </div>
+
+      <!-- bottom row: open mic toggle + hint -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px;">
+        <button id="omBtn" onclick="toggleOpenMic()"
+          style="display:flex;align-items:center;gap:6px;border:1px solid #2a2a4a;border-radius:20px;padding:6px 14px;font-size:12px;color:#a7a9be;background:transparent;">
+          <span id="omDot" style="width:8px;height:8px;border-radius:50%;background:#444466;display:inline-block;"></span>
+          <span id="omTxt">Open mic: Off</span>
+        </button>
+        <span style="font-size:11px;color:#444466;">Hold 🎤 = voice note</span>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- end pg-game -->
+
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-
 <script>
-/* ══════════════════════════════════════
-   FIREBASE INIT
-══════════════════════════════════════ */
-const firebaseConfig = {
-  apiKey:            "AIzaSyBFVlktJ3vSBxRsLRY_3CPBPX6UKH6g5Uo",
-  authDomain:        "truth-dare-app-95ce8.firebaseapp.com",
-  databaseURL:       "https://truth-dare-app-95ce8-default-rtdb.firebaseio.com",
-  projectId:         "truth-dare-app-95ce8",
-  storageBucket:     "truth-dare-app-95ce8.firebasestorage.app",
-  messagingSenderId: "698378458947",
-  appId:             "1:698378458947:web:aa6dcb626803205c1701f6",
-};
-firebase.initializeApp(firebaseConfig);
+/* ═══════════════════════════════
+   FIREBASE
+═══════════════════════════════ */
+firebase.initializeApp({
+  apiKey:"AIzaSyBFVlktJ3vSBxRsLRY_3CPBPX6UKH6g5Uo",
+  authDomain:"truth-dare-app-95ce8.firebaseapp.com",
+  databaseURL:"https://truth-dare-app-95ce8-default-rtdb.firebaseio.com",
+  projectId:"truth-dare-app-95ce8",
+  storageBucket:"truth-dare-app-95ce8.firebasestorage.app",
+  messagingSenderId:"698378458947",
+  appId:"1:698378458947:web:aa6dcb626803205c1701f6",
+});
 const db = firebase.database();
 
-/* ══════════════════════════════════════
+/* ═══════════════════════════════
    QUESTIONS
-══════════════════════════════════════ */
-const TRUTHS = [
-  "What's the most embarrassing thing you've done on a date?",
-  "Have you ever had a crush on someone in this room?",
-  "What's your biggest relationship dealbreaker?",
-  "Have you ever stalked an ex on social media?",
-  "What's the most romantic thing you've secretly done?",
-  "What's a lie you've told your partner or best friend?",
-  "What's your biggest fear in a relationship?",
-  "Have you ever fallen for someone you shouldn't have?",
-  "What's one thing you've never told anyone in this room?",
-  "Who was your first love and what happened?",
-  "What's the most embarrassing text you sent to the wrong person?",
-  "What's the wildest thing you've done to impress someone?",
-  "If you could date any celebrity, who and why?",
-  "What's something you secretly find attractive?",
-  "Have you ever kissed someone on a dare?",
-  "What's the most childish thing you still do?",
-  "Have you ever lied to get out of plans?",
-  "What's your guilty pleasure no one knows about?",
-  "What's the most awkward moment you've had with a crush?",
-  "If your best friend read your texts, what would surprise them?",
-  "What's the most jealous you've ever been?",
-  "What's the worst date you've been on?",
-  "What do you find most attractive in a person?",
-  "Have you ever sent a risky text and immediately regretted it?",
-  "What's something you've never admitted to anyone here?",
-];
-const DARES = [
-  "Give the person to your left a 10-second compliment without stopping.",
-  "Text your crush 'thinking of you' right now.",
-  "Do your best impression of someone in the room.",
-  "Send a flirty message to the last person in your DMs.",
-  "Say something sweet to each person in the room, one by one.",
-  "Let someone go through your recent Instagram likes for 10 seconds.",
-  "Speak in an accent for the next 2 rounds.",
-  "Call someone you haven't talked to in over a month.",
-  "Do a dramatic reading of your last sent text message out loud.",
-  "Dance for 30 seconds with no music.",
-  "Whisper a secret to the person across from you.",
-  "Give someone in the room a nickname based on their personality.",
-  "Let the room read your most recent 3 texts.",
-  "Say something you've always wanted to say in this room.",
-  "Stare into the eyes of the person next to you for 30 seconds without laughing.",
-  "Show the last 5 photos in your camera roll.",
-  "Sing the chorus of your favourite song out loud.",
-  "Write a poem about the person to your right in 60 seconds.",
-  "Let the group pick your profile picture for the next hour.",
-  "Do your best catwalk across the room.",
-  "Say three genuine things you like about the person across from you.",
-  "Let the room ask you one question you must answer honestly.",
-  "Act out your most embarrassing moment without speaking.",
-  "Send a voice note to any contact saying 'I miss you' — right now.",
-  "Recreate your best selfie pose right now.",
-];
+═══════════════════════════════ */
+const TRUTHS=["What's the most embarrassing thing you've done on a date?","Have you ever had a crush on someone in this room?","What's your biggest relationship dealbreaker?","Have you ever stalked an ex on social media?","What's the most romantic thing you've secretly done?","What's a lie you've told your partner or best friend?","What's your biggest fear in a relationship?","Have you ever fallen for someone you shouldn't have?","What's one thing you've never told anyone in this room?","Who was your first love and what happened?","What's the most embarrassing text you sent to the wrong person?","What's the wildest thing you've done to impress someone?","If you could date any celebrity, who and why?","What's something you secretly find attractive?","Have you ever kissed someone on a dare?","What's the most childish thing you still do?","What's your guilty pleasure no one knows about?","What's the most awkward moment you've had with a crush?","What's the most jealous you've ever been?","What do you find most attractive in a person?"];
+const DARES=["Give the person to your left a 10-second compliment without stopping.","Text your crush 'thinking of you' right now.","Do your best impression of someone in the room.","Send a flirty message to the last person in your DMs.","Say something sweet to each person in the room, one by one.","Let someone go through your recent Instagram likes for 10 seconds.","Speak in an accent for the next 2 rounds.","Call someone you haven't talked to in over a month.","Do a dramatic reading of your last sent text message out loud.","Dance for 30 seconds with no music.","Whisper a secret to the person across from you.","Give someone in the room a nickname based on their personality.","Stare into the eyes of the person next to you for 30 seconds without laughing.","Show the last 5 photos in your camera roll.","Sing the chorus of your favourite song out loud.","Let the group pick your profile picture for the next hour.","Say three genuine things you like about the person across from you.","Act out your most embarrassing moment without speaking.","Send a voice note saying 'I miss you' to any contact right now.","Recreate your best selfie pose right now."];
 
-/* ══════════════════════════════════════
+/* ═══════════════════════════════
    STATE
-══════════════════════════════════════ */
-let myName       = '';
-let roomCode     = '';
-let myId         = 'p_' + Math.random().toString(36).slice(2, 9);
-let roomRef      = null;  // db reference to this room
-let spinAngle    = 0;
-let spinning     = false;
-let chosenPlayer = null;
-let listeners    = [];    // keep track so we can detach on leave
+═══════════════════════════════ */
+let myName='',code='',myId='u'+Math.random().toString(36).slice(2,9);
+let ref=null,players={},spinAngle=0,spinning=false,chosen=null,ctab='truth';
+let typTimer=null,mrec=null,achunks=[],isRec=false,omStream=null,omOn=false;
 
-/* ══════════════════════════════════════
-   FIREBASE ROOM HELPERS
-══════════════════════════════════════ */
-function getRoomRef(code) {
-  return db.ref('rooms/' + code);
+/* ═══════════════════════════════
+   WebRTC
+═══════════════════════════════ */
+const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun2.l.google.com:19302'}]};
+let pcs={},localStream=null,inCall=false,mutedMic=false;
+
+/* ═══════════════════════════════
+   PWA INSTALL
+═══════════════════════════════ */
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault(); deferredPrompt=e;
+  setTimeout(showInstall,4000);
+});
+function showInstall(){
+  const b=document.getElementById('install-banner');
+  b.classList.remove('hidden');
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+  if(isIOS){
+    document.getElementById('install-btn').style.display='none';
+    document.getElementById('ios-tip').style.display='block';
+  }
+}
+function doInstall(){
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(()=>{deferredPrompt=null;dismissInstall();});
+}
+function dismissInstall(){ document.getElementById('install-banner').classList.add('hidden'); }
+
+window.addEventListener('DOMContentLoaded',()=>{
+  // iOS: show install prompt if not in standalone
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+  const standalone=window.navigator.standalone===true;
+  if(isIOS&&!standalone) setTimeout(showInstall,4000);
+
+  // URL room code pre-fill
+  const r=new URLSearchParams(location.search).get('room');
+  if(r){
+    document.getElementById('jc').value=r.toUpperCase();
+    document.getElementById('join-card').style.borderColor='#7F77DD';
+    setTimeout(()=>document.getElementById('join-card').scrollIntoView({behavior:'smooth'}),200);
+  }
+
+  drawWheel(0,['?']);
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+});
+
+window.addEventListener('beforeunload',()=>{
+  if(ref){ ref.child('players/'+myId).remove(); ref.child('typing/'+myId).remove(); ref.child('online/'+myId).remove(); }
+  if(inCall) endCall();
+});
+
+/* ═══════════════════════════════
+   ROOM JOIN
+═══════════════════════════════ */
+function randCode(){
+  const w=['ROSE','KISS','LOVE','BOLD','FIRE','GLOW','MOON','STAR','WILD','PINK','RUSH','VIBE'];
+  return w[Math.floor(Math.random()*w.length)]+Math.floor(Math.random()*9+1);
 }
 
-function joinFirebaseRoom() {
-  roomRef = getRoomRef(roomCode);
+function startFirebase(){
+  ref=db.ref('rooms/'+code);
+  ref.child('players/'+myId).set({name:myName,id:myId});
+  ref.child('players/'+myId).onDisconnect().remove();
+  ref.child('typing/'+myId).onDisconnect().remove();
+  ref.child('online/'+myId).set(true);
+  ref.child('online/'+myId).onDisconnect().remove();
 
-  // Write myself into the players list
-  roomRef.child('players/' + myId).set({ name: myName, id: myId });
-
-  // Remove myself when I disconnect
-  roomRef.child('players/' + myId).onDisconnect().remove();
-
-  // Listen for player list changes
-  const playersRef = roomRef.child('players');
-  playersRef.on('value', snap => {
-    const data = snap.val() || {};
-    // Rebuild players map { id: name }
-    const newPlayers = {};
-    Object.values(data).forEach(p => { newPlayers[p.id] = p.name; });
-    players = newPlayers;
+  ref.child('players').on('value',s=>{
+    const d=s.val()||{};
+    players={};
+    Object.values(d).forEach(p=>{players[p.id]=p.name;});
     renderPlayers();
   });
-  listeners.push(() => playersRef.off());
 
-  // Listen for game events
-  const eventsRef = roomRef.child('events');
-  eventsRef.limitToLast(1).on('child_added', snap => {
-    const event = snap.val();
-    if (!event || event._from === myId) return; // ignore own events
-    handleEvent(event);
+  ref.child('events').limitToLast(1).on('child_added',s=>{
+    const e=s.val();
+    if(!e||e._f===myId) return;
+    handleEv(e);
   });
-  listeners.push(() => eventsRef.off());
 
-  // Listen for game state (started)
-  const stateRef = roomRef.child('state');
-  stateRef.on('value', snap => {
-    const state = snap.val();
-    if (state && state.started && getCurrentScreen() === 'screen-waiting') {
-      players = state.players || players;
-      startGameLocal();
+  ref.child('state').on('value',s=>{
+    const v=s.val();
+    if(v&&v.started&&curPg()==='pg-wait'){
+      if(v.players) players=v.players;
+      startGame();
     }
   });
-  listeners.push(() => stateRef.off());
 
-  setStatus('● Connected', 'ok');
+  ref.child('typing').on('value',s=>{
+    const d=s.val()||{};
+    const who=Object.entries(d).filter(([id,v])=>id!==myId&&v).map(([id])=>players[id]||'Someone');
+    const el=document.getElementById('ttyp');
+    el.innerHTML=who.length ? who.join(', ')+(who.length===1?' is':' are')+' typing <span class="td"></span><span class="td"></span><span class="td"></span>' : '';
+  });
+
+  ref.child('online').on('value',s=>{
+    updateDots(Object.keys(s.val()||{}));
+  });
+
+  setupWebRTC();
+  setStatus('● Connected','ok');
 }
 
-function pushEvent(eventData) {
-  if (!roomRef) return;
-  roomRef.child('events').push({ ...eventData, _from: myId, _ts: Date.now() });
+function createRoom(){
+  const n=document.getElementById('cn').value.trim();
+  if(!n){alert('Enter your name!');return;}
+  myName=n; code=randCode();
+  document.getElementById('dcode').textContent=code;
+  showPg('pg-wait');
+  startFirebase();
 }
 
-function getCurrentScreen() {
-  const el = document.querySelector('.screen.active');
-  return el ? el.id : '';
+function joinRoom(){
+  const n=document.getElementById('jn').value.trim();
+  const c=document.getElementById('jc').value.trim().toUpperCase();
+  if(!n){alert('Enter your name!');return;}
+  if(!c){alert('Enter a room code!');return;}
+  myName=n; code=c;
+  document.getElementById('dcode').textContent=code;
+  showPg('pg-wait');
+  startFirebase();
 }
 
-/* ══════════════════════════════════════
-   EVENT HANDLER (from other players)
-══════════════════════════════════════ */
-function handleEvent(event) {
-  switch (event.type) {
-    case 'chat':
-      addMsg('user', event.name, event.text);
-      break;
-    case 'spin':
-      animateSpin(event.seed);
-      break;
+function copyLink(){
+  const url=location.href.split('?')[0]+'?room='+code;
+  navigator.clipboard.writeText(url).then(()=>alert('✅ Copied!\nCode: '+code)).catch(()=>alert('Code: '+code));
+}
+
+function pushEv(data){
+  if(!ref) return;
+  ref.child('events').push({...data,_f:myId,_t:Date.now()});
+}
+
+function curPg(){
+  const el=document.querySelector('.pg.on');
+  return el?el.id:'';
+}
+
+/* ═══════════════════════════════
+   GAME START
+═══════════════════════════════ */
+function broadcastStart(){
+  if(!Object.keys(players).length){alert('Waiting for players!');return;}
+  ref.child('state').set({started:true,players:{...players}});
+  startGame();
+}
+
+function startGame(){
+  document.getElementById('rtag').textContent='Room: '+code;
+  renderPlayers();
+  sysMsg('Game started! Spin the bottle 🍾');
+  showPg('pg-game');
+  showTab(1);
+  drawWheel(spinAngle,Object.values(players));
+}
+
+/* ═══════════════════════════════
+   EVENT HANDLER
+═══════════════════════════════ */
+function handleEv(e){
+  switch(e.type){
+    case 'chat': addBubble(false,e.name,e.text); break;
+    case 'voice': addVoice(false,e.name,e.data); break;
+    case 'spin': animSpin(e.seed); break;
     case 'chosen':
-      chosenPlayer = event.player;
-      document.getElementById('chosen-name').textContent = event.player + "'s turn!";
-      addMsg('system', null, '🍾 Bottle landed on ' + event.player + '!');
+      chosen=e.player;
+      document.getElementById('cname').textContent=e.player+"'s turn!";
+      sysMsg('🍾 Bottle landed on '+e.player+'!');
       break;
     case 'card':
-      showCard(event.cardType, event.question);
-      addMsg('system', null, event.who + ' picked ' + event.cardType.toUpperCase() + ': "' + event.question + '"');
+      showCard(e.ct,e.q,e.cx);
+      sysMsg(e.cx ? e.who+' asks ✏️: "'+e.q+'"' : e.who+' picked '+e.ct.toUpperCase());
+      showTab(1);
       break;
   }
 }
 
-/* ══════════════════════════════════════
-   LOBBY ACTIONS
-══════════════════════════════════════ */
-let players = {};
-
-function randCode() {
-  const w = ['ROSE','KISS','LOVE','BOLD','FIRE','GLOW','MOON','STAR','WILD','PINK','RUSH','VIBE'];
-  return w[Math.floor(Math.random() * w.length)] + Math.floor(Math.random() * 9 + 1);
+/* ═══════════════════════════════
+   TABS
+═══════════════════════════════ */
+function showTab(n){
+  const t1=document.getElementById('t1'),t2=document.getElementById('t2');
+  const b1=document.getElementById('tb1'),b2=document.getElementById('tb2');
+  t1.style.display=n===1?'flex':'none';
+  t2.style.display=n===2?'flex':'none';
+  b1.style.color=n===1?'#7F77DD':'#555577';
+  b1.style.borderBottom=n===1?'2px solid #7F77DD':'2px solid transparent';
+  b2.style.color=n===2?'#7F77DD':'#555577';
+  b2.style.borderBottom=n===2?'2px solid #7F77DD':'2px solid transparent';
+  if(n===2) setTimeout(()=>{const b=document.getElementById('chatbox');b.scrollTop=b.scrollHeight;},50);
 }
 
-function createRoom() {
-  const n = document.getElementById('create-name').value.trim();
-  if (!n) { alert('Enter your name!'); return; }
-  myName   = n;
-  roomCode = randCode();
-  document.getElementById('display-code').textContent = roomCode;
-  showScreen('screen-waiting');
-  joinFirebaseRoom();
-}
-
-function joinRoom() {
-  const n = document.getElementById('join-name').value.trim();
-  const c = document.getElementById('join-code').value.trim().toUpperCase();
-  if (!n) { alert('Enter your name!'); return; }
-  if (!c) { alert('Enter a room code!'); return; }
-  myName   = n;
-  roomCode = c;
-  document.getElementById('display-code').textContent = roomCode;
-  showScreen('screen-waiting');
-  joinFirebaseRoom();
-}
-
-function copyLink() {
-  const url = window.location.href.split('?')[0] + '?room=' + roomCode;
-  navigator.clipboard.writeText(url)
-    .then(() => alert('✅ Link copied!\n\nFriends open it and the code fills automatically.\nCode: ' + roomCode))
-    .catch(() => alert('Share this code: ' + roomCode));
-}
-
-// Auto-fill room code from URL param
-window.addEventListener('DOMContentLoaded', () => {
-  const r = new URLSearchParams(window.location.search).get('room');
-  if (r) {
-    document.getElementById('join-code').value = r.toUpperCase();
-    document.getElementById('join-card').classList.add('border-purple');
-    setTimeout(() => document.getElementById('join-card').scrollIntoView({ behavior: 'smooth' }), 150);
-  }
-  drawBottle(0, ['You']);
-});
-
-// Clean up on page close
-window.addEventListener('beforeunload', () => {
-  if (roomRef) roomRef.child('players/' + myId).remove();
-  listeners.forEach(off => off());
-});
-
-/* ══════════════════════════════════════
-   START GAME
-══════════════════════════════════════ */
-function broadcastStart() {
-  if (Object.keys(players).length < 1) { alert('Waiting for players to join!'); return; }
-  // Write game started state to Firebase — all clients pick it up
-  roomRef.child('state').set({ started: true, players: { ...players } });
-  players = { ...players };
-  startGameLocal();
-}
-
-function startGameLocal() {
-  document.getElementById('room-code-tag').textContent = 'Room: ' + roomCode;
-  renderPlayers();
-  addMsg('system', null, '-- Game started! Spin the bottle. --');
-  showScreen('screen-game');
-  drawBottle(spinAngle, Object.values(players));
-}
-
-/* ══════════════════════════════════════
+/* ═══════════════════════════════
    SPIN
-══════════════════════════════════════ */
-function broadcastSpin() {
-  if (spinning) return;
-  const seed = Math.random();
-  pushEvent({ type: 'spin', seed });
-  animateSpin(seed);
+═══════════════════════════════ */
+function doSpin(){
+  if(spinning) return;
+  const seed=Math.random();
+  pushEv({type:'spin',seed});
+  animSpin(seed);
 }
 
-function animateSpin(seed) {
-  if (spinning) return;
-  spinning = true;
-  document.getElementById('chosen-name').textContent = '';
-  const qcard = document.getElementById('question-card');
-  if (qcard) qcard.classList.add('hidden');
-
-  const pl         = Object.values(players);
-  const totalSpin  = Math.PI * 2 * (6 + seed * 6);
-  const duration   = 3500;
-  const t0         = performance.now();
-  const startAngle = spinAngle;
-
-  function frame(now) {
-    const progress = Math.min((now - t0) / duration, 1);
-    const ease = 1 - Math.pow(1 - progress, 4);
-    spinAngle = startAngle + totalSpin * ease;
-    drawBottle(spinAngle, pl);
-    if (progress < 1) { requestAnimationFrame(frame); return; }
-
-    spinning = false;
-    const n    = pl.length || 1;
-    const norm = ((spinAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-    const idx  = Math.floor(((norm + Math.PI / 2) % (Math.PI * 2)) / (Math.PI * 2 / n)) % n;
-    chosenPlayer = pl[idx];
-    document.getElementById('chosen-name').textContent = chosenPlayer + "'s turn!";
-    pushEvent({ type: 'chosen', player: chosenPlayer });
-    addMsg('system', null, '🍾 Bottle landed on ' + chosenPlayer + '!');
+function animSpin(seed){
+  if(spinning) return;
+  spinning=true;
+  document.getElementById('cname').textContent='';
+  document.getElementById('qcard').style.display='none';
+  const pl=Object.values(players);
+  const total=Math.PI*2*(6+seed*6),dur=3500,t0=performance.now(),sa=spinAngle;
+  const cv=document.getElementById('spin-canvas');
+  cv.style.transform='scale(1.07)';
+  setTimeout(()=>{cv.style.transform='scale(1)';},200);
+  function fr(now){
+    const p=Math.min((now-t0)/dur,1);
+    spinAngle=sa+total*(1-Math.pow(1-p,4));
+    drawWheel(spinAngle,pl);
+    if(p<1){requestAnimationFrame(fr);return;}
+    spinning=false;
+    const n=pl.length||1;
+    const norm=((spinAngle%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+    const idx=Math.floor(((norm+Math.PI/2)%(Math.PI*2))/(Math.PI*2/n))%n;
+    chosen=pl[idx];
+    document.getElementById('cname').textContent=chosen+"'s turn!";
+    cv.style.transform='scale(1.09)';
+    setTimeout(()=>{cv.style.transform='scale(1)';},150);
+    pushEv({type:'chosen',player:chosen});
+    sysMsg('🍾 '+chosen+"'s turn!");
   }
-  requestAnimationFrame(frame);
+  requestAnimationFrame(fr);
 }
 
-/* ══════════════════════════════════════
+/* ═══════════════════════════════
    CARDS
-══════════════════════════════════════ */
-function broadcastCard(type) {
-  const pool = type === 'truth' ? TRUTHS : DARES;
-  const q    = pool[Math.floor(Math.random() * pool.length)];
-  const who  = chosenPlayer || myName;
-  pushEvent({ type: 'card', cardType: type, question: q, who });
-  showCard(type, q);
-  addMsg('system', null, who + ' picked ' + type.toUpperCase() + ': "' + q + '"');
+═══════════════════════════════ */
+function doCard(type){
+  const pool=type==='truth'?TRUTHS:DARES;
+  const q=pool[Math.floor(Math.random()*pool.length)];
+  const who=chosen||myName;
+  pushEv({type:'card',ct:type,q,who,cx:false});
+  showCard(type,q,false);
+  sysMsg(who+' picked '+type.toUpperCase()+': "'+q+'"');
 }
 
-function showCard(type, q) {
-  const card = document.getElementById('question-card');
-  card.classList.remove('hidden');
-  const isTruth = type === 'truth';
-  card.innerHTML = `
-    <div class="border-l-4 ${isTruth ? 'border-purple bg-purple-bg' : 'border-pink bg-pink-bg'} rounded-r-2xl p-4">
-      <span class="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full
-        ${isTruth ? 'bg-purple text-white' : 'bg-pink text-white'}">
-        ${isTruth ? 'Truth' : 'Dare'}
-      </span>
-      <p class="mt-3 text-white text-base leading-relaxed">${q}</p>
-    </div>`;
+function setCT(t){
+  ctab=t;
+  document.getElementById('ct1').style.background=t==='truth'?'#7F77DD':'transparent';
+  document.getElementById('ct1').style.borderColor=t==='truth'?'#7F77DD':'#2a2a4a';
+  document.getElementById('ct1').style.color=t==='truth'?'#fff':'#555577';
+  document.getElementById('ct2').style.background=t==='dare'?'#D4537E':'transparent';
+  document.getElementById('ct2').style.borderColor=t==='dare'?'#D4537E':'#2a2a4a';
+  document.getElementById('ct2').style.color=t==='dare'?'#fff':'#555577';
+  document.getElementById('cq').placeholder=t==='truth'?'Type your own truth question…':'Type your own dare…';
 }
 
-/* ══════════════════════════════════════
+function sendCQ(){
+  const text=document.getElementById('cq').value.trim();
+  if(!text){alert('Type a question first!');return;}
+  const who=chosen||myName;
+  pushEv({type:'card',ct:ctab,q:text,who,cx:true});
+  showCard(ctab,text,true);
+  sysMsg(myName+' sent a custom '+ctab+' ✏️');
+  document.getElementById('cq').value='';
+}
+
+function showCard(type,q,isCustom){
+  const card=document.getElementById('qcard');
+  card.className='fade-up';
+  card.style.display='block';
+  const isTruth=type==='truth';
+  let bc,bg,badge;
+  if(isCustom){bc='#EF9F27';bg='#2a1f0a';badge='#EF9F27;color:#000';}
+  else if(isTruth){bc='#7F77DD';bg='#2e2a5e';badge='#7F77DD;color:#fff';}
+  else{bc='#D4537E';bg='#3e1a2e';badge='#D4537E;color:#fff';}
+  const lbl=isCustom?'✏️ Custom '+(isTruth?'Truth':'Dare'):(isTruth?'Truth':'Dare');
+  card.innerHTML=`<div style="border-left:3px solid ${bc};background:${bg};border-radius:0 16px 16px 0;padding:16px;">
+    <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;background:${badge};padding:3px 10px;border-radius:20px;">${lbl}</span>
+    <p style="margin-top:12px;font-size:16px;line-height:1.6;color:#fff;">${q}</p>
+  </div>`;
+}
+
+/* ═══════════════════════════════
    CHAT
-══════════════════════════════════════ */
-function sendMsg() {
-  const input = document.getElementById('msg-input');
-  const text  = input.value.trim();
-  if (!text) return;
-  pushEvent({ type: 'chat', name: myName, text });
-  addMsg('user', myName, text);
-  input.value = '';
+═══════════════════════════════ */
+function sendMsg(){
+  const inp=document.getElementById('mi');
+  const text=inp.value.trim();
+  if(!text) return;
+  pushEv({type:'chat',name:myName,text});
+  addBubble(true,myName,text);
+  inp.value='';
+  clearTyp();
 }
 
-function addMsg(type, name, text) {
-  const box = document.getElementById('chat-box');
-  if (!box) return;
-  const div = document.createElement('div');
-  div.className = 'text-sm leading-snug';
-  if (type === 'system') {
-    div.innerHTML = `<span class="text-hint italic text-xs">${text}</span>`;
+function onTyping(){
+  if(!ref) return;
+  ref.child('typing/'+myId).set(true);
+  clearTimeout(typTimer);
+  typTimer=setTimeout(clearTyp,2000);
+}
+function clearTyp(){
+  clearTimeout(typTimer);
+  if(ref) ref.child('typing/'+myId).remove();
+}
+
+function tn(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+
+function addBubble(isMe,name,text){
+  const box=document.getElementById('chatbox');
+  if(!box) return;
+  const w=document.createElement('div');
+  w.style.cssText='display:flex;flex-direction:column;max-width:78%;'+(isMe?'align-self:flex-end;align-items:flex-end;':'align-self:flex-start;align-items:flex-start;');
+  w.innerHTML=(isMe?'':'<span style="font-size:11px;color:#a7a9be;margin-bottom:2px;padding:0 4px;">'+name+'</span>')+
+    '<div class="'+(isMe?'bm':'bt')+'" style="padding:10px 14px;font-size:15px;color:#fff;line-height:1.4;">'+text+'</div>'+
+    '<span style="font-size:10px;color:#444466;margin-top:2px;padding:0 4px;">'+tn()+'</span>';
+  box.appendChild(w);
+  box.scrollTop=box.scrollHeight;
+}
+
+function addVoice(isMe,name,data){
+  const box=document.getElementById('chatbox');
+  if(!box) return;
+  const audio=new Audio(data);
+  const w=document.createElement('div');
+  w.style.cssText='display:flex;flex-direction:column;max-width:78%;'+(isMe?'align-self:flex-end;align-items:flex-end;':'align-self:flex-start;align-items:flex-start;');
+  const btn=document.createElement('button');
+  btn.className=isMe?'bm':'bt';
+  btn.style.cssText='padding:10px 16px;font-size:14px;color:#fff;display:flex;align-items:center;gap:8px;cursor:pointer;';
+  btn.innerHTML='<span style="font-size:20px;">🎵</span><span id="vt_'+Date.now()+'">Voice note ▶</span>';
+  btn.onclick=function(){
+    const sp=this.querySelector('span:last-child');
+    audio.play();
+    sp.textContent='Playing ◼';
+    audio.onended=()=>{sp.textContent='Voice note ▶';};
+  };
+  if(!isMe) w.innerHTML='<span style="font-size:11px;color:#a7a9be;margin-bottom:2px;padding:0 4px;">'+name+'</span>';
+  w.appendChild(btn);
+  const t=document.createElement('span');
+  t.style.cssText='font-size:10px;color:#444466;margin-top:2px;padding:0 4px;';
+  t.textContent=tn();
+  w.appendChild(t);
+  box.appendChild(w);
+  box.scrollTop=box.scrollHeight;
+}
+
+function sysMsg(text){
+  const box=document.getElementById('chatbox');
+  if(!box) return;
+  const d=document.createElement('div');
+  d.style.cssText='align-self:center;text-align:center;padding:4px 0;';
+  d.innerHTML='<span style="font-size:11px;color:#555577;background:#1a1a2e;border-radius:20px;padding:4px 12px;">'+text+'</span>';
+  box.appendChild(d);
+  box.scrollTop=box.scrollHeight;
+}
+
+/* ═══════════════════════════════
+   VOICE NOTE (PTT)
+═══════════════════════════════ */
+async function startRec(e){
+  e.preventDefault();
+  if(isRec) return;
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    mrec=new MediaRecorder(stream);
+    achunks=[];
+    mrec.ondataavailable=ev=>{if(ev.data.size>0) achunks.push(ev.data);};
+    mrec.onstop=()=>{
+      stream.getTracks().forEach(t=>t.stop());
+      const blob=new Blob(achunks,{type:'audio/webm'});
+      const reader=new FileReader();
+      reader.onloadend=()=>{
+        pushEv({type:'voice',name:myName,data:reader.result});
+        addVoice(true,myName,reader.result);
+      };
+      reader.readAsDataURL(blob);
+    };
+    mrec.start();
+    isRec=true;
+    const btn=document.getElementById('ptt');
+    btn.style.background='#D4537E';
+    btn.textContent='🔴';
+    btn.classList.add('ringing');
+  }catch(err){alert('Allow microphone access to send voice notes.');}
+}
+
+function stopRec(e){
+  e.preventDefault();
+  if(!isRec||!mrec) return;
+  mrec.stop();
+  isRec=false;
+  const btn=document.getElementById('ptt');
+  btn.style.background='#7F77DD';
+  btn.textContent='🎤';
+  btn.classList.remove('ringing');
+}
+
+/* ═══════════════════════════════
+   OPEN MIC TOGGLE
+═══════════════════════════════ */
+async function toggleOpenMic(){
+  if(!omOn){
+    try{
+      omStream=await navigator.mediaDevices.getUserMedia({audio:true});
+      omOn=true;
+      document.getElementById('omTxt').textContent='Open mic: On';
+      document.getElementById('omDot').style.background='#D4537E';
+      document.getElementById('omDot').style.animation='pulse 1s infinite';
+      document.getElementById('omBtn').style.borderColor='#D4537E';
+      document.getElementById('omBtn').style.color='#f5a0c0';
+      sysMsg(myName+' turned on open mic 🎙️');
+    }catch(e){alert('Allow microphone access.');}
   } else {
-    const isMe = name === myName;
-    div.innerHTML = `<span class="font-semibold mr-1" style="color:${isMe ? '#5DCAA5' : '#b0aaf5'}">${name}</span><span class="text-muted">${text}</span>`;
+    if(omStream) omStream.getTracks().forEach(t=>t.stop());
+    omStream=null; omOn=false;
+    document.getElementById('omTxt').textContent='Open mic: Off';
+    document.getElementById('omDot').style.background='#444466';
+    document.getElementById('omDot').style.animation='none';
+    document.getElementById('omBtn').style.borderColor='#2a2a4a';
+    document.getElementById('omBtn').style.color='#a7a9be';
+    sysMsg(myName+' turned off open mic');
   }
-  box.appendChild(div);
-  box.scrollTop = box.scrollHeight;
 }
 
-/* ══════════════════════════════════════
-   CANVAS — SPIN WHEEL
-══════════════════════════════════════ */
-function drawBottle(angle, pl) {
-  const canvas = document.getElementById('spin-canvas');
-  if (!canvas) return;
-  const ctx  = canvas.getContext('2d');
-  const list = pl && pl.length ? pl : Object.values(players).length ? Object.values(players) : ['?'];
-  const cx = 110, cy = 110, r = 95;
-  const a  = angle !== undefined ? angle : spinAngle;
-  const n  = list.length;
-  const colors = ['#7F77DD','#D4537E','#1D9E75','#EF9F27','#378ADD','#D85A30','#9E1D75','#5DCAA5'];
-
-  ctx.clearRect(0, 0, 220, 220);
-
-  for (let i = 0; i < n; i++) {
-    const s = (2 * Math.PI / n) * i - Math.PI / 2;
-    const e = s + 2 * Math.PI / n;
-    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, s, e);
-    ctx.fillStyle   = colors[i % colors.length] + '55'; ctx.fill();
-    ctx.strokeStyle = colors[i % colors.length] + 'cc'; ctx.lineWidth = 1.5; ctx.stroke();
-    const mid = (s + e) / 2;
-    ctx.save();
-    ctx.translate(cx + Math.cos(mid) * 63, cy + Math.sin(mid) * 63);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 12px -apple-system,sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(list[i].slice(0, 8), 0, 0);
-    ctx.restore();
-  }
-
-  // Centre circle
-  ctx.beginPath(); ctx.arc(cx, cy, 16, 0, Math.PI * 2);
-  ctx.fillStyle = '#0f0e17'; ctx.fill();
-  ctx.strokeStyle = '#2a2a4a'; ctx.lineWidth = 2; ctx.stroke();
-
-  // Needle
-  const bx = cx + Math.cos(a) * 82, by = cy + Math.sin(a) * 82;
-  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(bx, by);
-  ctx.strokeStyle = '#7F77DD'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.stroke();
-  ctx.beginPath(); ctx.arc(bx, by, 8, 0, Math.PI * 2);
-  ctx.fillStyle = '#7F77DD'; ctx.fill();
-}
-
-/* ══════════════════════════════════════
-   HELPERS
-══════════════════════════════════════ */
-function renderPlayers() {
-  const names = Object.values(players);
-  ['player-list','players-chips'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.innerHTML = names.map(name => `
-      <span class="inline-flex items-center gap-2 bg-surface border border-border rounded-full px-3 py-1 text-xs text-white">
-        <span class="w-2 h-2 rounded-full bg-green inline-block"></span>${name}
-      </span>`).join('');
+/* ═══════════════════════════════
+   WebRTC VOICE CALL
+═══════════════════════════════ */
+function setupWebRTC(){
+  if(!ref) return;
+  const sig=ref.child('webrtc');
+  // incoming offers
+  sig.child('offers/'+myId).on('child_added',async snap=>{
+    const d=snap.val(); if(!d) return; snap.ref.remove();
+    const pc=getPC(d.from);
+    await pc.setRemoteDescription(new RTCSessionDescription(d.sdp));
+    const ans=await pc.createAnswer();
+    await pc.setLocalDescription(ans);
+    sig.child('answers/'+d.from+'/'+myId).set({from:myId,sdp:{type:ans.type,sdp:ans.sdp}});
+  });
+  // incoming answers
+  sig.child('answers/'+myId).on('child_added',async snap=>{
+    const d=snap.val(); if(!d) return; snap.ref.remove();
+    const pc=pcs[d.from];
+    if(pc&&pc.signalingState==='have-local-offer') await pc.setRemoteDescription(new RTCSessionDescription(d.sdp));
+  });
+  // ICE
+  sig.child('ice/'+myId).on('child_added',async snap=>{
+    const d=snap.val(); if(!d) return; snap.ref.remove();
+    const pc=pcs[d.from];
+    if(pc&&d.candidate) try{await pc.addIceCandidate(new RTCIceCandidate(d.candidate));}catch(e){}
   });
 }
 
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+function getPC(pid){
+  if(pcs[pid]) return pcs[pid];
+  const pc=new RTCPeerConnection(ICE);
+  pcs[pid]=pc;
+  if(localStream) localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+  pc.ontrack=e=>{
+    let el=document.getElementById('ra_'+pid);
+    if(!el){el=document.createElement('audio');el.id='ra_'+pid;el.autoplay=true;el.playsInline=true;document.getElementById('remote-audios').appendChild(el);}
+    el.srcObject=e.streams[0];
+  };
+  pc.onicecandidate=e=>{
+    if(e.candidate&&ref) ref.child('webrtc/ice/'+pid+'/'+myId).push({from:myId,candidate:e.candidate.toJSON()});
+  };
+  pc.onconnectionstatechange=()=>{
+    renderCallAvatars();
+    if(['disconnected','failed','closed'].includes(pc.connectionState)){
+      delete pcs[pid];
+      const el=document.getElementById('ra_'+pid);
+      if(el) el.remove();
+      renderCallAvatars();
+    }
+  };
+  return pc;
 }
 
-function setStatus(text, type) {
-  ['status-pill','status-pill-game'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.className = `text-xs px-3 py-1 rounded-full border ${
-      type === 'ok'
-        ? 'bg-green-bg border-green-border text-green'
-        : type === 'err'
-        ? 'bg-pink-bg border-pink text-pink-light'
-        : 'bg-surface border-border text-hint'
-    }`;
-    el.textContent = text;
+async function startCall(){
+  if(inCall){openCallScreen();return;}
+  try{ localStream=await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(e){alert('Allow microphone access for voice calls.');return;}
+  inCall=true;
+  openCallScreen();
+  // offer all other players
+  for(const pid of Object.keys(players).filter(id=>id!==myId)){
+    const pc=getPC(pid);
+    localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+    const offer=await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    ref.child('webrtc/offers/'+pid).push({from:myId,sdp:{type:offer.type,sdp:offer.sdp}});
+  }
+  sysMsg(myName+' started a voice call 📞');
+}
+
+function openCallScreen(){
+  const cs=document.getElementById('call-overlay');
+  cs.style.display='flex';
+  document.getElementById('call-room').textContent='Room: '+code;
+  document.getElementById('call-status').textContent=inCall?'In call':'Connecting…';
+  renderCallAvatars();
+}
+
+function endCall(){
+  Object.values(pcs).forEach(pc=>pc.close());
+  pcs={};
+  if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
+  inCall=false;
+  document.getElementById('call-overlay').style.display='none';
+  document.getElementById('remote-audios').innerHTML='';
+  if(ref) ref.child('webrtc').remove();
+  sysMsg(myName+' ended the call');
+}
+
+function renderCallAvatars(){
+  const c=document.getElementById('call-avatars');
+  c.innerHTML=Object.entries(players).map(([id,name])=>{
+    const isMe=id===myId;
+    const conn=isMe||!!pcs[id];
+    const initials=name.slice(0,1).toUpperCase();
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+      <div style="width:64px;height:64px;border-radius:50%;border:2px solid ${conn?'#5DCAA5':'#2a2a4a'};background:${conn?'#0d2018':'#1a1a2e'};display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:${conn?'#5DCAA5':'#555577'};">${initials}</div>
+      <span style="font-size:11px;color:#a7a9be;">${isMe?'You':name}</span>
+      ${conn?'<div style="display:flex;gap:2px;align-items:flex-end;height:22px;"><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div></div>':''}
+    </div>`;
+  }).join('');
+}
+
+function toggleMute(){
+  if(!localStream) return;
+  mutedMic=!mutedMic;
+  localStream.getAudioTracks().forEach(t=>{t.enabled=!mutedMic;});
+  document.getElementById('mute-btn').textContent=mutedMic?'🔇':'🎤';
+}
+function toggleSpeaker(){
+  document.querySelectorAll('#remote-audios audio').forEach(a=>{a.muted=!a.muted;});
+  const b=document.getElementById('spk-btn');
+  b.textContent=b.textContent==='🔊'?'🔈':'🔊';
+}
+
+/* ═══════════════════════════════
+   CANVAS WHEEL
+═══════════════════════════════ */
+function drawWheel(angle,pl){
+  const cv=document.getElementById('spin-canvas');
+  if(!cv) return;
+  const ctx=cv.getContext('2d');
+  const list=pl&&pl.length?pl:['?'];
+  const cx=110,cy=110,r=95,n=list.length;
+  const a=angle!==undefined?angle:spinAngle;
+  const colors=['#7F77DD','#D4537E','#1D9E75','#EF9F27','#378ADD','#D85A30','#9E1D75','#5DCAA5'];
+  ctx.clearRect(0,0,220,220);
+  // outer ring
+  ctx.beginPath();ctx.arc(cx,cy,r+5,0,Math.PI*2);
+  ctx.strokeStyle='#2a2a4a';ctx.lineWidth=3;ctx.stroke();
+  // sectors
+  for(let i=0;i<n;i++){
+    const s=(2*Math.PI/n)*i-Math.PI/2,e=s+2*Math.PI/n;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,s,e);
+    ctx.fillStyle=colors[i%colors.length]+'55';ctx.fill();
+    ctx.strokeStyle=colors[i%colors.length]+'bb';ctx.lineWidth=1.5;ctx.stroke();
+    const mid=(s+e)/2;
+    ctx.save();ctx.translate(cx+Math.cos(mid)*63,cy+Math.sin(mid)*63);
+    ctx.fillStyle='#fff';ctx.font='bold 12px -apple-system,sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(list[i].slice(0,8),0,0);ctx.restore();
+  }
+  // center
+  ctx.beginPath();ctx.arc(cx,cy,18,0,Math.PI*2);
+  ctx.fillStyle='#0f0e17';ctx.fill();
+  ctx.strokeStyle='#7F77DD';ctx.lineWidth=2;ctx.stroke();
+  // needle
+  const bx=cx+Math.cos(a)*80,by=cy+Math.sin(a)*80;
+  const g=ctx.createLinearGradient(cx,cy,bx,by);
+  g.addColorStop(0,'#534AB7');g.addColorStop(1,'#b0aaf5');
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(bx,by);
+  ctx.strokeStyle=g;ctx.lineWidth=5;ctx.lineCap='round';ctx.stroke();
+  ctx.beginPath();ctx.arc(bx,by,9,0,Math.PI*2);
+  ctx.fillStyle='#b0aaf5';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.fillStyle='#7F77DD';ctx.fill();
+}
+
+/* ═══════════════════════════════
+   RENDER / HELPERS
+═══════════════════════════════ */
+function renderPlayers(){
+  const names=Object.values(players);
+  // waiting screen list
+  const pl=document.getElementById('plist');
+  if(pl) pl.innerHTML=names.map(n=>`
+    <span style="display:inline-flex;align-items:center;gap:6px;background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:5px 12px;font-size:13px;">
+      <span style="width:8px;height:8px;border-radius:50%;background:#5DCAA5;animation:pulse 2s infinite;display:inline-block;"></span>${n}
+    </span>`).join('');
+  // game header chips
+  const pc=document.getElementById('pchips');
+  if(pc) pc.innerHTML=names.map(n=>`
+    <span data-pn="${n}" style="display:inline-flex;align-items:center;gap:5px;background:#12102a;border-radius:20px;padding:3px 10px;font-size:12px;color:#fff;">
+      <span class="pdot" style="width:7px;height:7px;border-radius:50%;background:#444466;display:inline-block;"></span>${n}
+    </span>`).join('');
+}
+
+function updateDots(onlineIds){
+  document.querySelectorAll('[data-pn]').forEach(el=>{
+    const name=el.getAttribute('data-pn');
+    const isOn=Object.entries(players).some(([id,n])=>n===name&&onlineIds.includes(id));
+    const dot=el.querySelector('.pdot');
+    if(dot){dot.style.background=isOn?'#5DCAA5':'#444466';dot.style.animation=isOn?'pulse 2s infinite':'none';}
+  });
+}
+
+function showPg(id){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+
+function setStatus(text,type){
+  const ok=type==='ok';
+  const err=type==='err';
+  const style=ok?'background:#0d2018;border:1px solid #1a3e2e;color:#5DCAA5;':
+               err?'background:#1e0f18;border:1px solid #D4537E;color:#f5a0c0;':
+               'background:#1a1a2e;border:1px solid #2a2a4a;color:#555577;';
+  ['spill','spill2'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.style.cssText=`font-size:12px;padding:4px 14px;border-radius:20px;${style}`;el.textContent=text;}
   });
 }
 </script>
