@@ -8,20 +8,19 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="TruthDare"/>
 <link rel="manifest" href="manifest.json"/>
-<title>Truth or Dare</title>
+<title>Truth or Dare 🍾</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;background:#0f0e17;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
 body{display:flex;flex-direction:column;overflow:hidden;}
-#install-bar{flex-shrink:0;background:#1a1a2e;border-bottom:2px solid #7F77DD;padding:10px 14px;display:flex;align-items:center;gap:10px;padding-top:calc(10px + env(safe-area-inset-top,0px));}
-#install-bar.hidden-bar{display:none;}
-.ib-icon{font-size:28px;flex-shrink:0;}
-.ib-text{flex:1;}
-.ib-title{font-size:13px;font-weight:700;color:#fff;}
-.ib-sub{font-size:11px;color:#b0aaf5;margin-top:1px;}
-.ib-btn{background:#7F77DD;color:#fff;font-weight:700;border-radius:10px;padding:8px 14px;font-size:12px;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+
+/* ── install bar ── */
+#ibar{flex-shrink:0;background:linear-gradient(135deg,#2e2a5e,#1a1a2e);border-bottom:1.5px solid #7F77DD;display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 8px) 14px 8px;}
+#ibar.gone{display:none;}
+.ib-btn{background:#7F77DD;color:#fff;font-weight:700;border-radius:10px;padding:8px 14px;font-size:13px;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background .15s;}
 .ib-btn:active{background:#534AB7;}
-.ib-ios{font-size:11px;color:#b0aaf5;background:#2e2a5e;border-radius:8px;padding:7px 10px;flex-shrink:0;text-align:center;line-height:1.5;}
+
+/* ── app shell ── */
 #app{flex:1;overflow:hidden;display:flex;flex-direction:column;}
 .pg{display:none;flex:1;flex-direction:column;overflow:hidden;}
 .pg.on{display:flex;}
@@ -33,378 +32,407 @@ input::placeholder,textarea::placeholder{color:#444466;}
 input:focus,textarea:focus{outline:none;}
 textarea{resize:none;}
 .pb-safe{padding-bottom:env(safe-area-inset-bottom,12px);}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-.fu{animation:fadeUp .25s ease forwards;}
-@keyframes blink{0%,80%,100%{opacity:0;}40%{opacity:1;}}
-.td{display:inline-block;width:5px;height:5px;border-radius:50%;background:#a7a9be;animation:blink 1.2s infinite;margin:0 1px;vertical-align:middle;}
-.td:nth-child(2){animation-delay:.15s;}.td:nth-child(3){animation-delay:.3s;}
+
+/* ── animations ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.fu{animation:fadeUp .3s ease forwards;}
+
+/* typing dots */
+@keyframes bounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
+.td{display:inline-block;width:6px;height:6px;border-radius:50%;background:#7F77DD;margin:0 2px;vertical-align:middle;animation:bounce 1.2s infinite;}
+.td:nth-child(2){animation-delay:.2s;}.td:nth-child(3){animation-delay:.4s;}
+
+/* online pulse */
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
-.pl{animation:pulse 2s infinite;}
-@keyframes ring{0%{box-shadow:0 0 0 0 rgba(212,83,126,.7);}100%{box-shadow:0 0 0 16px rgba(212,83,126,0);}}
-.ringing{animation:ring .8s infinite;}
-@keyframes wave{0%,100%{height:5px;}50%{height:20px;}}
-.wb{width:3px;border-radius:2px;background:#7F77DD;animation:wave .7s infinite ease-in-out;display:inline-block;}
+
+/* call ring */
+@keyframes callring{0%{box-shadow:0 0 0 0 rgba(93,202,165,.7),0 0 0 0 rgba(93,202,165,.4);}50%{box-shadow:0 0 0 12px rgba(93,202,165,.2),0 0 0 24px rgba(93,202,165,0);}100%{box-shadow:0 0 0 12px rgba(93,202,165,0),0 0 0 24px rgba(93,202,165,0);}}
+.call-ring{animation:callring 1.5s infinite;}
+
+/* ptt recording pulse */
+@keyframes recpulse{0%{box-shadow:0 0 0 0 rgba(212,83,126,.8);}100%{box-shadow:0 0 0 18px rgba(212,83,126,0);}}
+.recording{background:#D4537E!important;animation:recpulse .7s infinite!important;}
+
+/* sound waves */
+@keyframes wave{0%,100%{height:4px;}50%{height:18px;}}
+.wb{width:3px;border-radius:2px;background:#7F77DD;animation:wave .6s infinite ease-in-out;display:inline-block;}
 .wb:nth-child(2){animation-delay:.1s;}.wb:nth-child(3){animation-delay:.2s;}.wb:nth-child(4){animation-delay:.3s;}
-.bm{background:#2e2a5e;border-radius:16px 16px 4px 16px;}
-.bt{background:#1a1a2e;border-radius:16px 16px 16px 4px;}
-#call-ov{display:none;position:fixed;inset:0;z-index:90;background:#0a0918;flex-direction:column;align-items:center;justify-content:space-between;padding:50px 24px 44px;}
+
+/* bubbles */
+.bm{background:#2e2a5e;border-radius:18px 18px 4px 18px;}
+.bt{background:#1a1a2e;border-radius:18px 18px 18px 4px;}
+
+/* call overlay */
+#call-ov{display:none;position:fixed;inset:0;z-index:90;background:#070614;flex-direction:column;align-items:center;justify-content:space-between;padding:60px 24px 50px;}
 #call-ov.on{display:flex;}
+
+/* incoming call overlay */
+#ring-ov{display:none;position:fixed;inset:0;z-index:95;background:rgba(7,6,20,.95);flex-direction:column;align-items:center;justify-content:center;gap:28px;}
+#ring-ov.on{display:flex;}
+
+/* modal backdrop */
+.modal-back{display:none;position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.75);align-items:flex-end;justify-content:center;}
+.modal-back.on{display:flex;}
+.modal-sheet{background:#1a1a2e;border:1px solid #7F77DD;border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;}
+
+/* voice note progress */
+.vnbar{height:4px;background:#7F77DD;border-radius:2px;transition:width .1s linear;}
+
+/* card styles */
+.qcard-truth{border-left:4px solid #7F77DD;background:#1e1b40;}
+.qcard-dare{border-left:4px solid #D4537E;background:#2a1220;}
+.qcard-custom{border-left:4px solid #EF9F27;background:#1e1600;}
 </style>
 </head>
 <body>
 
-<!-- PERMANENT TOP INSTALL BAR -->
-<div id="install-bar">
-  <span class="ib-icon">🍾</span>
-  <div class="ib-text">
-    <div class="ib-title">Install Truth or Dare</div>
-    <div class="ib-sub" id="ib-sub">Add to home screen · Works offline</div>
+<!-- ══════════════════════════════
+  INSTALL BAR
+══════════════════════════════ -->
+<div id="ibar">
+  <span style="font-size:26px;flex-shrink:0;">🍾</span>
+  <div style="flex:1;min-width:0;">
+    <div style="font-size:13px;font-weight:700;color:#fff;">Truth or Dare</div>
+    <div style="font-size:11px;color:#b0aaf5;margin-top:1px;">Install for the best experience</div>
   </div>
-  <!-- Android/Desktop: real install button -->
   <button id="ib-btn" class="ib-btn" onclick="doInstall()">📲 Install</button>
-  <!-- iOS: tap button opens step-by-step modal -->
-  <button id="ib-ios-btn" class="ib-btn" style="display:none;" onclick="showIOSGuide()">📲 Install</button>
+  <button id="ib-ios-btn" class="ib-btn" style="display:none;" onclick="showIOSModal()">📲 Install</button>
 </div>
 
-<!-- iOS install guide modal -->
-<div id="ios-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.75);align-items:flex-end;justify-content:center;">
-  <div style="background:#1a1a2e;border:1px solid #7F77DD;border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;">
+<!-- iOS install modal -->
+<div id="ios-modal" class="modal-back">
+  <div class="modal-sheet">
     <div style="text-align:center;margin-bottom:20px;">
-      <div style="font-size:40px;margin-bottom:8px;">🍾</div>
-      <h2 style="font-size:18px;font-weight:700;margin-bottom:4px;">Install Truth or Dare</h2>
-      <p style="font-size:13px;color:#a7a9be;">Follow these steps to add to your home screen</p>
+      <div style="font-size:44px;margin-bottom:8px;">🍾</div>
+      <h2 style="font-size:18px;font-weight:700;margin-bottom:4px;">Install on iPhone</h2>
+      <p style="font-size:13px;color:#a7a9be;">3 quick steps</p>
     </div>
-    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px;">
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
       <div style="display:flex;align-items:center;gap:14px;background:#12102a;border-radius:14px;padding:14px;">
-        <div style="width:36px;height:36px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">1</div>
-        <div>
-          <p style="font-size:14px;font-weight:600;margin-bottom:2px;">Tap the Share button</p>
-          <p style="font-size:12px;color:#a7a9be;">The box with an arrow pointing up ↑ at the bottom of your screen</p>
-        </div>
+        <div style="width:36px;height:36px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0;">1</div>
+        <div><p style="font-size:14px;font-weight:600;">Tap the Share button</p><p style="font-size:12px;color:#a7a9be;margin-top:2px;">The □↑ icon at the bottom of Safari</p></div>
       </div>
       <div style="display:flex;align-items:center;gap:14px;background:#12102a;border-radius:14px;padding:14px;">
-        <div style="width:36px;height:36px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">2</div>
-        <div>
-          <p style="font-size:14px;font-weight:600;margin-bottom:2px;">Scroll down and tap</p>
-          <p style="font-size:12px;color:#a7a9be;">"Add to Home Screen" from the menu</p>
-        </div>
+        <div style="width:36px;height:36px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0;">2</div>
+        <div><p style="font-size:14px;font-weight:600;">Tap "Add to Home Screen"</p><p style="font-size:12px;color:#a7a9be;margin-top:2px;">Scroll down the share sheet to find it</p></div>
       </div>
       <div style="display:flex;align-items:center;gap:14px;background:#12102a;border-radius:14px;padding:14px;">
-        <div style="width:36px;height:36px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">3</div>
-        <div>
-          <p style="font-size:14px;font-weight:600;margin-bottom:2px;">Tap "Add"</p>
-          <p style="font-size:12px;color:#a7a9be;">The app icon will appear on your home screen</p>
-        </div>
+        <div style="width:36px;height:36px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0;">3</div>
+        <div><p style="font-size:14px;font-weight:600;">Tap "Add"</p><p style="font-size:12px;color:#a7a9be;margin-top:2px;">App icon appears on your home screen</p></div>
       </div>
     </div>
-    <button onclick="closeIOSGuide()" style="width:100%;background:#7F77DD;color:#fff;font-weight:700;border-radius:14px;padding:14px;font-size:15px;border:none;cursor:pointer;">Got it ✓</button>
+    <button onclick="closeIOSModal()" style="width:100%;background:#7F77DD;color:#fff;font-weight:700;border-radius:14px;padding:14px;font-size:15px;cursor:pointer;">Got it ✓</button>
   </div>
 </div>
 
-<!-- CALL OVERLAY -->
+<!-- ══════════════════════════════
+  INCOMING CALL OVERLAY
+══════════════════════════════ -->
+<div id="ring-ov">
+  <div style="text-align:center;">
+    <div id="ring-avatar" class="call-ring" style="width:90px;height:90px;border-radius:50%;background:#1a1a2e;border:3px solid #5DCAA5;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;margin:0 auto 16px;">?</div>
+    <p id="ring-name" style="font-size:22px;font-weight:700;margin-bottom:6px;"></p>
+    <p style="font-size:14px;color:#a7a9be;">Incoming voice call…</p>
+  </div>
+  <div style="display:flex;gap:40px;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+      <button onclick="declineCall()" style="width:68px;height:68px;border-radius:50%;background:#D4537E;font-size:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;">📵</button>
+      <span style="font-size:12px;color:#a7a9be;">Decline</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+      <button onclick="acceptCall()" style="width:68px;height:68px;border-radius:50%;background:#5DCAA5;font-size:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;">📞</button>
+      <span style="font-size:12px;color:#a7a9be;">Accept</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+  ACTIVE CALL OVERLAY
+══════════════════════════════ -->
 <div id="call-ov">
   <div style="text-align:center;">
-    <p id="call-status" style="color:#a7a9be;font-size:13px;margin-bottom:6px;">Connecting…</p>
-    <h2 style="font-size:22px;font-weight:700;margin-bottom:2px;">Voice Call</h2>
-    <p id="call-room" style="color:#a7a9be;font-size:12px;"></p>
+    <p id="call-status" style="color:#5DCAA5;font-size:13px;margin-bottom:6px;letter-spacing:1px;">● CONNECTING</p>
+    <h2 style="font-size:22px;font-weight:700;margin-bottom:4px;">Voice Call</h2>
+    <p id="call-room" style="color:#555577;font-size:12px;"></p>
   </div>
-  <div id="call-avs" style="display:flex;flex-wrap:wrap;gap:14px;justify-content:center;width:100%;"></div>
+  <div id="call-avs" style="display:flex;flex-wrap:wrap;gap:20px;justify-content:center;width:100%;"></div>
   <div id="remote-audios" style="display:none;"></div>
-  <div style="display:flex;gap:20px;align-items:center;">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
-      <button id="mute-btn" onclick="toggleMute()" style="width:58px;height:58px;border-radius:50%;background:#1a1a2e;border:1px solid #2a2a4a;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;">🎤</button>
-      <span style="font-size:10px;color:#555577;">Mute</span>
+  <div style="display:flex;gap:24px;align-items:center;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+      <button id="mute-btn" onclick="toggleMute()" style="width:60px;height:60px;border-radius:50%;background:#1a1a2e;border:1.5px solid #2a2a4a;font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;">🎤</button>
+      <span style="font-size:11px;color:#555577;">Mute</span>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
-      <button onclick="endCall()" style="width:68px;height:68px;border-radius:50%;background:#D4537E;font-size:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;">📵</button>
-      <span style="font-size:10px;color:#555577;">End</span>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+      <button onclick="endCall()" style="width:72px;height:72px;border-radius:50%;background:#D4537E;font-size:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;">📵</button>
+      <span style="font-size:11px;color:#a7a9be;">End</span>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
-      <button id="spk-btn" onclick="toggleSpeaker()" style="width:58px;height:58px;border-radius:50%;background:#1a1a2e;border:1px solid #2a2a4a;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;">🔊</button>
-      <span style="font-size:10px;color:#555577;">Speaker</span>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+      <button id="spk-btn" onclick="toggleSpeaker()" style="width:60px;height:60px;border-radius:50%;background:#1a1a2e;border:1.5px solid #2a2a4a;font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;">🔊</button>
+      <span style="font-size:11px;color:#555577;">Speaker</span>
     </div>
   </div>
 </div>
 
 <div id="app">
 
-<!-- LOBBY -->
+<!-- ══════════════════════════════
+  PAGE: LOBBY
+══════════════════════════════ -->
 <div class="pg on" id="pg-lobby">
-  <div class="sy flex-1" style="padding:16px 16px 32px;">
-    <div style="text-align:center;padding:28px 0 22px;">
-      <div style="font-size:52px;margin-bottom:6px;">🍾</div>
-      <h1 style="font-size:26px;font-weight:800;margin-bottom:4px;">Truth or Dare</h1>
-      <p style="color:#a7a9be;font-size:13px;">Multiplayer · Voice calls · Real-time</p>
+  <div class="sy" style="flex:1;padding:16px 16px 40px;">
+    <div style="text-align:center;padding:32px 0 24px;">
+      <div style="font-size:56px;margin-bottom:8px;">🍾</div>
+      <h1 style="font-size:28px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px;">Truth or Dare</h1>
+      <p style="color:#555577;font-size:13px;">Multiplayer · Voice calls · Real-time</p>
     </div>
     <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:20px;margin-bottom:10px;">
-      <p style="font-weight:600;font-size:15px;margin-bottom:14px;">Create a room</p>
-      <input id="cn" type="text" maxlength="16" placeholder="Your name" style="width:100%;display:block;background:#0f0e17;border:1px solid #2a2a4a;border-radius:12px;padding:12px 16px;font-size:15px;color:#fff;margin-bottom:12px;"/>
-      <button onclick="createRoom()" style="width:100%;background:#7F77DD;color:#fff;font-weight:600;border-radius:12px;padding:14px;font-size:15px;cursor:pointer;">Create room</button>
+      <p style="font-weight:700;font-size:14px;color:#a7a9be;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Create a room</p>
+      <input id="cn" type="text" maxlength="16" placeholder="Your name" style="width:100%;display:block;background:#0f0e17;border:1.5px solid #2a2a4a;border-radius:12px;padding:13px 16px;font-size:15px;color:#fff;margin-bottom:12px;transition:border-color .2s;"/>
+      <button onclick="createRoom()" style="width:100%;background:#7F77DD;color:#fff;font-weight:700;border-radius:14px;padding:15px;font-size:15px;cursor:pointer;transition:background .15s;">Create room →</button>
     </div>
-    <div style="text-align:center;color:#444466;font-size:12px;margin:10px 0;">— or —</div>
+    <div style="text-align:center;color:#333355;font-size:12px;margin:12px 0;">— or join existing —</div>
     <div id="join-card" style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:20px;">
-      <p style="font-weight:600;font-size:15px;margin-bottom:14px;">Join a room</p>
-      <input id="jn" type="text" maxlength="16" placeholder="Your name" style="width:100%;display:block;background:#0f0e17;border:1px solid #2a2a4a;border-radius:12px;padding:12px 16px;font-size:15px;color:#fff;margin-bottom:10px;"/>
-      <input id="jc" type="text" maxlength="10" placeholder="Room code (e.g. ROSE7)" oninput="this.value=this.value.toUpperCase()" style="width:100%;display:block;background:#0f0e17;border:1px solid #2a2a4a;border-radius:12px;padding:12px 16px;font-size:15px;color:#fff;margin-bottom:12px;"/>
-      <button onclick="joinRoom()" style="width:100%;background:#D4537E;color:#fff;font-weight:600;border-radius:12px;padding:14px;font-size:15px;cursor:pointer;">Join room</button>
+      <p style="font-weight:700;font-size:14px;color:#a7a9be;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Join a room</p>
+      <input id="jn" type="text" maxlength="16" placeholder="Your name" style="width:100%;display:block;background:#0f0e17;border:1.5px solid #2a2a4a;border-radius:12px;padding:13px 16px;font-size:15px;color:#fff;margin-bottom:10px;"/>
+      <input id="jc" type="text" maxlength="10" placeholder="Room code (e.g. ROSE7)" oninput="this.value=this.value.toUpperCase()" style="width:100%;display:block;background:#0f0e17;border:1.5px solid #2a2a4a;border-radius:12px;padding:13px 16px;font-size:15px;color:#fff;margin-bottom:12px;letter-spacing:2px;"/>
+      <button onclick="joinRoom()" style="width:100%;background:#D4537E;color:#fff;font-weight:700;border-radius:14px;padding:15px;font-size:15px;cursor:pointer;">Join room →</button>
     </div>
   </div>
 </div>
 
-<!-- WAITING -->
+<!-- ══════════════════════════════
+  PAGE: WAITING
+══════════════════════════════ -->
 <div class="pg" id="pg-wait">
-  <div class="sy flex-1" style="padding:16px 16px 32px;">
-    <div style="text-align:center;padding:24px 0 18px;">
-      <div style="font-size:38px;margin-bottom:6px;">🎉</div>
+  <div class="sy" style="flex:1;padding:16px 16px 40px;">
+    <div style="text-align:center;padding:24px 0 20px;">
+      <div style="font-size:42px;margin-bottom:8px;">🎉</div>
       <h1 style="font-size:22px;font-weight:700;margin-bottom:4px;">Waiting for players…</h1>
-      <p style="color:#a7a9be;font-size:13px;">Share the code with friends</p>
+      <p style="color:#555577;font-size:13px;">Share the code below</p>
     </div>
-    <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:18px;text-align:center;margin-bottom:10px;">
-      <p style="font-size:10px;color:#a7a9be;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">Room Code</p>
-      <div id="dcode" style="font-size:38px;font-weight:800;letter-spacing:8px;color:#7F77DD;margin-bottom:10px;">----</div>
-      <button onclick="copyLink()" style="color:#b0aaf5;font-size:13px;text-decoration:underline;cursor:pointer;">📋 Copy invite link</button>
+    <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:20px;text-align:center;margin-bottom:10px;">
+      <p style="font-size:10px;color:#555577;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">Room Code</p>
+      <div id="dcode" style="font-size:40px;font-weight:800;letter-spacing:10px;color:#7F77DD;margin-bottom:14px;">----</div>
+      <button onclick="copyLink()" style="background:#2e2a5e;border:1px solid #7F77DD;color:#b0aaf5;border-radius:10px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;">📋 Copy invite link</button>
     </div>
     <div style="text-align:center;margin-bottom:10px;">
-      <span id="spill" style="font-size:12px;padding:4px 14px;border-radius:20px;background:#1a1a2e;border:1px solid #2a2a4a;color:#555577;">Connecting…</span>
+      <span id="spill" style="font-size:12px;padding:5px 16px;border-radius:20px;background:#1a1a2e;border:1px solid #2a2a4a;color:#555577;display:inline-block;">Connecting…</span>
     </div>
-    <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:18px;padding:14px;margin-bottom:14px;">
-      <p style="font-size:10px;font-weight:700;color:#a7a9be;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Players in room</p>
-      <div id="plist" style="display:flex;flex-wrap:wrap;gap:8px;min-height:28px;"></div>
+    <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:18px;padding:16px;margin-bottom:14px;">
+      <p style="font-size:11px;font-weight:700;color:#555577;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Players</p>
+      <div id="plist" style="display:flex;flex-wrap:wrap;gap:8px;min-height:32px;"></div>
     </div>
-    <button onclick="broadcastStart()" style="width:100%;background:#7F77DD;color:#fff;font-weight:600;border-radius:14px;padding:15px;font-size:15px;margin-bottom:6px;cursor:pointer;">Start game</button>
-    <p style="text-align:center;font-size:11px;color:#444466;">Everyone's screen updates at the same time</p>
+    <button onclick="broadcastStart()" style="width:100%;background:#7F77DD;color:#fff;font-weight:700;border-radius:14px;padding:16px;font-size:15px;cursor:pointer;margin-bottom:6px;">Start game 🎮</button>
+    <p style="text-align:center;font-size:11px;color:#333355;">All screens update together</p>
   </div>
 </div>
 
-<!-- GAME -->
+<!-- ══════════════════════════════
+  PAGE: GAME
+══════════════════════════════ -->
 <div class="pg" id="pg-game">
+
+  <!-- header -->
   <div style="background:#1a1a2e;border-bottom:1px solid #2a2a4a;flex-shrink:0;">
     <div style="display:flex;align-items:center;gap:8px;padding:10px 14px 6px;">
       <span id="rtag" style="font-size:11px;font-weight:700;color:#b0aaf5;background:#2e2a5e;border-radius:20px;padding:3px 10px;"></span>
-      <span id="spill2" style="font-size:11px;padding:3px 10px;border-radius:20px;background:#0d2018;border:1px solid #1a3e2e;color:#5DCAA5;">● Live</span>
+      <span id="spill2" style="font-size:11px;padding:3px 10px;border-radius:20px;background:#0d2018;border:1px solid #1a3e2e;color:#5DCAA5;display:inline-block;">● Live</span>
       <div style="flex:1;"></div>
-      <button onclick="startCall()" style="display:flex;align-items:center;gap:5px;background:#0d2018;border:1px solid #1a3e2e;color:#5DCAA5;border-radius:20px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;">📞 Call</button>
+      <button onclick="startCall()" id="call-btn" style="display:flex;align-items:center;gap:5px;background:#0d2018;border:1px solid #1a3e2e;color:#5DCAA5;border-radius:20px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;">📞 Call</button>
     </div>
-    <div id="pchips" style="display:flex;flex-wrap:wrap;gap:5px;padding:0 14px 8px;"></div>
+    <div id="pchips" style="display:flex;flex-wrap:wrap;gap:5px;padding:0 14px 8px;min-height:26px;"></div>
+    <!-- tabs -->
     <div style="display:flex;border-top:1px solid #2a2a4a;">
-      <button id="tb1" onclick="showTab(1)" style="flex:1;padding:10px;font-size:14px;font-weight:500;color:#7F77DD;border-bottom:2px solid #7F77DD;background:none;cursor:pointer;">🎮 Game</button>
-      <button id="tb2" onclick="showTab(2)" style="flex:1;padding:10px;font-size:14px;font-weight:500;color:#555577;border-bottom:2px solid transparent;background:none;cursor:pointer;">💬 Chat</button>
+      <button id="tb1" onclick="showTab(1)" style="flex:1;padding:11px;font-size:14px;font-weight:600;color:#7F77DD;border-bottom:2px solid #7F77DD;background:none;cursor:pointer;">🎮 Game</button>
+      <button id="tb2" onclick="showTab(2)" style="flex:1;padding:11px;font-size:14px;font-weight:500;color:#555577;border-bottom:2px solid transparent;background:none;cursor:pointer;">💬 Chat</button>
     </div>
   </div>
 
-  <!-- GAME TAB -->
-  <div id="t1" class="sy" style="flex:1;padding:14px;display:flex;flex-direction:column;gap:14px;">
-    <div style="display:flex;flex-direction:column;align-items:center;">
+  <!-- ── GAME TAB ── -->
+  <div id="t1" class="sy" style="flex:1;padding:16px;display:flex;flex-direction:column;gap:14px;">
+
+    <!-- spin section — hidden after spin lands -->
+    <div id="spin-section" style="display:flex;flex-direction:column;align-items:center;gap:10px;">
       <canvas id="spin-canvas" width="220" height="220" style="transition:transform .15s;display:block;"></canvas>
-      <div id="cname" style="color:#b0aaf5;font-size:17px;font-weight:600;margin-top:8px;min-height:26px;text-align:center;"></div>
+      <div id="cname" style="color:#b0aaf5;font-size:17px;font-weight:600;min-height:26px;text-align:center;"></div>
+      <button onclick="doSpin()" id="spin-btn" style="border:1.5px solid #2a2a4a;border-radius:14px;padding:11px 24px;font-size:14px;color:#fff;background:#12102a;cursor:pointer;font-weight:600;">🔄 Spin the bottle</button>
     </div>
-    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-      <button onclick="doSpin()" style="border:1px solid #2a2a4a;border-radius:12px;padding:10px 16px;font-size:14px;color:#fff;background:#12102a;cursor:pointer;">🔄 Spin</button>
-      <button onclick="doCard('truth')" style="border:1px solid #7F77DD;border-radius:12px;padding:10px 16px;font-size:14px;color:#b0aaf5;background:#2e2a5e;cursor:pointer;">🎲 Truth</button>
-      <button onclick="doCard('dare')" style="border:1px solid #D4537E;border-radius:12px;padding:10px 16px;font-size:14px;color:#f5a0c0;background:#3e1a2e;cursor:pointer;">🎲 Dare</button>
-    </div>
-    <div id="qcard" style="display:none;"></div>
-    <div style="background:#1a1a2e;border:1px solid #3a2c0f;border-radius:18px;padding:14px;">
-      <p style="font-size:11px;font-weight:700;color:#EF9F27;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">✏️ Send your own question</p>
-      <div style="display:flex;gap:8px;margin-bottom:10px;">
-        <button id="ct1" onclick="setCT('truth')" style="flex:1;border-radius:10px;padding:8px;font-size:13px;font-weight:600;background:#7F77DD;border:1px solid #7F77DD;color:#fff;cursor:pointer;">Truth</button>
-        <button id="ct2" onclick="setCT('dare')" style="flex:1;border-radius:10px;padding:8px;font-size:13px;font-weight:600;background:transparent;border:1px solid #2a2a4a;color:#555577;cursor:pointer;">Dare</button>
+
+    <!-- after spin — truth/dare/custom shown here (hidden until spin lands) -->
+    <div id="post-spin" style="display:none;flex-direction:column;gap:12px;">
+      <!-- who's turn banner -->
+      <div id="turn-banner" style="background:#2e2a5e;border:1px solid #7F77DD;border-radius:16px;padding:14px 16px;text-align:center;">
+        <p id="turn-name" style="font-size:18px;font-weight:700;color:#b0aaf5;"></p>
+        <p style="font-size:12px;color:#555577;margin-top:2px;">Pick truth or dare</p>
       </div>
-      <textarea id="cq" rows="2" maxlength="200" placeholder="Type your own truth question…" style="width:100%;background:#0f0e17;border:1px solid #2a2a4a;border-radius:12px;padding:12px 14px;font-size:14px;color:#fff;margin-bottom:10px;"></textarea>
-      <button onclick="sendCQ()" style="width:100%;background:#EF9F27;color:#000;font-weight:700;border-radius:12px;padding:13px;font-size:14px;cursor:pointer;">Send to everyone 🚀</button>
+      <!-- action buttons -->
+      <div style="display:flex;gap:8px;">
+        <button onclick="doCard('truth')" style="flex:1;border:1.5px solid #7F77DD;border-radius:14px;padding:13px;font-size:14px;font-weight:700;color:#b0aaf5;background:#2e2a5e;cursor:pointer;">🎲 Truth</button>
+        <button onclick="doCard('dare')" style="flex:1;border:1.5px solid #D4537E;border-radius:14px;padding:13px;font-size:14px;font-weight:700;color:#f5a0c0;background:#3e1a2e;cursor:pointer;">🎲 Dare</button>
+      </div>
+      <!-- question card -->
+      <div id="qcard" style="display:none;"></div>
+      <!-- custom question -->
+      <div style="background:#1a1a2e;border:1px solid #3a2c0f;border-radius:18px;padding:14px;">
+        <p style="font-size:11px;font-weight:700;color:#EF9F27;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">✏️ Your own question</p>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button id="ct1" onclick="setCT('truth')" style="flex:1;border-radius:10px;padding:8px;font-size:13px;font-weight:600;background:#7F77DD;border:1px solid #7F77DD;color:#fff;cursor:pointer;">Truth</button>
+          <button id="ct2" onclick="setCT('dare')" style="flex:1;border-radius:10px;padding:8px;font-size:13px;font-weight:600;background:transparent;border:1px solid #2a2a4a;color:#555577;cursor:pointer;">Dare</button>
+        </div>
+        <textarea id="cq" rows="2" maxlength="200" placeholder="Type your own truth question…" style="width:100%;background:#0f0e17;border:1px solid #2a2a4a;border-radius:12px;padding:12px 14px;font-size:14px;color:#fff;margin-bottom:10px;"></textarea>
+        <button onclick="sendCQ()" style="width:100%;background:#EF9F27;color:#000;font-weight:700;border-radius:12px;padding:13px;font-size:14px;cursor:pointer;">Send to everyone 🚀</button>
+      </div>
+      <!-- spin again -->
+      <button onclick="resetSpin()" style="border:1.5px solid #2a2a4a;border-radius:14px;padding:11px;font-size:14px;color:#555577;background:transparent;cursor:pointer;font-weight:600;">🔄 Spin again</button>
     </div>
+
   </div>
 
-  <!-- CHAT TAB -->
+  <!-- ── CHAT TAB ── -->
   <div id="t2" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
-    <div id="chatbox" class="sy" style="flex:1;padding:10px 14px;display:flex;flex-direction:column;gap:8px;"></div>
-    <div style="padding:2px 14px;min-height:18px;"><span id="ttyp" style="font-size:12px;color:#a7a9be;"></span></div>
+    <div id="chatbox" class="sy" style="flex:1;padding:10px 14px;display:flex;flex-direction:column;gap:6px;"></div>
+    <!-- typing indicator -->
+    <div style="padding:2px 14px 2px;min-height:22px;display:flex;align-items:center;gap:8px;">
+      <div id="typing-dots" style="display:none;align-items:center;gap:6px;background:#1a1a2e;border-radius:20px;padding:5px 12px;">
+        <span id="typing-who" style="font-size:12px;color:#a7a9be;"></span>
+        <span class="td"></span><span class="td"></span><span class="td"></span>
+      </div>
+    </div>
+    <!-- input bar -->
     <div class="pb-safe" style="background:#1a1a2e;border-top:1px solid #2a2a4a;padding:10px 12px;flex-shrink:0;">
       <div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:8px;">
-        <div style="flex:1;background:#0f0e17;border:1px solid #2a2a4a;border-radius:22px;padding:10px 16px;display:flex;align-items:center;min-height:44px;">
+        <div style="flex:1;background:#0f0e17;border:1.5px solid #2a2a4a;border-radius:24px;padding:10px 16px;display:flex;align-items:center;min-height:46px;transition:border-color .2s;">
           <input id="mi" type="text" maxlength="300" placeholder="Message…" oninput="onTyping()" onkeydown="if(event.key==='Enter')sendMsg()" style="flex:1;background:transparent;font-size:15px;color:#fff;"/>
         </div>
-        <button id="ptt" onmousedown="startRec(event)" onmouseup="stopRec(event)" ontouchstart="startRec(event)" ontouchend="stopRec(event)" style="width:44px;height:44px;border-radius:50%;background:#7F77DD;font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:transform .1s;">🎤</button>
-        <button onclick="sendMsg()" style="width:44px;height:44px;border-radius:50%;background:#7F77DD;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;">➤</button>
+        <!-- PTT voice note button -->
+        <div style="position:relative;">
+          <button id="ptt" onmousedown="startRec(event)" onmouseup="stopRec(event)" ontouchstart="startRec(event)" ontouchend="stopRec(event)"
+            style="width:46px;height:46px;border-radius:50%;background:#7F77DD;font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:background .15s;">🎤</button>
+        </div>
+        <button onclick="sendMsg()" style="width:46px;height:46px;border-radius:50%;background:#7F77DD;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;">➤</button>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px;">
-        <button id="omBtn" onclick="toggleOpenMic()" style="display:flex;align-items:center;gap:6px;border:1px solid #2a2a4a;border-radius:20px;padding:6px 12px;font-size:12px;color:#a7a9be;background:transparent;cursor:pointer;">
-          <span id="omDot" style="width:8px;height:8px;border-radius:50%;background:#444466;display:inline-block;flex-shrink:0;"></span>
+      <!-- open mic row -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px;">
+        <button id="omBtn" onclick="toggleOpenMic()" style="display:flex;align-items:center;gap:7px;border:1px solid #2a2a4a;border-radius:20px;padding:6px 14px;font-size:12px;color:#a7a9be;background:transparent;cursor:pointer;transition:all .2s;">
+          <span id="omDot" style="width:8px;height:8px;border-radius:50%;background:#333355;display:inline-block;flex-shrink:0;"></span>
           <span id="omTxt">Open mic: Off</span>
         </button>
-        <span style="font-size:11px;color:#444466;">Hold 🎤 = voice note</span>
+        <span style="font-size:11px;color:#333355;">Hold 🎤 = voice note</span>
       </div>
     </div>
   </div>
-</div>
+
+</div><!-- end pg-game -->
 
 </div><!-- #app -->
 
+<!-- Recording indicator (shown while recording) -->
+<div id="rec-indicator" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#D4537E;border-radius:30px;padding:10px 20px;z-index:80;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(212,83,126,.4);">
+  <div style="display:flex;gap:3px;align-items:flex-end;height:20px;">
+    <div class="wb" style="background:#fff;"></div><div class="wb" style="background:#fff;"></div><div class="wb" style="background:#fff;"></div><div class="wb" style="background:#fff;"></div>
+  </div>
+  <span id="rec-time" style="font-size:14px;font-weight:700;color:#fff;min-width:32px;">0:00</span>
+  <span style="font-size:12px;color:rgba(255,255,255,.8);">Recording… release to send</span>
+</div>
+
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script>
-firebase.initializeApp({apiKey:"AIzaSyBFVlktJ3vSBxRsLRY_3CPBPX6UKH6g5Uo",authDomain:"truth-dare-app-95ce8.firebaseapp.com",databaseURL:"https://truth-dare-app-95ce8-default-rtdb.firebaseio.com",projectId:"truth-dare-app-95ce8",storageBucket:"truth-dare-app-95ce8.firebasestorage.app",messagingSenderId:"698378458947",appId:"1:698378458947:web:aa6dcb626803205c1701f6"});
+/* ══════════════════════
+   FIREBASE
+══════════════════════ */
+firebase.initializeApp({
+  apiKey:"AIzaSyBFVlktJ3vSBxRsLRY_3CPBPX6UKH6g5Uo",
+  authDomain:"truth-dare-app-95ce8.firebaseapp.com",
+  databaseURL:"https://truth-dare-app-95ce8-default-rtdb.firebaseio.com",
+  projectId:"truth-dare-app-95ce8",
+  storageBucket:"truth-dare-app-95ce8.firebasestorage.app",
+  messagingSenderId:"698378458947",
+  appId:"1:698378458947:web:aa6dcb626803205c1701f6",
+});
 const db=firebase.database();
+
+/* ══════════════════════
+   QUESTIONS
+══════════════════════ */
 const TRUTHS=["What's the most embarrassing thing you've done on a date?","Have you ever had a crush on someone in this room?","What's your biggest relationship dealbreaker?","Have you ever stalked an ex on social media?","What's the most romantic thing you've secretly done?","What's a lie you've told your partner or best friend?","What's your biggest fear in a relationship?","Have you ever fallen for someone you shouldn't have?","What's one thing you've never told anyone in this room?","Who was your first love and what happened?","What's the most embarrassing text you sent to the wrong person?","What's the wildest thing you've done to impress someone?","If you could date any celebrity, who and why?","What's something you secretly find attractive?","Have you ever kissed someone on a dare?","What's the most childish thing you still do?","What's your guilty pleasure no one knows about?","What's the most awkward moment you've had with a crush?","What's the most jealous you've ever been?","What do you find most attractive in a person?"];
 const DARES=["Give the person to your left a 10-second compliment without stopping.","Text your crush 'thinking of you' right now.","Do your best impression of someone in the room.","Send a flirty message to the last person in your DMs.","Say something sweet to each person in the room, one by one.","Let someone go through your recent Instagram likes for 10 seconds.","Speak in an accent for the next 2 rounds.","Call someone you haven't talked to in over a month.","Do a dramatic reading of your last sent text message out loud.","Dance for 30 seconds with no music.","Whisper a secret to the person across from you.","Give someone in the room a nickname based on their personality.","Stare into the eyes of the person next to you for 30 seconds without laughing.","Show the last 5 photos in your camera roll.","Sing the chorus of your favourite song out loud.","Let the group pick your profile picture for the next hour.","Say three genuine things you like about the person across from you.","Act out your most embarrassing moment without speaking.","Send a voice note saying 'I miss you' to any contact right now.","Recreate your best selfie pose right now."];
+
+/* ══════════════════════
+   STATE
+══════════════════════ */
 let myName='',code='',myId='u'+Math.random().toString(36).slice(2,9);
 let ref=null,players={},spinAngle=0,spinning=false,chosen=null,ctab='truth';
-let typTimer=null,mrec=null,achunks=[],isRec=false,omStream=null,omOn=false;
-const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
+let typTimer=null;
+// voice note state — FIX: use timeslice recording to get all audio
+let mrec=null,achunks=[],isRec=false,recTimer=null,recSecs=0;
+let omStream=null,omOn=false;
+const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun2.l.google.com:19302'}]};
 let pcs={},localStream=null,inCall=false,mutedMic=false;
-let deferredPrompt=null;
+let deferredPrompt=null,installBtnTapped=false;
+let pendingCallFrom=null; // for incoming call ring
 
-/* ═══ INSTALL BAR ═══
-   - Always visible unless already installed
-   - Android/Chrome/Desktop: native prompt on click
-   - iOS Safari: beautiful step-by-step modal on click
-   - Hides automatically if running as installed PWA
-*/
-
-function checkInstalled(){
-  const isStandalone=window.navigator.standalone===true||window.matchMedia('(display-mode:standalone)').matches;
-  if(isStandalone){
-    document.getElementById('install-bar').classList.add('hidden-bar');
-    return true;
-  }
-  return false;
-}
-
-function setupInstallBar(){
-  if(checkInstalled()) return; // already installed, hide bar
-
-  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
-
-  if(isIOS){
-    // iOS: show iOS-specific button that opens step-by-step modal
-    document.getElementById('ib-btn').style.display='none';
-    document.getElementById('ib-ios-btn').style.display='block';
-  } else {
-    // Android/Desktop: show normal install button
-    // Button is visible immediately — clicking it will either
-    // trigger native prompt (if available) or show browser instructions
-    document.getElementById('ib-btn').style.display='block';
-    document.getElementById('ib-ios-btn').style.display='none';
-  }
-}
-
-// Capture the native install prompt when browser fires it
+/* ══════════════════════
+   PWA INSTALL
+══════════════════════ */
 window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();
-  deferredPrompt=e;
-  // Update button to show it's ready
-  const btn=document.getElementById('ib-btn');
-  if(btn) btn.textContent='📲 Install';
+  e.preventDefault();deferredPrompt=e;
+  if(installBtnTapped){installBtnTapped=false;triggerInstall();}
 });
-
-// Called when user clicks Install on Android/Desktop
-function doInstall(){
-  if(deferredPrompt){
-    // Native prompt available — trigger it immediately
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(r=>{
-      deferredPrompt=null;
-      if(r.outcome==='accepted'){
-        // User accepted install — hide the bar
-        document.getElementById('install-bar').classList.add('hidden-bar');
-        document.getElementById('ib-sub').textContent='✅ Installing…';
-      }
-    });
-  } else {
-    // Native prompt not yet available — show browser-specific guide
-    const isAndroid=/Android/i.test(navigator.userAgent);
-    if(isAndroid){
-      showAndroidGuide();
-    } else {
-      // Desktop Chrome/Edge — show instructions modal
-      showDesktopGuide();
-    }
-  }
-}
-
-// Listen for app being installed (fires after successful install)
 window.addEventListener('appinstalled',()=>{
-  document.getElementById('install-bar').classList.add('hidden-bar');
+  document.getElementById('ibar').classList.add('gone');
   deferredPrompt=null;
 });
-
-// iOS: show beautiful step-by-step modal
-function showIOSGuide(){
-  const modal=document.getElementById('ios-modal');
-  modal.style.display='flex';
+function doInstall(){
+  if(deferredPrompt){triggerInstall();}
+  else{
+    installBtnTapped=true;
+    const btn=document.getElementById('ib-btn');
+    btn.textContent='⏳ Installing…';btn.disabled=true;
+    setTimeout(()=>{if(installBtnTapped){installBtnTapped=false;btn.textContent='📲 Install';btn.disabled=false;}},6000);
+  }
 }
-function closeIOSGuide(){
-  document.getElementById('ios-modal').style.display='none';
+function triggerInstall(){
+  if(!deferredPrompt)return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(r=>{
+    deferredPrompt=null;installBtnTapped=false;
+    const btn=document.getElementById('ib-btn');
+    if(r.outcome==='accepted'){document.getElementById('ibar').classList.add('gone');}
+    else{btn.textContent='📲 Install';btn.disabled=false;}
+  });
 }
-// Tap outside modal to close
-document.addEventListener('click',e=>{
-  const modal=document.getElementById('ios-modal');
-  if(e.target===modal) closeIOSGuide();
-});
-
-// Android fallback (when beforeinstallprompt hasn't fired yet)
-function showAndroidGuide(){
-  const existing=document.getElementById('android-modal');
-  if(existing){existing.style.display='flex';return;}
-  const m=document.createElement('div');
-  m.id='android-modal';
-  m.style.cssText='position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.75);display:flex;align-items:flex-end;justify-content:center;';
-  m.innerHTML=`<div style="background:#1a1a2e;border:1px solid #7F77DD;border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;">
-    <div style="text-align:center;margin-bottom:20px;"><div style="font-size:40px;margin-bottom:8px;">🍾</div>
-    <h2 style="font-size:18px;font-weight:700;margin-bottom:4px;">Install on Android</h2></div>
-    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
-      <div style="display:flex;align-items:center;gap:12px;background:#12102a;border-radius:14px;padding:12px;">
-        <div style="width:32px;height:32px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:700;">1</div>
-        <p style="font-size:14px;">Tap the <strong>⋮ menu</strong> in the top right of Chrome</p>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px;background:#12102a;border-radius:14px;padding:12px;">
-        <div style="width:32px;height:32px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:700;">2</div>
-        <p style="font-size:14px;">Tap <strong>"Add to Home screen"</strong></p>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px;background:#12102a;border-radius:14px;padding:12px;">
-        <div style="width:32px;height:32px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:700;">3</div>
-        <p style="font-size:14px;">Tap <strong>"Install"</strong> or <strong>"Add"</strong></p>
-      </div>
-    </div>
-    <button onclick="document.getElementById('android-modal').style.display='none'" style="width:100%;background:#7F77DD;color:#fff;font-weight:700;border-radius:14px;padding:14px;font-size:15px;border:none;cursor:pointer;">Got it ✓</button>
-  </div>`;
-  document.body.appendChild(m);
-  m.addEventListener('click',e=>{ if(e.target===m) m.style.display='none'; });
-}
-
-// Desktop fallback
-function showDesktopGuide(){
-  const existing=document.getElementById('desktop-modal');
-  if(existing){existing.style.display='flex';return;}
-  const m=document.createElement('div');
-  m.id='desktop-modal';
-  m.style.cssText='position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:20px;';
-  m.innerHTML=`<div style="background:#1a1a2e;border:1px solid #7F77DD;border-radius:20px;padding:24px;width:100%;max-width:400px;">
-    <div style="text-align:center;margin-bottom:16px;"><div style="font-size:40px;margin-bottom:8px;">🍾</div>
-    <h2 style="font-size:18px;font-weight:700;margin-bottom:4px;">Install on Desktop</h2></div>
-    <div style="background:#12102a;border-radius:14px;padding:14px;margin-bottom:16px;">
-      <p style="font-size:14px;line-height:1.6;">Look for the <strong style="color:#7F77DD;">install icon ⊕</strong> in your browser's address bar and click it, or go to the browser menu and choose <strong style="color:#7F77DD;">"Install Truth or Dare"</strong></p>
-    </div>
-    <button onclick="document.getElementById('desktop-modal').style.display='none'" style="width:100%;background:#7F77DD;color:#fff;font-weight:700;border-radius:14px;padding:13px;font-size:15px;border:none;cursor:pointer;">Got it ✓</button>
-  </div>`;
-  document.body.appendChild(m);
-  m.addEventListener('click',e=>{ if(e.target===m) m.style.display='none'; });
-}
+function showIOSModal(){document.getElementById('ios-modal').classList.add('on');}
+function closeIOSModal(){document.getElementById('ios-modal').classList.remove('on');}
+document.addEventListener('click',e=>{if(e.target===document.getElementById('ios-modal'))closeIOSModal();});
 
 window.addEventListener('DOMContentLoaded',()=>{
-  setupInstallBar();
+  const standalone=navigator.standalone===true||matchMedia('(display-mode:standalone)').matches;
+  if(standalone){document.getElementById('ibar').classList.add('gone');}
+  else{
+    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+    if(isIOS){document.getElementById('ib-btn').style.display='none';document.getElementById('ib-ios-btn').style.display='block';}
+  }
   const r=new URLSearchParams(location.search).get('room');
   if(r){document.getElementById('jc').value=r.toUpperCase();document.getElementById('join-card').style.borderColor='#7F77DD';}
   drawWheel(0,['?']);
-  if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
 });
+
 window.addEventListener('beforeunload',()=>{
   if(ref){ref.child('players/'+myId).remove();ref.child('typing/'+myId).remove();ref.child('online/'+myId).remove();}
   if(inCall)endCall();
 });
 
-/* FIREBASE */
-function startFirebase(){
+/* ══════════════════════
+   FIREBASE ROOM
+══════════════════════ */
+function randCode(){
+  const w=['ROSE','KISS','LOVE','BOLD','FIRE','GLOW','MOON','STAR','WILD','PINK','RUSH','VIBE'];
+  return w[Math.floor(Math.random()*w.length)]+Math.floor(Math.random()*9+1);
+}
+function startFB(){
   ref=db.ref('rooms/'+code);
   ref.child('players/'+myId).set({name:myName,id:myId});
   ref.child('players/'+myId).onDisconnect().remove();
@@ -414,67 +442,561 @@ function startFirebase(){
   ref.child('players').on('value',s=>{const d=s.val()||{};players={};Object.values(d).forEach(p=>{players[p.id]=p.name;});renderPlayers();});
   ref.child('events').limitToLast(1).on('child_added',s=>{const e=s.val();if(!e||e._f===myId)return;handleEv(e);});
   ref.child('state').on('value',s=>{const v=s.val();if(v&&v.started&&curPg()==='pg-wait'){if(v.players)players=v.players;startGame();}});
-  ref.child('typing').on('value',s=>{const d=s.val()||{};const who=Object.entries(d).filter(([id,v])=>id!==myId&&v).map(([id])=>players[id]||'Someone');const el=document.getElementById('ttyp');el.innerHTML=who.length?who.join(', ')+(who.length===1?' is':' are')+' typing <span class="td"></span><span class="td"></span><span class="td"></span>':'';});
+  ref.child('typing').on('value',s=>{
+    const d=s.val()||{};
+    const who=Object.entries(d).filter(([id,v])=>id!==myId&&v).map(([id])=>players[id]||'Someone');
+    const bar=document.getElementById('typing-dots'),lbl=document.getElementById('typing-who');
+    if(who.length){bar.style.display='flex';lbl.textContent=who.join(', ')+(who.length===1?' is':' are')+' typing';}
+    else{bar.style.display='none';}
+  });
   ref.child('online').on('value',s=>{updateDots(Object.keys(s.val()||{}));});
-  setupWebRTC();setStatus('● Connected','ok');
+  setupWebRTC();
+  setStatus('● Connected','ok');
 }
-function randCode(){const w=['ROSE','KISS','LOVE','BOLD','FIRE','GLOW','MOON','STAR','WILD','PINK','RUSH','VIBE'];return w[Math.floor(Math.random()*w.length)]+Math.floor(Math.random()*9+1);}
-function createRoom(){const n=document.getElementById('cn').value.trim();if(!n){alert('Enter your name!');return;}myName=n;code=randCode();document.getElementById('dcode').textContent=code;showPg('pg-wait');startFirebase();}
-function joinRoom(){const n=document.getElementById('jn').value.trim();const c=document.getElementById('jc').value.trim().toUpperCase();if(!n){alert('Enter your name!');return;}if(!c){alert('Enter a room code!');return;}myName=n;code=c;document.getElementById('dcode').textContent=code;showPg('pg-wait');startFirebase();}
-function copyLink(){const url=location.href.split('?')[0]+'?room='+code;navigator.clipboard.writeText(url).then(()=>alert('Copied! Code: '+code)).catch(()=>alert('Code: '+code));}
+function createRoom(){
+  const n=document.getElementById('cn').value.trim();
+  if(!n){alert('Enter your name!');return;}
+  myName=n;code=randCode();
+  document.getElementById('dcode').textContent=code;
+  showPg('pg-wait');startFB();
+}
+function joinRoom(){
+  const n=document.getElementById('jn').value.trim();
+  const c=document.getElementById('jc').value.trim().toUpperCase();
+  if(!n){alert('Enter your name!');return;}
+  if(!c){alert('Enter a room code!');return;}
+  myName=n;code=c;
+  document.getElementById('dcode').textContent=code;
+  showPg('pg-wait');startFB();
+}
+function copyLink(){
+  const url=location.href.split('?')[0]+'?room='+code;
+  navigator.clipboard.writeText(url).then(()=>alert('✅ Copied!\nCode: '+code)).catch(()=>alert('Code: '+code));
+}
 function pushEv(data){if(!ref)return;ref.child('events').push({...data,_f:myId,_t:Date.now()});}
 function curPg(){const el=document.querySelector('.pg.on');return el?el.id:'';}
 
-/* GAME */
-function broadcastStart(){if(!Object.keys(players).length){alert('Waiting for players!');return;}ref.child('state').set({started:true,players:{...players}});startGame();}
-function startGame(){document.getElementById('rtag').textContent='Room: '+code;renderPlayers();sysMsg('Game started! Spin the bottle');showPg('pg-game');showTab(1);drawWheel(spinAngle,Object.values(players));}
-function handleEv(e){switch(e.type){case 'chat':addBubble(false,e.name,e.text);break;case 'voice':addVoice(false,e.name,e.data);break;case 'spin':animSpin(e.seed);break;case 'chosen':chosen=e.player;document.getElementById('cname').textContent=e.player+"'s turn!";sysMsg('🍾 '+e.player+"'s turn!");break;case 'card':showCard(e.ct,e.q,e.cx);sysMsg(e.cx?e.who+' asks: "'+e.q+'"':e.who+' picked '+e.ct.toUpperCase());showTab(1);break;}}
-function showTab(n){const t1=document.getElementById('t1'),t2=document.getElementById('t2'),b1=document.getElementById('tb1'),b2=document.getElementById('tb2');t1.style.display=n===1?'flex':'none';t2.style.display=n===2?'flex':'none';b1.style.color=n===1?'#7F77DD':'#555577';b1.style.borderBottom=n===1?'2px solid #7F77DD':'2px solid transparent';b2.style.color=n===2?'#7F77DD':'#555577';b2.style.borderBottom=n===2?'2px solid #7F77DD':'2px solid transparent';if(n===2)setTimeout(()=>{const b=document.getElementById('chatbox');b.scrollTop=b.scrollHeight;},50);}
+/* ══════════════════════
+   GAME
+══════════════════════ */
+function broadcastStart(){
+  if(!Object.keys(players).length){alert('Waiting for players!');return;}
+  ref.child('state').set({started:true,players:{...players}});
+  startGame();
+}
+function startGame(){
+  document.getElementById('rtag').textContent='Room: '+code;
+  renderPlayers();sysMsg('Game started! Spin the bottle 🍾');
+  showPg('pg-game');showTab(1);
+  drawWheel(spinAngle,Object.values(players));
+}
+function handleEv(e){
+  switch(e.type){
+    case 'chat':addBubble(false,e.name,e.text);break;
+    case 'voice':addVoice(false,e.name,e.data);break;
+    case 'spin':animSpin(e.seed);break;
+    case 'chosen':
+      chosen=e.player;
+      showPostSpin(e.player);
+      sysMsg('🍾 '+e.player+"'s turn!");
+      break;
+    case 'card':
+      showCard(e.ct,e.q,e.cx);
+      sysMsg(e.cx?e.who+' asks: "'+e.q+'"':e.who+' picked '+e.ct.toUpperCase());
+      break;
+    case 'call-invite':
+      // show incoming ring UI
+      showIncomingCall(e.name,e.callerId);
+      break;
+  }
+}
 
-/* SPIN */
-function doSpin(){if(spinning)return;const seed=Math.random();pushEv({type:'spin',seed});animSpin(seed);}
-function animSpin(seed){if(spinning)return;spinning=true;document.getElementById('cname').textContent='';document.getElementById('qcard').style.display='none';const pl=Object.values(players);const total=Math.PI*2*(6+seed*6),dur=3500,t0=performance.now(),sa=spinAngle;const cv=document.getElementById('spin-canvas');cv.style.transform='scale(1.07)';setTimeout(()=>{cv.style.transform='scale(1)';},200);function fr(now){const p=Math.min((now-t0)/dur,1);spinAngle=sa+total*(1-Math.pow(1-p,4));drawWheel(spinAngle,pl);if(p<1){requestAnimationFrame(fr);return;}spinning=false;const n=pl.length||1;const norm=((spinAngle%(Math.PI*2))+Math.PI*2)%(Math.PI*2);const idx=Math.floor(((norm+Math.PI/2)%(Math.PI*2))/(Math.PI*2/n))%n;chosen=pl[idx];document.getElementById('cname').textContent=chosen+"'s turn!";cv.style.transform='scale(1.09)';setTimeout(()=>{cv.style.transform='scale(1)';},150);pushEv({type:'chosen',player:chosen});sysMsg('🍾 '+chosen+"'s turn!");}requestAnimationFrame(fr);}
+/* ══════════════════════
+   TABS
+══════════════════════ */
+function showTab(n){
+  const t1=document.getElementById('t1'),t2=document.getElementById('t2');
+  const b1=document.getElementById('tb1'),b2=document.getElementById('tb2');
+  t1.style.display=n===1?'flex':'none';
+  t2.style.display=n===2?'flex':'none';
+  b1.style.color=n===1?'#7F77DD':'#555577';b1.style.borderBottom=n===1?'2px solid #7F77DD':'2px solid transparent';
+  b2.style.color=n===2?'#7F77DD':'#555577';b2.style.borderBottom=n===2?'2px solid #7F77DD':'2px solid transparent';
+  if(n===2)setTimeout(()=>{const b=document.getElementById('chatbox');b.scrollTop=b.scrollHeight;},50);
+}
 
-/* CARDS */
-function doCard(type){const pool=type==='truth'?TRUTHS:DARES;const q=pool[Math.floor(Math.random()*pool.length)];const who=chosen||myName;pushEv({type:'card',ct:type,q,who,cx:false});showCard(type,q,false);sysMsg(who+' picked '+type.toUpperCase()+': "'+q+'"');}
-function setCT(t){ctab=t;document.getElementById('ct1').style.cssText='flex:1;border-radius:10px;padding:8px;font-size:13px;font-weight:600;cursor:pointer;'+(t==='truth'?'background:#7F77DD;border:1px solid #7F77DD;color:#fff;':'background:transparent;border:1px solid #2a2a4a;color:#555577;');document.getElementById('ct2').style.cssText='flex:1;border-radius:10px;padding:8px;font-size:13px;font-weight:600;cursor:pointer;'+(t==='dare'?'background:#D4537E;border:1px solid #D4537E;color:#fff;':'background:transparent;border:1px solid #2a2a4a;color:#555577;');document.getElementById('cq').placeholder=t==='truth'?'Type your own truth question…':'Type your own dare…';}
-function sendCQ(){const text=document.getElementById('cq').value.trim();if(!text){alert('Type a question first!');return;}const who=chosen||myName;pushEv({type:'card',ct:ctab,q:text,who,cx:true});showCard(ctab,text,true);sysMsg(myName+' sent a custom '+ctab);document.getElementById('cq').value='';}
-function showCard(type,q,isCustom){const card=document.getElementById('qcard');card.className='fu';card.style.display='block';const isTruth=type==='truth';let bc,bg,badge;if(isCustom){bc='#EF9F27';bg='#2a1f0a';badge='background:#EF9F27;color:#000;';}else if(isTruth){bc='#7F77DD';bg='#2e2a5e';badge='background:#7F77DD;color:#fff;';}else{bc='#D4537E';bg='#3e1a2e';badge='background:#D4537E;color:#fff;';}const lbl=isCustom?'✏️ Custom '+(isTruth?'Truth':'Dare'):(isTruth?'Truth':'Dare');card.innerHTML='<div style="border-left:3px solid '+bc+';background:'+bg+';border-radius:0 14px 14px 0;padding:14px;"><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;'+badge+'padding:3px 10px;border-radius:20px;">'+lbl+'</span><p style="margin-top:10px;font-size:16px;line-height:1.6;color:#fff;">'+q+'</p></div>';}
+/* ══════════════════════
+   SPIN — hide wheel after land, show post-spin
+══════════════════════ */
+function doSpin(){
+  if(spinning)return;
+  const seed=Math.random();
+  pushEv({type:'spin',seed});
+  animSpin(seed);
+}
+function animSpin(seed){
+  if(spinning)return;
+  spinning=true;
+  document.getElementById('cname').textContent='';
+  document.getElementById('qcard').style.display='none';
+  // make sure spin section is visible
+  document.getElementById('spin-section').style.display='flex';
+  document.getElementById('post-spin').style.display='none';
 
-/* CHAT */
-function sendMsg(){const inp=document.getElementById('mi');const text=inp.value.trim();if(!text)return;pushEv({type:'chat',name:myName,text});addBubble(true,myName,text);inp.value='';clearTyp();}
-function onTyping(){if(!ref)return;ref.child('typing/'+myId).set(true);clearTimeout(typTimer);typTimer=setTimeout(clearTyp,2000);}
+  const pl=Object.values(players);
+  const total=Math.PI*2*(6+seed*6),dur=3500,t0=performance.now(),sa=spinAngle;
+  const cv=document.getElementById('spin-canvas');
+  cv.style.transform='scale(1.06)';
+  setTimeout(()=>{cv.style.transform='scale(1)';},200);
+
+  function fr(now){
+    const p=Math.min((now-t0)/dur,1);
+    spinAngle=sa+total*(1-Math.pow(1-p,4));
+    drawWheel(spinAngle,pl);
+    if(p<1){requestAnimationFrame(fr);return;}
+    spinning=false;
+    const n=pl.length||1;
+    const norm=((spinAngle%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+    const idx=Math.floor(((norm+Math.PI/2)%(Math.PI*2))/(Math.PI*2/n))%n;
+    chosen=pl[idx];
+    cv.style.transform='scale(1.08)';
+    setTimeout(()=>{cv.style.transform='scale(1)';},150);
+    pushEv({type:'chosen',player:chosen});
+    sysMsg('🍾 '+chosen+"'s turn!");
+    showPostSpin(chosen);
+  }
+  requestAnimationFrame(fr);
+}
+
+function showPostSpin(player){
+  chosen=player;
+  // fade out spin wheel, show post-spin options
+  const ss=document.getElementById('spin-section');
+  ss.style.transition='opacity .4s';
+  ss.style.opacity='0';
+  setTimeout(()=>{
+    ss.style.display='none';
+    ss.style.opacity='1';
+    ss.style.transition='';
+    const ps=document.getElementById('post-spin');
+    ps.style.display='flex';
+    ps.classList.add('fu');
+    document.getElementById('turn-name').textContent=player+"'s turn!";
+    document.getElementById('cname').textContent=player+"'s turn!";
+  },400);
+}
+
+function resetSpin(){
+  document.getElementById('post-spin').style.display='none';
+  document.getElementById('qcard').style.display='none';
+  document.getElementById('spin-section').style.display='flex';
+  chosen=null;
+  drawWheel(spinAngle,Object.values(players));
+}
+
+/* ══════════════════════
+   CARDS
+══════════════════════ */
+function doCard(type){
+  const pool=type==='truth'?TRUTHS:DARES;
+  const q=pool[Math.floor(Math.random()*pool.length)];
+  const who=chosen||myName;
+  pushEv({type:'card',ct:type,q,who,cx:false});
+  showCard(type,q,false);
+  sysMsg(who+' picked '+type.toUpperCase()+': "'+q+'"');
+}
+function setCT(t){
+  ctab=t;
+  document.getElementById('ct1').style.cssText='flex:1;border-radius:10px;padding:8px;font-size:13px;font-weight:600;cursor:pointer;'+(t==='truth'?'background:#7F77DD;border:1px solid #7F77DD;color:#fff;':'background:transparent;border:1px solid #2a2a4a;color:#555577;');
+  document.getElementById('ct2').style.cssText='flex:1;border-radius:10px;padding:8px;font-size:13px;font-weight:600;cursor:pointer;'+(t==='dare'?'background:#D4537E;border:1px solid #D4537E;color:#fff;':'background:transparent;border:1px solid #2a2a4a;color:#555577;');
+  document.getElementById('cq').placeholder=t==='truth'?'Type your own truth question…':'Type your own dare…';
+}
+function sendCQ(){
+  const text=document.getElementById('cq').value.trim();
+  if(!text){alert('Type a question first!');return;}
+  const who=chosen||myName;
+  pushEv({type:'card',ct:ctab,q:text,who,cx:true});
+  showCard(ctab,text,true);
+  sysMsg(myName+' sent a custom '+ctab+' ✏️');
+  document.getElementById('cq').value='';
+}
+function showCard(type,q,isCustom){
+  const card=document.getElementById('qcard');
+  card.className='fu';card.style.display='block';
+  const isTruth=type==='truth';
+  let cls,badge,bc;
+  if(isCustom){cls='qcard-custom';badge='background:#EF9F27;color:#000;';bc='#EF9F27';}
+  else if(isTruth){cls='qcard-truth';badge='background:#7F77DD;color:#fff;';bc='#7F77DD';}
+  else{cls='qcard-dare';badge='background:#D4537E;color:#fff;';bc='#D4537E';}
+  const lbl=isCustom?'✏️ Custom '+(isTruth?'Truth':'Dare'):(isTruth?'Truth':'Dare');
+  card.innerHTML=`<div class="${cls}" style="border-radius:0 16px 16px 0;padding:16px;">
+    <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;${badge}padding:4px 12px;border-radius:20px;">${lbl}</span>
+    <p style="margin-top:12px;font-size:17px;line-height:1.65;color:#fff;font-weight:500;">${q}</p>
+  </div>`;
+}
+
+/* ══════════════════════
+   CHAT
+══════════════════════ */
+function sendMsg(){
+  const inp=document.getElementById('mi');
+  const text=inp.value.trim();
+  if(!text)return;
+  pushEv({type:'chat',name:myName,text});
+  addBubble(true,myName,text);
+  inp.value='';clearTyp();
+}
+function onTyping(){
+  if(!ref)return;
+  ref.child('typing/'+myId).set(true);
+  clearTimeout(typTimer);
+  typTimer=setTimeout(clearTyp,2000);
+}
 function clearTyp(){clearTimeout(typTimer);if(ref)ref.child('typing/'+myId).remove();}
 function tn(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
-function addBubble(isMe,name,text){const box=document.getElementById('chatbox');if(!box)return;const w=document.createElement('div');w.style.cssText='display:flex;flex-direction:column;max-width:78%;'+(isMe?'align-self:flex-end;align-items:flex-end;':'align-self:flex-start;align-items:flex-start;');w.innerHTML=(isMe?'':'<span style="font-size:11px;color:#a7a9be;margin-bottom:2px;padding:0 4px;">'+name+'</span>')+'<div class="'+(isMe?'bm':'bt')+'" style="padding:10px 14px;font-size:15px;color:#fff;line-height:1.4;">'+text+'</div><span style="font-size:10px;color:#444466;margin-top:2px;padding:0 4px;">'+tn()+'</span>';box.appendChild(w);box.scrollTop=box.scrollHeight;}
-function addVoice(isMe,name,data){const box=document.getElementById('chatbox');if(!box)return;const audio=new Audio(data);const w=document.createElement('div');w.style.cssText='display:flex;flex-direction:column;max-width:78%;'+(isMe?'align-self:flex-end;align-items:flex-end;':'align-self:flex-start;align-items:flex-start;');const btn=document.createElement('button');btn.className=isMe?'bm':'bt';btn.style.cssText='padding:10px 16px;font-size:14px;color:#fff;display:flex;align-items:center;gap:8px;cursor:pointer;border:none;';btn.innerHTML='<span style="font-size:18px;">🎵</span><span>Voice note ▶</span>';btn.onclick=function(){const sp=this.querySelector('span:last-child');audio.play();sp.textContent='Playing ◼';audio.onended=()=>{sp.textContent='Voice note ▶';};};if(!isMe){const n=document.createElement('span');n.style.cssText='font-size:11px;color:#a7a9be;margin-bottom:2px;padding:0 4px;';n.textContent=name;w.appendChild(n);}w.appendChild(btn);const t=document.createElement('span');t.style.cssText='font-size:10px;color:#444466;margin-top:2px;padding:0 4px;';t.textContent=tn();w.appendChild(t);box.appendChild(w);box.scrollTop=box.scrollHeight;}
-function sysMsg(text){const box=document.getElementById('chatbox');if(!box)return;const d=document.createElement('div');d.style.cssText='align-self:center;text-align:center;padding:3px 0;';d.innerHTML='<span style="font-size:11px;color:#555577;background:#1a1a2e;border-radius:20px;padding:4px 12px;">'+text+'</span>';box.appendChild(d);box.scrollTop=box.scrollHeight;}
 
-/* VOICE NOTE PTT */
-async function startRec(e){e.preventDefault();if(isRec)return;try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});mrec=new MediaRecorder(stream);achunks=[];mrec.ondataavailable=ev=>{if(ev.data.size>0)achunks.push(ev.data);};mrec.onstop=()=>{stream.getTracks().forEach(t=>t.stop());const blob=new Blob(achunks,{type:'audio/webm'});const reader=new FileReader();reader.onloadend=()=>{pushEv({type:'voice',name:myName,data:reader.result});addVoice(true,myName,reader.result);};reader.readAsDataURL(blob);};mrec.start();isRec=true;const btn=document.getElementById('ptt');btn.style.background='#D4537E';btn.textContent='🔴';btn.classList.add('ringing');}catch(err){alert('Allow microphone access to send voice notes.');}}
-function stopRec(e){e.preventDefault();if(!isRec||!mrec)return;mrec.stop();isRec=false;const btn=document.getElementById('ptt');btn.style.background='#7F77DD';btn.textContent='🎤';btn.classList.remove('ringing');}
+function addBubble(isMe,name,text){
+  const box=document.getElementById('chatbox');if(!box)return;
+  const w=document.createElement('div');
+  w.style.cssText='display:flex;flex-direction:column;max-width:78%;'+(isMe?'align-self:flex-end;align-items:flex-end;':'align-self:flex-start;align-items:flex-start;');
+  w.innerHTML=(isMe?'':'<span style="font-size:11px;color:#a7a9be;margin-bottom:2px;padding:0 4px;">'+name+'</span>')+
+    '<div class="'+(isMe?'bm':'bt')+'" style="padding:10px 14px;font-size:15px;color:#fff;line-height:1.45;">'+text+'</div>'+
+    '<span style="font-size:10px;color:#333355;margin-top:3px;padding:0 4px;">'+tn()+'</span>';
+  box.appendChild(w);box.scrollTop=box.scrollHeight;
+}
 
-/* OPEN MIC */
-async function toggleOpenMic(){if(!omOn){try{omStream=await navigator.mediaDevices.getUserMedia({audio:true});omOn=true;document.getElementById('omTxt').textContent='Open mic: On';document.getElementById('omDot').style.cssText='width:8px;height:8px;border-radius:50%;background:#D4537E;display:inline-block;flex-shrink:0;animation:pulse 1s infinite;';document.getElementById('omBtn').style.borderColor='#D4537E';document.getElementById('omBtn').style.color='#f5a0c0';sysMsg(myName+' turned on open mic 🎙️');}catch(e){alert('Allow microphone access.');}}else{if(omStream)omStream.getTracks().forEach(t=>t.stop());omStream=null;omOn=false;document.getElementById('omTxt').textContent='Open mic: Off';document.getElementById('omDot').style.cssText='width:8px;height:8px;border-radius:50%;background:#444466;display:inline-block;flex-shrink:0;animation:none;';document.getElementById('omBtn').style.borderColor='#2a2a4a';document.getElementById('omBtn').style.color='#a7a9be';sysMsg(myName+' turned off open mic');}}
+function addVoice(isMe,name,data){
+  const box=document.getElementById('chatbox');if(!box)return;
+  const audio=new Audio(data);
+  const w=document.createElement('div');
+  w.style.cssText='display:flex;flex-direction:column;max-width:80%;'+(isMe?'align-self:flex-end;align-items:flex-end;':'align-self:flex-start;align-items:flex-start;');
+  const bubble=document.createElement('div');
+  bubble.className=isMe?'bm':'bt';
+  bubble.style.cssText='padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;min-width:160px;';
 
-/* WebRTC */
-function setupWebRTC(){if(!ref)return;const sig=ref.child('webrtc');sig.child('offers/'+myId).on('child_added',async snap=>{const d=snap.val();if(!d)return;snap.ref.remove();const pc=getPC(d.from);await pc.setRemoteDescription(new RTCSessionDescription(d.sdp));const ans=await pc.createAnswer();await pc.setLocalDescription(ans);sig.child('answers/'+d.from+'/'+myId).set({from:myId,sdp:{type:ans.type,sdp:ans.sdp}});});sig.child('answers/'+myId).on('child_added',async snap=>{const d=snap.val();if(!d)return;snap.ref.remove();const pc=pcs[d.from];if(pc&&pc.signalingState==='have-local-offer')await pc.setRemoteDescription(new RTCSessionDescription(d.sdp));});sig.child('ice/'+myId).on('child_added',async snap=>{const d=snap.val();if(!d)return;snap.ref.remove();const pc=pcs[d.from];if(pc&&d.candidate)try{await pc.addIceCandidate(new RTCIceCandidate(d.candidate));}catch(e){}});}
-function getPC(pid){if(pcs[pid])return pcs[pid];const pc=new RTCPeerConnection(ICE);pcs[pid]=pc;if(localStream)localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));pc.ontrack=e=>{let el=document.getElementById('ra_'+pid);if(!el){el=document.createElement('audio');el.id='ra_'+pid;el.autoplay=true;el.playsInline=true;document.getElementById('remote-audios').appendChild(el);}el.srcObject=e.streams[0];};pc.onicecandidate=e=>{if(e.candidate&&ref)ref.child('webrtc/ice/'+pid+'/'+myId).push({from:myId,candidate:e.candidate.toJSON()});};pc.onconnectionstatechange=()=>{renderCallAvs();if(['disconnected','failed','closed'].includes(pc.connectionState)){delete pcs[pid];const el=document.getElementById('ra_'+pid);if(el)el.remove();renderCallAvs();}};return pc;}
-async function startCall(){if(inCall){openCallScreen();return;}try{localStream=await navigator.mediaDevices.getUserMedia({audio:true});}catch(e){alert('Allow microphone access for voice calls.');return;}inCall=true;openCallScreen();for(const pid of Object.keys(players).filter(id=>id!==myId)){const pc=getPC(pid);localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));const offer=await pc.createOffer();await pc.setLocalDescription(offer);ref.child('webrtc/offers/'+pid).push({from:myId,sdp:{type:offer.type,sdp:offer.sdp}});}sysMsg(myName+' started a voice call 📞');}
-function openCallScreen(){const cs=document.getElementById('call-ov');cs.classList.add('on');document.getElementById('call-room').textContent='Room: '+code;document.getElementById('call-status').textContent=inCall?'In call':'Connecting…';renderCallAvs();}
-function endCall(){Object.values(pcs).forEach(pc=>pc.close());pcs={};if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}inCall=false;document.getElementById('call-ov').classList.remove('on');document.getElementById('remote-audios').innerHTML='';if(ref)ref.child('webrtc').remove();sysMsg(myName+' ended the call');}
-function renderCallAvs(){const c=document.getElementById('call-avs');c.innerHTML=Object.entries(players).map(([id,name])=>{const isMe=id===myId,conn=isMe||!!pcs[id];return'<div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div style="width:62px;height:62px;border-radius:50%;border:2px solid '+(conn?'#5DCAA5':'#2a2a4a')+';background:'+(conn?'#0d2018':'#1a1a2e')+';display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:'+(conn?'#5DCAA5':'#555577')+';">'+name.slice(0,1).toUpperCase()+'</div><span style="font-size:11px;color:#a7a9be;">'+(isMe?'You':name)+'</span>'+(conn?'<div style="display:flex;gap:2px;align-items:flex-end;height:20px;"><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div></div>':'')+'</div>';}).join('');}
-function toggleMute(){if(!localStream)return;mutedMic=!mutedMic;localStream.getAudioTracks().forEach(t=>{t.enabled=!mutedMic;});document.getElementById('mute-btn').textContent=mutedMic?'🔇':'🎤';}
-function toggleSpeaker(){document.querySelectorAll('#remote-audios audio').forEach(a=>{a.muted=!a.muted;});const b=document.getElementById('spk-btn');b.textContent=b.textContent==='🔊'?'🔈':'🔊';}
+  const waveDiv=document.createElement('div');
+  waveDiv.style.cssText='display:flex;gap:2px;align-items:flex-end;height:20px;';
+  for(let i=0;i<5;i++){const b=document.createElement('div');b.style.cssText='width:3px;background:'+(isMe?'#b0aaf5':'#5DCAA5')+';border-radius:2px;height:'+(4+Math.random()*14)+'px;transition:height .1s;';waveDiv.appendChild(b);}
 
-/* WHEEL */
-function drawWheel(angle,pl){const cv=document.getElementById('spin-canvas');if(!cv)return;const ctx=cv.getContext('2d');const list=pl&&pl.length?pl:['?'];const cx=110,cy=110,r=95,n=list.length;const a=angle!==undefined?angle:spinAngle;const colors=['#7F77DD','#D4537E','#1D9E75','#EF9F27','#378ADD','#D85A30','#9E1D75','#5DCAA5'];ctx.clearRect(0,0,220,220);ctx.beginPath();ctx.arc(cx,cy,r+5,0,Math.PI*2);ctx.strokeStyle='#2a2a4a';ctx.lineWidth=3;ctx.stroke();for(let i=0;i<n;i++){const s=(2*Math.PI/n)*i-Math.PI/2,e=s+2*Math.PI/n;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,s,e);ctx.fillStyle=colors[i%colors.length]+'55';ctx.fill();ctx.strokeStyle=colors[i%colors.length]+'bb';ctx.lineWidth=1.5;ctx.stroke();const mid=(s+e)/2;ctx.save();ctx.translate(cx+Math.cos(mid)*63,cy+Math.sin(mid)*63);ctx.fillStyle='#fff';ctx.font='bold 12px -apple-system,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(list[i].slice(0,8),0,0);ctx.restore();}ctx.beginPath();ctx.arc(cx,cy,18,0,Math.PI*2);ctx.fillStyle='#0f0e17';ctx.fill();ctx.strokeStyle='#7F77DD';ctx.lineWidth=2;ctx.stroke();const bx=cx+Math.cos(a)*80,by=cy+Math.sin(a)*80;const g=ctx.createLinearGradient(cx,cy,bx,by);g.addColorStop(0,'#534AB7');g.addColorStop(1,'#b0aaf5');ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(bx,by);ctx.strokeStyle=g;ctx.lineWidth=5;ctx.lineCap='round';ctx.stroke();ctx.beginPath();ctx.arc(bx,by,9,0,Math.PI*2);ctx.fillStyle='#b0aaf5';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.fillStyle='#7F77DD';ctx.fill();}
+  const timeSpan=document.createElement('span');
+  timeSpan.style.cssText='font-size:12px;color:#a7a9be;min-width:32px;';
+  // get audio duration
+  audio.addEventListener('loadedmetadata',()=>{
+    const d=Math.round(audio.duration);
+    timeSpan.textContent=Math.floor(d/60)+':'+(d%60+'').padStart(2,'0');
+  });
+  timeSpan.textContent='🎵';
 
-/* HELPERS */
-function renderPlayers(){const names=Object.values(players);const pl=document.getElementById('plist');if(pl)pl.innerHTML=names.map(n=>'<span style="display:inline-flex;align-items:center;gap:6px;background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:5px 12px;font-size:13px;"><span class="pl" style="width:8px;height:8px;border-radius:50%;background:#5DCAA5;display:inline-block;"></span>'+n+'</span>').join('');const pc=document.getElementById('pchips');if(pc)pc.innerHTML=names.map(n=>'<span data-pn="'+n+'" style="display:inline-flex;align-items:center;gap:5px;background:#12102a;border-radius:20px;padding:3px 10px;font-size:12px;color:#fff;"><span class="pdot" style="width:7px;height:7px;border-radius:50%;background:#444466;display:inline-block;"></span>'+n+'</span>').join('');}
-function updateDots(onlineIds){document.querySelectorAll('[data-pn]').forEach(el=>{const name=el.getAttribute('data-pn');const isOn=Object.entries(players).some(([id,n])=>n===name&&onlineIds.includes(id));const dot=el.querySelector('.pdot');if(dot){dot.style.background=isOn?'#5DCAA5':'#444466';dot.style.animation=isOn?'pulse 2s infinite':'none';}});}
+  bubble.appendChild(waveDiv);
+  bubble.appendChild(timeSpan);
+  bubble.onclick=()=>{
+    audio.play();
+    timeSpan.style.color='#7F77DD';
+    audio.onended=()=>{timeSpan.style.color='#a7a9be';};
+  };
+
+  if(!isMe){const n=document.createElement('span');n.style.cssText='font-size:11px;color:#a7a9be;margin-bottom:2px;padding:0 4px;';n.textContent=name;w.appendChild(n);}
+  w.appendChild(bubble);
+  const t=document.createElement('span');t.style.cssText='font-size:10px;color:#333355;margin-top:3px;padding:0 4px;';t.textContent=tn();
+  w.appendChild(t);
+  box.appendChild(w);box.scrollTop=box.scrollHeight;
+}
+
+function sysMsg(text){
+  const box=document.getElementById('chatbox');if(!box)return;
+  const d=document.createElement('div');
+  d.style.cssText='align-self:center;text-align:center;padding:3px 0;';
+  d.innerHTML='<span style="font-size:11px;color:#444466;background:#1a1a2e;border-radius:20px;padding:4px 14px;">'+text+'</span>';
+  box.appendChild(d);box.scrollTop=box.scrollHeight;
+}
+
+/* ══════════════════════
+   VOICE NOTE (PTT) — FIXED
+   Uses timeslice (100ms chunks) so all audio is captured
+   even on short recordings. Shows live timer.
+══════════════════════ */
+async function startRec(e){
+  e.preventDefault();
+  if(isRec)return;
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true,echoCancellation:true,noiseSuppression:true});
+    // Use timeslice=100ms — this fires ondataavailable every 100ms
+    // so we never lose audio even on short recordings
+    mrec=new MediaRecorder(stream,{mimeType:MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':'audio/webm'});
+    achunks=[];
+    mrec.ondataavailable=ev=>{if(ev.data&&ev.data.size>0)achunks.push(ev.data);};
+    mrec.onstop=()=>{
+      stream.getTracks().forEach(t=>t.stop());
+      clearInterval(recTimer);
+      hideRecIndicator();
+      if(achunks.length===0)return;
+      const blob=new Blob(achunks,{type:mrec.mimeType||'audio/webm'});
+      if(blob.size<1000)return; // too short, discard
+      const reader=new FileReader();
+      reader.onloadend=()=>{
+        pushEv({type:'voice',name:myName,data:reader.result});
+        addVoice(true,myName,reader.result);
+        // switch to chat tab so they see it
+        showTab(2);
+      };
+      reader.readAsDataURL(blob);
+    };
+    mrec.start(100); // timeslice = 100ms — KEY FIX
+    isRec=true;
+    recSecs=0;
+    showRecIndicator();
+    recTimer=setInterval(()=>{
+      recSecs++;
+      const el=document.getElementById('rec-time');
+      if(el)el.textContent=Math.floor(recSecs/60)+':'+(recSecs%60+'').padStart(2,'0');
+    },1000);
+    // style ptt button
+    const btn=document.getElementById('ptt');
+    btn.classList.add('recording');
+    btn.textContent='🔴';
+  }catch(err){alert('Allow microphone access to record voice notes.');}
+}
+function stopRec(e){
+  e.preventDefault();
+  if(!isRec||!mrec)return;
+  mrec.stop();isRec=false;
+  const btn=document.getElementById('ptt');
+  btn.classList.remove('recording');
+  btn.textContent='🎤';
+}
+function showRecIndicator(){
+  const el=document.getElementById('rec-indicator');
+  el.style.display='flex';
+  document.getElementById('rec-time').textContent='0:00';
+}
+function hideRecIndicator(){
+  document.getElementById('rec-indicator').style.display='none';
+}
+
+/* ══════════════════════
+   OPEN MIC
+══════════════════════ */
+async function toggleOpenMic(){
+  if(!omOn){
+    try{
+      omStream=await navigator.mediaDevices.getUserMedia({audio:true});
+      omOn=true;
+      document.getElementById('omTxt').textContent='Open mic: On';
+      document.getElementById('omDot').style.cssText='width:8px;height:8px;border-radius:50%;background:#D4537E;display:inline-block;flex-shrink:0;animation:pulse .8s infinite;';
+      document.getElementById('omBtn').style.cssText='display:flex;align-items:center;gap:7px;border:1px solid #D4537E;border-radius:20px;padding:6px 14px;font-size:12px;color:#f5a0c0;background:transparent;cursor:pointer;';
+      sysMsg(myName+' turned on open mic 🎙️');
+    }catch(e){alert('Allow microphone access.');}
+  }else{
+    if(omStream)omStream.getTracks().forEach(t=>t.stop());
+    omStream=null;omOn=false;
+    document.getElementById('omTxt').textContent='Open mic: Off';
+    document.getElementById('omDot').style.cssText='width:8px;height:8px;border-radius:50%;background:#333355;display:inline-block;flex-shrink:0;animation:none;';
+    document.getElementById('omBtn').style.cssText='display:flex;align-items:center;gap:7px;border:1px solid #2a2a4a;border-radius:20px;padding:6px 14px;font-size:12px;color:#a7a9be;background:transparent;cursor:pointer;';
+    sysMsg(myName+' turned off open mic');
+  }
+}
+
+/* ══════════════════════
+   WebRTC CALL — with ring
+══════════════════════ */
+function setupWebRTC(){
+  if(!ref)return;
+  const sig=ref.child('webrtc');
+  // incoming call invite
+  ref.child('call-invites/'+myId).on('child_added',snap=>{
+    const d=snap.val();if(!d)return;snap.ref.remove();
+    if(d.from!==myId) showIncomingCall(d.name,d.from);
+  });
+  sig.child('offers/'+myId).on('child_added',async snap=>{
+    const d=snap.val();if(!d)return;snap.ref.remove();
+    const pc=getPC(d.from);
+    await pc.setRemoteDescription(new RTCSessionDescription(d.sdp));
+    const ans=await pc.createAnswer();
+    await pc.setLocalDescription(ans);
+    sig.child('answers/'+d.from+'/'+myId).set({from:myId,sdp:{type:ans.type,sdp:ans.sdp}});
+  });
+  sig.child('answers/'+myId).on('child_added',async snap=>{
+    const d=snap.val();if(!d)return;snap.ref.remove();
+    const pc=pcs[d.from];
+    if(pc&&pc.signalingState==='have-local-offer')await pc.setRemoteDescription(new RTCSessionDescription(d.sdp));
+  });
+  sig.child('ice/'+myId).on('child_added',async snap=>{
+    const d=snap.val();if(!d)return;snap.ref.remove();
+    const pc=pcs[d.from];
+    if(pc&&d.candidate)try{await pc.addIceCandidate(new RTCIceCandidate(d.candidate));}catch(e){}
+  });
+}
+
+function showIncomingCall(callerName,callerId){
+  pendingCallFrom=callerId;
+  document.getElementById('ring-name').textContent=callerName;
+  document.getElementById('ring-avatar').textContent=callerName.slice(0,1).toUpperCase();
+  document.getElementById('ring-ov').classList.add('on');
+  // vibrate on mobile
+  if(navigator.vibrate)navigator.vibrate([400,200,400,200,400]);
+}
+function declineCall(){document.getElementById('ring-ov').classList.remove('on');pendingCallFrom=null;}
+async function acceptCall(){
+  document.getElementById('ring-ov').classList.remove('on');
+  // get mic and join call
+  if(!inCall){
+    try{localStream=await navigator.mediaDevices.getUserMedia({audio:true});}
+    catch(e){alert('Allow microphone access.');return;}
+    inCall=true;
+  }
+  openCallScreen();
+}
+
+function getPC(pid){
+  if(pcs[pid])return pcs[pid];
+  const pc=new RTCPeerConnection(ICE);pcs[pid]=pc;
+  if(localStream)localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+  pc.ontrack=e=>{
+    let el=document.getElementById('ra_'+pid);
+    if(!el){el=document.createElement('audio');el.id='ra_'+pid;el.autoplay=true;el.playsInline=true;document.getElementById('remote-audios').appendChild(el);}
+    el.srcObject=e.streams[0];
+  };
+  pc.onicecandidate=e=>{if(e.candidate&&ref)ref.child('webrtc/ice/'+pid+'/'+myId).push({from:myId,candidate:e.candidate.toJSON()});};
+  pc.onconnectionstatechange=()=>{
+    renderCallAvs();
+    if(['disconnected','failed','closed'].includes(pc.connectionState)){
+      delete pcs[pid];const el=document.getElementById('ra_'+pid);if(el)el.remove();renderCallAvs();
+    }
+  };
+  return pc;
+}
+
+async function startCall(){
+  // Send ring notification to all other players
+  const otherIds=Object.keys(players).filter(id=>id!==myId);
+  otherIds.forEach(pid=>{
+    ref.child('call-invites/'+pid).push({from:myId,name:myName});
+  });
+  if(inCall){openCallScreen();return;}
+  try{localStream=await navigator.mediaDevices.getUserMedia({audio:true});}
+  catch(e){alert('Allow microphone access for voice calls.');return;}
+  inCall=true;openCallScreen();
+  for(const pid of otherIds){
+    const pc=getPC(pid);
+    localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+    const offer=await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    ref.child('webrtc/offers/'+pid).push({from:myId,sdp:{type:offer.type,sdp:offer.sdp}});
+  }
+  sysMsg(myName+' started a voice call 📞');
+}
+
+function openCallScreen(){
+  document.getElementById('call-ov').classList.add('on');
+  document.getElementById('call-room').textContent='Room: '+code;
+  document.getElementById('call-status').textContent='● IN CALL';
+  renderCallAvs();
+}
+function endCall(){
+  Object.values(pcs).forEach(pc=>pc.close());pcs={};
+  if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
+  inCall=false;
+  document.getElementById('call-ov').classList.remove('on');
+  document.getElementById('remote-audios').innerHTML='';
+  if(ref)ref.child('webrtc').remove();
+  sysMsg(myName+' ended the call');
+}
+function renderCallAvs(){
+  const c=document.getElementById('call-avs');
+  c.innerHTML=Object.entries(players).map(([id,name])=>{
+    const isMe=id===myId,conn=isMe||!!pcs[id];
+    return`<div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+      <div style="width:68px;height:68px;border-radius:50%;border:2.5px solid ${conn?'#5DCAA5':'#2a2a4a'};background:${conn?'#0d2018':'#1a1a2e'};display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:${conn?'#5DCAA5':'#444466'};">${name.slice(0,1).toUpperCase()}</div>
+      <span style="font-size:12px;color:#a7a9be;">${isMe?'You ('+name+')':name}</span>
+      ${conn?'<div style="display:flex;gap:2px;align-items:flex-end;height:20px;"><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div></div>':'<span style="font-size:10px;color:#444466;">ringing…</span>'}
+    </div>`;
+  }).join('');
+}
+function toggleMute(){
+  if(!localStream)return;mutedMic=!mutedMic;
+  localStream.getAudioTracks().forEach(t=>{t.enabled=!mutedMic;});
+  document.getElementById('mute-btn').textContent=mutedMic?'🔇':'🎤';
+  document.getElementById('mute-btn').style.borderColor=mutedMic?'#D4537E':'#2a2a4a';
+}
+function toggleSpeaker(){
+  document.querySelectorAll('#remote-audios audio').forEach(a=>{a.muted=!a.muted;});
+  const b=document.getElementById('spk-btn');
+  b.textContent=b.textContent==='🔊'?'🔈':'🔊';
+}
+
+/* ══════════════════════
+   CANVAS WHEEL
+══════════════════════ */
+function drawWheel(angle,pl){
+  const cv=document.getElementById('spin-canvas');if(!cv)return;
+  const ctx=cv.getContext('2d');
+  const list=pl&&pl.length?pl:['?'];
+  const cx=110,cy=110,r=95,n=list.length;
+  const a=angle!==undefined?angle:spinAngle;
+  const colors=['#7F77DD','#D4537E','#1D9E75','#EF9F27','#378ADD','#D85A30','#9E1D75','#5DCAA5'];
+  ctx.clearRect(0,0,220,220);
+  // shadow ring
+  ctx.beginPath();ctx.arc(cx,cy,r+6,0,Math.PI*2);
+  ctx.strokeStyle='rgba(127,119,221,0.2)';ctx.lineWidth=6;ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cy,r+3,0,Math.PI*2);
+  ctx.strokeStyle='#2a2a4a';ctx.lineWidth=2;ctx.stroke();
+  // sectors
+  for(let i=0;i<n;i++){
+    const s=(2*Math.PI/n)*i-Math.PI/2,e=s+2*Math.PI/n;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,s,e);
+    ctx.fillStyle=colors[i%colors.length]+'55';ctx.fill();
+    ctx.strokeStyle=colors[i%colors.length]+'cc';ctx.lineWidth=1.5;ctx.stroke();
+    const mid=(s+e)/2;
+    ctx.save();ctx.translate(cx+Math.cos(mid)*63,cy+Math.sin(mid)*63);
+    ctx.fillStyle='#fff';ctx.font='700 12px -apple-system,sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=3;
+    ctx.fillText(list[i].slice(0,8),0,0);ctx.restore();
+  }
+  // center
+  ctx.shadowBlur=0;
+  ctx.beginPath();ctx.arc(cx,cy,20,0,Math.PI*2);
+  ctx.fillStyle='#0f0e17';ctx.fill();
+  ctx.strokeStyle='#7F77DD';ctx.lineWidth=2.5;ctx.stroke();
+  // needle with gradient
+  const bx=cx+Math.cos(a)*80,by=cy+Math.sin(a)*80;
+  const g=ctx.createLinearGradient(cx,cy,bx,by);
+  g.addColorStop(0,'#534AB7');g.addColorStop(1,'#b0aaf5');
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(bx,by);
+  ctx.strokeStyle=g;ctx.lineWidth=5;ctx.lineCap='round';ctx.stroke();
+  // needle tip glow
+  ctx.beginPath();ctx.arc(bx,by,10,0,Math.PI*2);
+  ctx.fillStyle='#b0aaf5';ctx.fill();
+  ctx.strokeStyle='rgba(176,170,245,0.4)';ctx.lineWidth=4;ctx.stroke();
+  // center dot
+  ctx.beginPath();ctx.arc(cx,cy,6,0,Math.PI*2);ctx.fillStyle='#7F77DD';ctx.fill();
+}
+
+/* ══════════════════════
+   HELPERS
+══════════════════════ */
+function renderPlayers(){
+  const names=Object.values(players);
+  const pl=document.getElementById('plist');
+  if(pl)pl.innerHTML=names.map(n=>`<span style="display:inline-flex;align-items:center;gap:7px;background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:500;"><span style="width:8px;height:8px;border-radius:50%;background:#5DCAA5;animation:pulse 2s infinite;display:inline-block;"></span>${n}</span>`).join('');
+  const pc=document.getElementById('pchips');
+  if(pc)pc.innerHTML=names.map(n=>`<span data-pn="${n}" style="display:inline-flex;align-items:center;gap:5px;background:#12102a;border-radius:20px;padding:3px 10px;font-size:12px;color:#fff;"><span class="pdot" style="width:7px;height:7px;border-radius:50%;background:#333355;display:inline-block;"></span>${n}</span>`).join('');
+  // also redraw wheel with new players
+  if(curPg()==='pg-game')drawWheel(spinAngle,names);
+}
+function updateDots(onlineIds){
+  document.querySelectorAll('[data-pn]').forEach(el=>{
+    const name=el.getAttribute('data-pn');
+    const isOn=Object.entries(players).some(([id,n])=>n===name&&onlineIds.includes(id));
+    const dot=el.querySelector('.pdot');
+    if(dot){dot.style.background=isOn?'#5DCAA5':'#333355';dot.style.animation=isOn?'pulse 2s infinite':'none';}
+  });
+}
 function showPg(id){document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));document.getElementById(id).classList.add('on');}
-function setStatus(text,type){const ok=type==='ok',err=type==='err';const s=ok?'background:#0d2018;border:1px solid #1a3e2e;color:#5DCAA5;':err?'background:#1e0f18;border:1px solid #D4537E;color:#f5a0c0;':'background:#1a1a2e;border:1px solid #2a2a4a;color:#555577;';['spill','spill2'].forEach(id=>{const el=document.getElementById(id);if(el){el.style.cssText='font-size:12px;padding:4px 14px;border-radius:20px;'+s;el.textContent=text;}});}
+function setStatus(text,type){
+  const ok=type==='ok',err=type==='err';
+  const s=ok?'background:#0d2018;border:1px solid #1a3e2e;color:#5DCAA5;':err?'background:#1e0f18;border:1px solid #D4537E;color:#f5a0c0;':'background:#1a1a2e;border:1px solid #2a2a4a;color:#555577;';
+  ['spill','spill2'].forEach(id=>{const el=document.getElementById(id);if(el){el.style.cssText='font-size:12px;padding:4px 14px;border-radius:20px;display:inline-block;'+s;el.textContent=text;}});
+}
 </script>
 </body>
 </html>
