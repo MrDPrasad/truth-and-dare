@@ -58,10 +58,47 @@ textarea{resize:none;}
   <span class="ib-icon">🍾</span>
   <div class="ib-text">
     <div class="ib-title">Install Truth or Dare</div>
-    <div class="ib-sub">Add to home screen · Works like a real app</div>
+    <div class="ib-sub" id="ib-sub">Add to home screen · Works offline</div>
   </div>
+  <!-- Android/Desktop: real install button -->
   <button id="ib-btn" class="ib-btn" onclick="doInstall()">📲 Install</button>
-  <div id="ib-ios" class="ib-ios" style="display:none;">Tap Share ↑<br/>→ Add to Home Screen</div>
+  <!-- iOS: tap button opens step-by-step modal -->
+  <button id="ib-ios-btn" class="ib-btn" style="display:none;" onclick="showIOSGuide()">📲 Install</button>
+</div>
+
+<!-- iOS install guide modal -->
+<div id="ios-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.75);align-items:flex-end;justify-content:center;">
+  <div style="background:#1a1a2e;border:1px solid #7F77DD;border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:40px;margin-bottom:8px;">🍾</div>
+      <h2 style="font-size:18px;font-weight:700;margin-bottom:4px;">Install Truth or Dare</h2>
+      <p style="font-size:13px;color:#a7a9be;">Follow these steps to add to your home screen</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px;">
+      <div style="display:flex;align-items:center;gap:14px;background:#12102a;border-radius:14px;padding:14px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">1</div>
+        <div>
+          <p style="font-size:14px;font-weight:600;margin-bottom:2px;">Tap the Share button</p>
+          <p style="font-size:12px;color:#a7a9be;">The box with an arrow pointing up ↑ at the bottom of your screen</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;background:#12102a;border-radius:14px;padding:14px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">2</div>
+        <div>
+          <p style="font-size:14px;font-weight:600;margin-bottom:2px;">Scroll down and tap</p>
+          <p style="font-size:12px;color:#a7a9be;">"Add to Home Screen" from the menu</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;background:#12102a;border-radius:14px;padding:14px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">3</div>
+        <div>
+          <p style="font-size:14px;font-weight:600;margin-bottom:2px;">Tap "Add"</p>
+          <p style="font-size:12px;color:#a7a9be;">The app icon will appear on your home screen</p>
+        </div>
+      </div>
+    </div>
+    <button onclick="closeIOSGuide()" style="width:100%;background:#7F77DD;color:#fff;font-weight:700;border-radius:14px;padding:14px;font-size:15px;border:none;cursor:pointer;">Got it ✓</button>
+  </div>
 </div>
 
 <!-- CALL OVERLAY -->
@@ -217,41 +254,145 @@ const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l
 let pcs={},localStream=null,inCall=false,mutedMic=false;
 let deferredPrompt=null;
 
-/* INSTALL BAR - always visible, detects context */
+/* ═══ INSTALL BAR ═══
+   - Always visible unless already installed
+   - Android/Chrome/Desktop: native prompt on click
+   - iOS Safari: beautiful step-by-step modal on click
+   - Hides automatically if running as installed PWA
+*/
+
+function checkInstalled(){
+  const isStandalone=window.navigator.standalone===true||window.matchMedia('(display-mode:standalone)').matches;
+  if(isStandalone){
+    document.getElementById('install-bar').classList.add('hidden-bar');
+    return true;
+  }
+  return false;
+}
+
+function setupInstallBar(){
+  if(checkInstalled()) return; // already installed, hide bar
+
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+
+  if(isIOS){
+    // iOS: show iOS-specific button that opens step-by-step modal
+    document.getElementById('ib-btn').style.display='none';
+    document.getElementById('ib-ios-btn').style.display='block';
+  } else {
+    // Android/Desktop: show normal install button
+    // Button is visible immediately — clicking it will either
+    // trigger native prompt (if available) or show browser instructions
+    document.getElementById('ib-btn').style.display='block';
+    document.getElementById('ib-ios-btn').style.display='none';
+  }
+}
+
+// Capture the native install prompt when browser fires it
 window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();deferredPrompt=e;
-  document.getElementById('ib-btn').style.display='block';
+  e.preventDefault();
+  deferredPrompt=e;
+  // Update button to show it's ready
+  const btn=document.getElementById('ib-btn');
+  if(btn) btn.textContent='📲 Install';
 });
+
+// Called when user clicks Install on Android/Desktop
 function doInstall(){
   if(deferredPrompt){
-    // Android Chrome - native install prompt available
+    // Native prompt available — trigger it immediately
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(r=>{
       deferredPrompt=null;
       if(r.outcome==='accepted'){
+        // User accepted install — hide the bar
         document.getElementById('install-bar').classList.add('hidden-bar');
+        document.getElementById('ib-sub').textContent='✅ Installing…';
       }
     });
   } else {
-    // Fallback for browsers where prompt isn't available yet
-    // Show a helpful modal with manual instructions
-    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
-    if(isIOS){
-      alert('To install on iPhone:\n\n1. Tap the Share button (box with arrow) at the bottom\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" — done!');
+    // Native prompt not yet available — show browser-specific guide
+    const isAndroid=/Android/i.test(navigator.userAgent);
+    if(isAndroid){
+      showAndroidGuide();
     } else {
-      alert('To install on Android:\n\n1. Tap the 3-dot menu (⋮) in your browser\n2. Tap "Add to Home Screen" or "Install app"\n3. Tap "Install" — done!\n\nOn desktop: look for the install icon in the address bar.');
+      // Desktop Chrome/Edge — show instructions modal
+      showDesktopGuide();
     }
   }
 }
+
+// Listen for app being installed (fires after successful install)
+window.addEventListener('appinstalled',()=>{
+  document.getElementById('install-bar').classList.add('hidden-bar');
+  deferredPrompt=null;
+});
+
+// iOS: show beautiful step-by-step modal
+function showIOSGuide(){
+  const modal=document.getElementById('ios-modal');
+  modal.style.display='flex';
+}
+function closeIOSGuide(){
+  document.getElementById('ios-modal').style.display='none';
+}
+// Tap outside modal to close
+document.addEventListener('click',e=>{
+  const modal=document.getElementById('ios-modal');
+  if(e.target===modal) closeIOSGuide();
+});
+
+// Android fallback (when beforeinstallprompt hasn't fired yet)
+function showAndroidGuide(){
+  const existing=document.getElementById('android-modal');
+  if(existing){existing.style.display='flex';return;}
+  const m=document.createElement('div');
+  m.id='android-modal';
+  m.style.cssText='position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.75);display:flex;align-items:flex-end;justify-content:center;';
+  m.innerHTML=`<div style="background:#1a1a2e;border:1px solid #7F77DD;border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;">
+    <div style="text-align:center;margin-bottom:20px;"><div style="font-size:40px;margin-bottom:8px;">🍾</div>
+    <h2 style="font-size:18px;font-weight:700;margin-bottom:4px;">Install on Android</h2></div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:12px;background:#12102a;border-radius:14px;padding:12px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:700;">1</div>
+        <p style="font-size:14px;">Tap the <strong>⋮ menu</strong> in the top right of Chrome</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;background:#12102a;border-radius:14px;padding:12px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:700;">2</div>
+        <p style="font-size:14px;">Tap <strong>"Add to Home screen"</strong></p>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;background:#12102a;border-radius:14px;padding:12px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:700;">3</div>
+        <p style="font-size:14px;">Tap <strong>"Install"</strong> or <strong>"Add"</strong></p>
+      </div>
+    </div>
+    <button onclick="document.getElementById('android-modal').style.display='none'" style="width:100%;background:#7F77DD;color:#fff;font-weight:700;border-radius:14px;padding:14px;font-size:15px;border:none;cursor:pointer;">Got it ✓</button>
+  </div>`;
+  document.body.appendChild(m);
+  m.addEventListener('click',e=>{ if(e.target===m) m.style.display='none'; });
+}
+
+// Desktop fallback
+function showDesktopGuide(){
+  const existing=document.getElementById('desktop-modal');
+  if(existing){existing.style.display='flex';return;}
+  const m=document.createElement('div');
+  m.id='desktop-modal';
+  m.style.cssText='position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:20px;';
+  m.innerHTML=`<div style="background:#1a1a2e;border:1px solid #7F77DD;border-radius:20px;padding:24px;width:100%;max-width:400px;">
+    <div style="text-align:center;margin-bottom:16px;"><div style="font-size:40px;margin-bottom:8px;">🍾</div>
+    <h2 style="font-size:18px;font-weight:700;margin-bottom:4px;">Install on Desktop</h2></div>
+    <div style="background:#12102a;border-radius:14px;padding:14px;margin-bottom:16px;">
+      <p style="font-size:14px;line-height:1.6;">Look for the <strong style="color:#7F77DD;">install icon ⊕</strong> in your browser's address bar and click it, or go to the browser menu and choose <strong style="color:#7F77DD;">"Install Truth or Dare"</strong></p>
+    </div>
+    <button onclick="document.getElementById('desktop-modal').style.display='none'" style="width:100%;background:#7F77DD;color:#fff;font-weight:700;border-radius:14px;padding:13px;font-size:15px;border:none;cursor:pointer;">Got it ✓</button>
+  </div>`;
+  document.body.appendChild(m);
+  m.addEventListener('click',e=>{ if(e.target===m) m.style.display='none'; });
+}
+
 window.addEventListener('DOMContentLoaded',()=>{
-  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
-  const isStandalone=window.navigator.standalone===true||window.matchMedia('(display-mode:standalone)').matches;
-  if(isStandalone){
-    document.getElementById('install-bar').classList.add('hidden-bar');
-  } else if(isIOS){
-    document.getElementById('ib-ios').style.display='block';
-    document.getElementById('ib-btn').style.display='none';
-  }
+  setupInstallBar();
   const r=new URLSearchParams(location.search).get('room');
   if(r){document.getElementById('jc').value=r.toUpperCase();document.getElementById('join-card').style.borderColor='#7F77DD';}
   drawWheel(0,['?']);
