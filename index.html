@@ -25,7 +25,6 @@ body{
   font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
   display:flex;flex-direction:column;overflow:hidden;
 }
-
 /* ── CSS VARIABLES ── */
 :root{
   --purple:#7F5AF0;
@@ -45,24 +44,20 @@ body{
   --safe-top:env(safe-area-inset-top,0px);
   --safe-bot:env(safe-area-inset-bottom,12px);
 }
-
 /* ── SCROLLBAR ── */
 .sy{overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .sy::-webkit-scrollbar{width:3px;}
 .sy::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
-
 /* ── INPUTS ── */
 input,textarea,button{font-family:inherit;border:none;background:none;}
 input::placeholder,textarea::placeholder{color:var(--text3);}
 input[type=text]:focus,textarea:focus{outline:none;border-color:var(--purple)!important;box-shadow:0 0 0 3px rgba(127,90,240,.15);}
 textarea{resize:none;}
 button{cursor:pointer;min-height:44px;}
-
 /* ── PAGES ── */
 #app{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0;}
 .pg{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;}
 .pg.on{display:flex;}
-
 /* ── INSTALL BAR ── */
 #ibar{
   flex-shrink:0;
@@ -79,172 +74,6 @@ button{cursor:pointer;min-height:44px;}
   transition:background .15s;
 }
 .ib-btn:active{background:var(--purple-dim);}
-
-/* ── ANIMATIONS ── */
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
-.fu{animation:fadeUp .3s ease forwards;}
-@keyframes bounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
-.td{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--purple);margin:0 2px;vertical-align:middle;animation:bounce 1.2s infinite;}
-.td:nth-child(2){animation-delay:.2s;}.td:nth-child(3){animation-delay:.4s;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
-@keyframes callring{
-  0%{box-shadow:0 0 0 0 rgba(46,204,138,.7),0 0 0 0 rgba(46,204,138,.4);}
-  50%{box-shadow:0 0 0 14px rgba(46,204,138,.2),0 0 0 28px rgba(46,204,138,0);}
-  100%{box-shadow:0 0 0 14px rgba(46,204,138,0),0 0 0 28px rgba(46,204,138,0);}
-}
-.call-ring{animation:callring 1.4s infinite;}
-@keyframes recpulse{0%{box-shadow:0 0 0 0 rgba(228,92,139,.8);}100%{box-shadow:0 0 0 20px rgba(228,92,139,0);}}
-.recording{background:var(--pink)!important;animation:recpulse .7s infinite!important;}
-@keyframes wave{0%,100%{height:4px;}50%{height:18px;}}
-.wb{width:3px;border-radius:2px;background:var(--purple);animation:wave .65s infinite ease-in-out;display:inline-block;}
-.wb:nth-child(2){animation-delay:.1s;}.wb:nth-child(3){animation-delay:.2s;}.wb:nth-child(4){animation-delay:.3s;}
-@keyframes spin360{to{transform:rotate(360deg);}}
-.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin360 .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px;}
-@keyframes ringDing{
-  0%{transform:scale(1);}15%{transform:scale(1.08) rotate(-3deg);}30%{transform:scale(1.05) rotate(3deg);}45%{transform:scale(1.08) rotate(-2deg);}60%{transform:scale(1.03) rotate(2deg);}100%{transform:scale(1);}
-}
-@keyframes slideUp{from{transform:translateY(100%);opacity:0;}to{transform:translateY(0);opacity:1;}}
-@keyframes glow{0%,100%{box-shadow:0 0 8px rgba(127,90,240,.4);}50%{box-shadow:0 0 22px rgba(127,90,240,.8);}}
-
-/* ── CHAT BUBBLES ── */
-.bm{background:var(--purple-dim);border-radius:18px 18px 4px 18px;}
-.bt{background:var(--bg3);border-radius:18px 18px 18px 4px;}
-
-/* ── OVERLAYS ── */
-#call-ov{
-  visibility:hidden;opacity:0;
-  position:fixed;inset:0;z-index:90;
-  background:rgba(10,9,20,.97);
-  backdrop-filter:blur(10px);
-  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
-  padding:calc(var(--safe-top)+56px) 24px calc(var(--safe-bot)+40px);
-  transition:opacity .2s,visibility .2s;
-}
-#call-ov.on{visibility:visible;opacity:1;}
-#ring-ov{
-  visibility:hidden;opacity:0;
-  position:fixed;inset:0;z-index:95;
-  background:rgba(10,9,20,.97);
-  backdrop-filter:blur(12px);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;
-  transition:opacity .25s,visibility .25s;
-}
-#ring-ov.on{visibility:visible;opacity:1;}
-.modal-back{display:none;position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.75);align-items:flex-end;justify-content:center;}
-.modal-back.on{display:flex;}
-.modal-sheet{
-  background:var(--bg2);
-  border:1px solid var(--border2);
-  border-radius:24px 24px 0 0;
-  padding:24px 20px calc(var(--safe-bot)+24px);
-  width:100%;max-width:480px;
-  animation:slideUp .25s ease;
-}
-
-/* ── CARDS ── */
-.qcard-truth{border-left:4px solid var(--purple);background:rgba(127,90,240,.08);border-radius:0 16px 16px 0;padding:18px;}
-.qcard-dare{border-left:4px solid var(--pink);background:rgba(228,92,139,.08);border-radius:0 16px 16px 0;padding:18px;}
-.qcard-custom{border-left:4px solid var(--amber);background:rgba(240,160,48,.08);border-radius:0 16px 16px 0;padding:18px;}
-
-/* ── TOAST ── */
-#toast{
-  position:fixed;bottom:calc(var(--safe-bot) + 90px);left:50%;
-  transform:translateX(-50%) translateY(8px);
-  background:var(--bg3);
-  border:1px solid var(--border2);
-  border-radius:24px;padding:11px 22px;font-size:13px;color:var(--text);
-  z-index:200;opacity:0;transition:opacity .22s,transform .22s;
-  pointer-events:none;max-width:90vw;text-align:center;
-  white-space:nowrap;
-}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-
-/* ── FIELD ERRORS ── */
-.field-error{font-size:12px;color:#f5a0c0;margin-top:4px;min-height:16px;display:block;}
-.input-label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;font-weight:600;}
-
-/* ── CHAT BADGE ── */
-#tb2{position:relative;}
-#chat-badge{
-  position:absolute;top:7px;right:14px;
-  min-width:16px;height:16px;border-radius:8px;
-  background:var(--pink);display:none;
-  font-size:10px;font-weight:700;color:#fff;
-  align-items:center;justify-content:center;
-  padding:0 4px;
-}
-
-/* ── REC INDICATOR ── */
-#rec-indicator{
-  display:none;
-  position:fixed;
-  bottom:calc(var(--safe-bot) + 80px);
-  left:50%;transform:translateX(-50%);
-  background:var(--pink);
-  border-radius:32px;padding:12px 22px;
-  z-index:80;align-items:center;gap:10px;
-  box-shadow:0 4px 24px rgba(228,92,139,.5);
-}
-
-/* ── STATUS PILL ── */
-.status-ok{background:#0a2018;border:1px solid #1d4a30;color:var(--green);}
-.status-err{background:#1e0f18;border:1px solid #5a1a30;color:#f5a0c0;}
-.status-idle{background:var(--bg2);border:1px solid var(--border);color:var(--text3);}
-
-/* ── BUTTONS ── */
-.btn-primary{
-  width:100%;background:var(--purple);color:#fff;font-weight:700;
-  border-radius:14px;padding:15px;font-size:15px;min-height:52px;
-  transition:background .15s,transform .1s,box-shadow .15s;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-}
-.btn-primary:active{background:var(--purple-dim);transform:scale(.98);}
-.btn-danger{background:var(--pink);}
-.btn-danger:active{background:#b03465;}
-
-/* ── ROOM CODE ── */
-#dcode{
-  font-size:40px;font-weight:800;
-  letter-spacing:10px;text-indent:10px;
-  color:var(--purple);
-  font-variant-numeric:tabular-nums;
-}
-
-/* ── PLAYER CHIPS ── */
-.pchip{
-  display:inline-flex;align-items:center;gap:6px;
-  background:var(--bg3);border:1px solid var(--border);
-  border-radius:20px;padding:5px 14px;
-  font-size:13px;font-weight:500;
-  transition:border-color .2s;
-}
-.pchip.online{border-color:rgba(46,204,138,.4);}
-.pdot{width:7px;height:7px;border-radius:50%;background:var(--text3);display:inline-block;flex-shrink:0;}
-.pdot.on{background:var(--green);animation:pulse 2s infinite;}
-
-/* ── CALL AVATAR ── */
-.call-av{
-  display:flex;flex-direction:column;align-items:center;gap:8px;
-}
-.call-av-circle{
-  width:72px;height:72px;border-radius:50%;
-  background:var(--bg3);
-  border:2.5px solid var(--border);
-  display:flex;align-items:center;justify-content:center;
-  font-size:28px;font-weight:700;color:var(--text3);
-  transition:all .3s;
-}
-.call-av-circle.connected{
-  background:#0a2018;
-  border-color:var(--green);
-  color:var(--green);
-  box-shadow:0 0 16px rgba(46,204,138,.25);
-}
-
-/* ── TURN BANNER ── */
-#turn-banner{border-radius:16px;padding:14px 18px;text-align:center;}
-.tb-me{background:rgba(127,90,240,.12);border:2px solid var(--purple);}
-.tb-other{background:var(--bg2);border:1px solid var(--border);}
 </style>
 </head>
 <body>
@@ -265,7 +94,7 @@ button{cursor:pointer;min-height:44px;}
 
 <div id="toast" role="status" aria-live="polite"></div>
 
-<!-- RINGING AUDIO (synthesized) -->
+<!-- RINGING AUDIO -->
 <audio id="ring-audio" loop style="display:none;"></audio>
 
 <!-- iOS INSTALL MODAL -->
@@ -353,253 +182,242 @@ button{cursor:pointer;min-height:44px;}
 </div>
 
 <div id="app">
-
-<!-- ══════════ LOBBY PAGE ══════════ -->
-<div class="pg on" id="pg-lobby" role="main">
-  <div class="sy" style="flex:1;padding:16px 16px 40px;">
-    <div style="text-align:center;padding:32px 0 24px;">
-      <svg width="84" height="84" viewBox="0 0 84 84" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto 14px;display:block;" aria-hidden="true">
-        <defs>
-          <radialGradient id="rg" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#3d2880"/>
-            <stop offset="100%" stop-color="#0a0914"/>
-          </radialGradient>
-        </defs>
-        <circle cx="42" cy="42" r="42" fill="url(#rg)"/>
-        <circle cx="42" cy="42" r="40" fill="none" stroke="#7F5AF0" stroke-width="1.5" stroke-opacity=".5"/>
-        <text x="42" y="56" text-anchor="middle" font-size="38" font-family="-apple-system,sans-serif">🍾</text>
-      </svg>
-      <h1 style="font-size:30px;font-weight:800;letter-spacing:-.8px;margin-bottom:5px;">Truth or Dare</h1>
-      <p style="color:var(--text3);font-size:13px;">Multiplayer · Voice Calls · Real‑time</p>
-    </div>
-
-    <!-- CREATE CARD -->
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:10px;">
-      <p style="font-weight:800;font-size:11px;color:var(--purple);text-transform:uppercase;letter-spacing:2px;margin-bottom:14px;">✨ Create a room</p>
-      <label for="cn" class="input-label">Your name</label>
-      <input id="cn" type="text" maxlength="16" placeholder="e.g. Alex"
-        autocomplete="given-name" autocorrect="off" autocapitalize="words" spellcheck="false"
-        oninput="clearErr('cn-err')" onkeydown="if(event.key==='Enter')createRoom()"
-        aria-describedby="cn-err"
-        style="width:100%;display:block;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;font-size:15px;color:var(--text);margin-bottom:4px;transition:border-color .15s,box-shadow .15s;"/>
-      <span id="cn-err" class="field-error" role="alert" aria-live="polite"></span>
-      <button id="create-btn" onclick="createRoom()" class="btn-primary" style="margin-top:10px;" aria-label="Create a new game room">
-        Create room →
-      </button>
-    </div>
-
-    <div style="text-align:center;color:var(--text3);font-size:12px;margin:14px 0;">— or join existing —</div>
-
-    <!-- JOIN CARD -->
-    <div id="join-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:20px;">
-      <p style="font-weight:800;font-size:11px;color:var(--pink);text-transform:uppercase;letter-spacing:2px;margin-bottom:14px;">🎯 Join a room</p>
-      <label for="jn" class="input-label">Your name</label>
-      <input id="jn" type="text" maxlength="16" placeholder="e.g. Sam"
-        autocomplete="given-name" autocorrect="off" autocapitalize="words" spellcheck="false"
-        oninput="clearErr('jn-err')" onkeydown="if(event.key==='Enter')document.getElementById('jc').focus()"
-        aria-describedby="jn-err"
-        style="width:100%;display:block;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;font-size:15px;color:var(--text);margin-bottom:4px;transition:border-color .15s,box-shadow .15s;"/>
-      <span id="jn-err" class="field-error" role="alert" aria-live="polite"></span>
-      <label for="jc" class="input-label" style="margin-top:10px;">Room code</label>
-      <input id="jc" type="text" maxlength="8" placeholder="e.g. ROSE7"
-        autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" inputmode="text"
-        oninput="this.value=this.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();clearErr('jc-err')"
-        onkeydown="if(event.key==='Enter')joinRoom()"
-        aria-describedby="jc-err"
-        style="width:100%;display:block;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;font-size:16px;color:var(--text);margin-bottom:4px;letter-spacing:4px;font-weight:700;transition:border-color .15s,box-shadow .15s;"/>
-      <span id="jc-err" class="field-error" role="alert" aria-live="polite"></span>
-      <button id="join-btn" onclick="joinRoom()" class="btn-primary btn-danger" style="margin-top:10px;" aria-label="Join an existing game room">
-        Join room →
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════ WAITING ROOM ══════════ -->
-<div class="pg" id="pg-wait" role="main">
-  <div class="sy" style="flex:1;padding:16px 16px 40px;">
-    <button onclick="goBack()" aria-label="Back to lobby"
-      style="display:flex;align-items:center;gap:6px;color:var(--text3);font-size:14px;margin-bottom:18px;cursor:pointer;min-height:44px;">
-      ← Back
-    </button>
-    <div style="text-align:center;padding:10px 0 20px;">
-      <div style="font-size:44px;margin-bottom:10px;">🎉</div>
-      <h1 style="font-size:22px;font-weight:800;margin-bottom:4px;">Room ready!</h1>
-      <p style="color:var(--text3);font-size:13px;">Share the code below</p>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:22px;text-align:center;margin-bottom:12px;">
-      <p style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;">Room Code</p>
-      <div id="dcode" role="text" aria-label="Room code">------</div>
-      <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">
-        <button onclick="copyCode()" aria-label="Copy room code"
-          style="background:var(--bg4);border:1px solid var(--border2);color:var(--text2);border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;min-height:44px;transition:background .15s;">
-          📋 Copy Code
+  <!-- LOBBY PAGE -->
+  <div class="pg on" id="pg-lobby" role="main">
+    <div class="sy" style="flex:1;padding:16px 16px 40px;">
+      <div style="text-align:center;padding:32px 0 24px;">
+        <svg width="84" height="84" viewBox="0 0 84 84" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto 14px;display:block;" aria-hidden="true">
+          <defs>
+            <radialGradient id="rg" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#3d2880"/>
+              <stop offset="100%" stop-color="#0a0914"/>
+            </radialGradient>
+          </defs>
+          <circle cx="42" cy="42" r="42" fill="url(#rg)"/>
+          <circle cx="42" cy="42" r="40" fill="none" stroke="#7F5AF0" stroke-width="1.5" stroke-opacity=".5"/>
+          <text x="42" y="56" text-anchor="middle" font-size="38" font-family="-apple-system,sans-serif">🍾</text>
+        </svg>
+        <h1 style="font-size:30px;font-weight:800;letter-spacing:-.8px;margin-bottom:5px;">Truth or Dare</h1>
+        <p style="color:var(--text3);font-size:13px;">Multiplayer · Voice Calls · Real‑time</p>
+      </div>
+      <!-- CREATE CARD -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:10px;">
+        <p style="font-weight:800;font-size:11px;color:var(--purple);text-transform:uppercase;letter-spacing:2px;margin-bottom:14px;">✨ Create a room</p>
+        <label for="cn" class="input-label">Your name</label>
+        <input id="cn" type="text" maxlength="16" placeholder="e.g. Alex"
+          autocomplete="given-name" autocorrect="off" autocapitalize="words" spellcheck="false"
+          oninput="clearErr('cn-err')" onkeydown="if(event.key==='Enter')createRoom()"
+          aria-describedby="cn-err"
+          style="width:100%;display:block;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;font-size:15px;color:var(--text);margin-bottom:4px;transition:border-color .15s,box-shadow .15s;"/>
+        <span id="cn-err" class="field-error" role="alert" aria-live="polite"></span>
+        <button id="create-btn" onclick="createRoom()" class="btn-primary" style="margin-top:10px;" aria-label="Create a new game room">
+          Create room →
         </button>
-        <button onclick="copyLink()" aria-label="Copy invite link"
-          style="background:var(--bg4);border:1px solid var(--border2);color:var(--text2);border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;min-height:44px;transition:background .15s;">
-          🔗 Copy Link
+      </div>
+      <div style="text-align:center;color:var(--text3);font-size:12px;margin:14px 0;">— or join existing —</div>
+      <!-- JOIN CARD -->
+      <div id="join-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:20px;">
+        <p style="font-weight:800;font-size:11px;color:var(--pink);text-transform:uppercase;letter-spacing:2px;margin-bottom:14px;">🎯 Join a room</p>
+        <label for="jn" class="input-label">Your name</label>
+        <input id="jn" type="text" maxlength="16" placeholder="e.g. Sam"
+          autocomplete="given-name" autocorrect="off" autocapitalize="words" spellcheck="false"
+          oninput="clearErr('jn-err')" onkeydown="if(event.key==='Enter')document.getElementById('jc').focus()"
+          aria-describedby="jn-err"
+          style="width:100%;display:block;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;font-size:15px;color:var(--text);margin-bottom:4px;transition:border-color .15s,box-shadow .15s;"/>
+        <span id="jn-err" class="field-error" role="alert" aria-live="polite"></span>
+        <label for="jc" class="input-label" style="margin-top:10px;">Room code</label>
+        <input id="jc" type="text" maxlength="8" placeholder="e.g. ROSE7"
+          autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" inputmode="text"
+          oninput="this.value=this.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();clearErr('jc-err')"
+          onkeydown="if(event.key==='Enter')joinRoom()"
+          aria-describedby="jc-err"
+          style="width:100%;display:block;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;font-size:16px;color:var(--text);margin-bottom:4px;letter-spacing:4px;font-weight:700;transition:border-color .15s,box-shadow .15s;"/>
+        <span id="jc-err" class="field-error" role="alert" aria-live="polite"></span>
+        <button id="join-btn" onclick="joinRoom()" class="btn-primary btn-danger" style="margin-top:10px;" aria-label="Join an existing game room">
+          Join room →
         </button>
       </div>
     </div>
-    <div style="text-align:center;margin-bottom:12px;">
-      <span id="spill" class="status-idle" style="font-size:12px;padding:5px 16px;border-radius:20px;display:inline-block;" role="status" aria-live="polite">Connecting…</span>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:16px;">
-      <p style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Players in room</p>
-      <div id="plist" style="display:flex;flex-wrap:wrap;gap:8px;min-height:36px;" role="list" aria-label="Players in room">
-        <span id="plist-empty" style="font-size:13px;color:var(--text3);padding:4px 0;">Waiting for players to join…</span>
-      </div>
-    </div>
-    <button onclick="broadcastStart()" aria-label="Start the game"
-      style="width:100%;background:var(--purple);color:#fff;font-weight:800;border-radius:14px;padding:16px;font-size:16px;cursor:pointer;margin-bottom:8px;min-height:54px;transition:background .15s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px;">
-      Start game 🎮
-    </button>
-    <p style="text-align:center;font-size:11px;color:var(--text3);">Need at least 2 players · All screens sync together</p>
-  </div>
-</div>
-
-<!-- ══════════ GAME PAGE ══════════ -->
-<div class="pg" id="pg-game" role="main">
-  <!-- HEADER -->
-  <div style="background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;">
-    <div style="display:flex;align-items:center;gap:8px;padding:10px 14px 6px;">
-      <span id="rtag" style="font-size:11px;font-weight:700;color:#b0aaf5;background:var(--bg4);border-radius:20px;padding:3px 10px;" role="text"></span>
-      <span id="spill2" class="status-ok" style="font-size:11px;padding:3px 10px;border-radius:20px;display:inline-block;" role="status" aria-live="polite">● Live</span>
-      <div style="flex:1;"></div>
-      <button id="call-btn" onclick="startCall()" aria-label="Start voice call"
-        style="display:none;align-items:center;gap:6px;background:#0a2018;border:1px solid #1d4a30;color:var(--green);border-radius:20px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;min-height:36px;transition:background .15s;">
-        📞 Call
-      </button>
-    </div>
-    <!-- PLAYER CHIPS -->
-    <div id="pchips" style="display:flex;flex-wrap:wrap;gap:5px;padding:0 14px 8px;min-height:28px;" role="list" aria-label="Players">
-      <div id="typing-dots-game" style="display:none;align-items:center;gap:4px;background:var(--bg4);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--text2);" aria-live="polite">
-        <span id="typing-who-game"></span>
-        <span class="td" aria-hidden="true"></span><span class="td" aria-hidden="true"></span><span class="td" aria-hidden="true"></span>
-      </div>
-    </div>
-    <!-- TABS -->
-    <div style="display:flex;border-top:1px solid var(--border);" role="tablist">
-      <button id="tb1" role="tab" aria-selected="true" aria-controls="t1" onclick="showTab(1)"
-        style="flex:1;padding:12px;font-size:14px;font-weight:700;color:var(--purple);border-bottom:2px solid var(--purple);background:none;cursor:pointer;min-height:48px;transition:color .15s;">
-        🎮 Game
-      </button>
-      <button id="tb2" role="tab" aria-selected="false" aria-controls="t2" onclick="showTab(2)"
-        style="flex:1;padding:12px;font-size:14px;font-weight:500;color:var(--text3);border-bottom:2px solid transparent;background:none;cursor:pointer;min-height:48px;position:relative;transition:color .15s;">
-        💬 Chat
-        <span id="chat-badge" aria-label="Unread messages"></span>
-      </button>
-    </div>
   </div>
 
-  <!-- GAME TAB -->
-  <div id="t1" class="sy" role="tabpanel" aria-labelledby="tb1" style="flex:1;padding:16px;display:flex;flex-direction:column;gap:14px;">
-    <div id="spin-section" style="display:flex;flex-direction:column;align-items:center;gap:12px;">
-      <canvas id="spin-canvas" width="220" height="220" style="display:block;" aria-label="Spin the bottle wheel" role="img"></canvas>
-      <button onclick="doSpin()" id="spin-btn" aria-label="Spin the bottle"
-        style="border:1.5px solid var(--border2);border-radius:14px;padding:12px 28px;font-size:14px;color:var(--text);background:var(--bg2);cursor:pointer;font-weight:700;min-height:48px;transition:all .15s;display:flex;align-items:center;gap:8px;">
-        🔄 Spin the bottle
+  <!-- WAITING ROOM -->
+  <div class="pg" id="pg-wait" role="main">
+    <div class="sy" style="flex:1;padding:16px 16px 40px;">
+      <button onclick="goBack()" aria-label="Back to lobby"
+        style="display:flex;align-items:center;gap:6px;color:var(--text3);font-size:14px;margin-bottom:18px;cursor:pointer;min-height:44px;">
+        ← Back
       </button>
-    </div>
-
-    <div id="post-spin" style="display:none;flex-direction:column;gap:12px;">
-      <div id="turn-banner" role="status" aria-live="assertive">
-        <p id="turn-name" style="font-size:20px;font-weight:800;"></p>
-        <p id="turn-sub" style="font-size:13px;margin-top:3px;"></p>
+      <div style="text-align:center;padding:10px 0 20px;">
+        <div style="font-size:44px;margin-bottom:10px;">🎉</div>
+        <h1 style="font-size:22px;font-weight:800;margin-bottom:4px;">Room ready!</h1>
+        <p style="color:var(--text3);font-size:13px;">Share the code below</p>
       </div>
-
-      <div id="my-turn-actions" style="display:none;flex-direction:column;gap:12px;">
-        <div style="display:flex;gap:8px;">
-          <button onclick="doCard('truth')" aria-label="Pick a truth question"
-            style="flex:1;border:1.5px solid var(--purple);border-radius:14px;padding:14px;font-size:15px;font-weight:700;color:#c9c4ff;background:rgba(127,90,240,.12);cursor:pointer;min-height:52px;transition:all .15s;">
-            🎲 Truth
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:22px;text-align:center;margin-bottom:12px;">
+        <p style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;">Room Code</p>
+        <div id="dcode" role="text" aria-label="Room code">------</div>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">
+          <button onclick="copyCode()" aria-label="Copy room code"
+            style="background:var(--bg4);border:1px solid var(--border2);color:var(--text2);border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;min-height:44px;transition:background .15s;">
+            📋 Copy Code
           </button>
-          <button onclick="doCard('dare')" aria-label="Pick a dare"
-            style="flex:1;border:1.5px solid var(--pink);border-radius:14px;padding:14px;font-size:15px;font-weight:700;color:#f5a0c0;background:rgba(228,92,139,.1);cursor:pointer;min-height:52px;transition:all .15s;">
-            🎲 Dare
+          <button onclick="copyLink()" aria-label="Copy invite link"
+            style="background:var(--bg4);border:1px solid var(--border2);color:var(--text2);border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;min-height:44px;transition:background .15s;">
+            🔗 Copy Link
           </button>
         </div>
-        <div style="background:var(--bg2);border:1px solid rgba(240,160,48,.25);border-radius:18px;padding:16px;">
-          <p style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">✏️ Your own question</p>
-          <div style="display:flex;gap:8px;margin-bottom:12px;" role="group" aria-label="Question type">
-            <button id="ct1" onclick="setCT('truth')" aria-pressed="true"
-              style="flex:1;border-radius:10px;padding:9px;font-size:13px;font-weight:600;background:var(--purple);border:1px solid var(--purple);color:#fff;cursor:pointer;min-height:42px;transition:all .15s;">Truth</button>
-            <button id="ct2" onclick="setCT('dare')" aria-pressed="false"
-              style="flex:1;border-radius:10px;padding:9px;font-size:13px;font-weight:600;background:transparent;border:1px solid var(--border);color:var(--text3);cursor:pointer;min-height:42px;transition:all .15s;">Dare</button>
+      </div>
+      <div style="text-align:center;margin-bottom:12px;">
+        <span id="spill" class="status-idle" style="font-size:12px;padding:5px 16px;border-radius:20px;display:inline-block;" role="status" aria-live="polite">Connecting…</span>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:16px;">
+        <p style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Players in room</p>
+        <div id="plist" style="display:flex;flex-wrap:wrap;gap:8px;min-height:36px;" role="list" aria-label="Players in room">
+          <span id="plist-empty" style="font-size:13px;color:var(--text3);padding:4px 0;">Waiting for players to join…</span>
+        </div>
+      </div>
+      <button onclick="broadcastStart()" aria-label="Start the game"
+        style="width:100%;background:var(--purple);color:#fff;font-weight:800;border-radius:14px;padding:16px;font-size:16px;cursor:pointer;margin-bottom:8px;min-height:54px;transition:background .15s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px;">
+        Start game 🎮
+      </button>
+      <p style="text-align:center;font-size:11px;color:var(--text3);">Need at least 2 players · All screens sync together</p>
+    </div>
+  </div>
+
+  <!-- GAME PAGE -->
+  <div class="pg" id="pg-game" role="main">
+    <!-- HEADER -->
+    <div style="background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 14px 6px;">
+        <span id="rtag" style="font-size:11px;font-weight:700;color:#b0aaf5;background:var(--bg4);border-radius:20px;padding:3px 10px;" role="text"></span>
+        <span id="spill2" class="status-ok" style="font-size:11px;padding:3px 10px;border-radius:20px;display:inline-block;" role="status" aria-live="polite">● Live</span>
+        <div style="flex:1;"></div>
+        <button id="call-btn" onclick="startCall()" aria-label="Start voice call"
+          style="display:none;align-items:center;gap:6px;background:#0a2018;border:1px solid #1d4a30;color:var(--green);border-radius:20px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;min-height:36px;transition:background .15s;">
+          📞 Call
+        </button>
+      </div>
+      <!-- PLAYER CHIPS -->
+      <div id="pchips" style="display:flex;flex-wrap:wrap;gap:5px;padding:0 14px 8px;min-height:28px;" role="list" aria-label="Players">
+        <div id="typing-dots-game" style="display:none;align-items:center;gap:4px;background:var(--bg4);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--text2);" aria-live="polite">
+          <span id="typing-who-game"></span>
+          <span class="td" aria-hidden="true"></span><span class="td" aria-hidden="true"></span><span class="td" aria-hidden="true"></span>
+        </div>
+      </div>
+      <!-- TABS -->
+      <div style="display:flex;border-top:1px solid var(--border);" role="tablist">
+        <button id="tb1" role="tab" aria-selected="true" aria-controls="t1" onclick="showTab(1)"
+          style="flex:1;padding:12px;font-size:14px;font-weight:700;color:var(--purple);border-bottom:2px solid var(--purple);background:none;cursor:pointer;min-height:48px;transition:color .15s;">
+          🎮 Game
+        </button>
+        <button id="tb2" role="tab" aria-selected="false" aria-controls="t2" onclick="showTab(2)"
+          style="flex:1;padding:12px;font-size:14px;font-weight:500;color:var(--text3);border-bottom:2px solid transparent;background:none;cursor:pointer;min-height:48px;position:relative;transition:color .15s;">
+          💬 Chat
+          <span id="chat-badge" aria-label="Unread messages"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- GAME TAB -->
+    <div id="t1" class="sy" role="tabpanel" aria-labelledby="tb1" style="flex:1;padding:16px;display:flex;flex-direction:column;gap:14px;">
+      <div id="spin-section" style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+        <canvas id="spin-canvas" width="220" height="220" style="display:block;" aria-label="Spin the bottle wheel" role="img"></canvas>
+        <button onclick="doSpin()" id="spin-btn" aria-label="Spin the bottle"
+          style="border:1.5px solid var(--border2);border-radius:14px;padding:12px 28px;font-size:14px;color:var(--text);background:var(--bg2);cursor:pointer;font-weight:700;min-height:48px;transition:all .15s;display:flex;align-items:center;gap:8px;">
+          🔄 Spin the bottle
+        </button>
+      </div>
+      <div id="post-spin" style="display:none;flex-direction:column;gap:12px;">
+        <div id="turn-banner" role="status" aria-live="assertive">
+          <p id="turn-name" style="font-size:20px;font-weight:800;"></p>
+          <p id="turn-sub" style="font-size:13px;margin-top:3px;"></p>
+        </div>
+        <div id="my-turn-actions" style="display:none;flex-direction:column;gap:12px;">
+          <div style="display:flex;gap:8px;">
+            <button onclick="doCard('truth')" aria-label="Pick a truth question"
+              style="flex:1;border:1.5px solid var(--purple);border-radius:14px;padding:14px;font-size:15px;font-weight:700;color:#c9c4ff;background:rgba(127,90,240,.12);cursor:pointer;min-height:52px;transition:all .15s;">
+              🎲 Truth
+            </button>
+            <button onclick="doCard('dare')" aria-label="Pick a dare"
+              style="flex:1;border:1.5px solid var(--pink);border-radius:14px;padding:14px;font-size:15px;font-weight:700;color:#f5a0c0;background:rgba(228,92,139,.1);cursor:pointer;min-height:52px;transition:all .15s;">
+              🎲 Dare
+            </button>
           </div>
-          <label for="cq" class="input-label">Type your question</label>
-          <textarea id="cq" rows="2" maxlength="200" placeholder="Type your own truth question…"
-            aria-label="Custom question text"
-            style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--text);margin-bottom:12px;transition:border-color .15s,box-shadow .15s;"></textarea>
-          <button onclick="sendCQ()" aria-label="Send custom question to everyone"
-            style="width:100%;background:var(--amber);color:#000;font-weight:700;border-radius:12px;padding:13px;font-size:14px;cursor:pointer;min-height:48px;transition:all .15s;">
-            Send to everyone 🚀
-          </button>
+          <div style="background:var(--bg2);border:1px solid rgba(240,160,48,.25);border-radius:18px;padding:16px;">
+            <p style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">✏️ Your own question</p>
+            <div style="display:flex;gap:8px;margin-bottom:12px;" role="group" aria-label="Question type">
+              <button id="ct1" onclick="setCT('truth')" aria-pressed="true"
+                style="flex:1;border-radius:10px;padding:9px;font-size:13px;font-weight:600;background:var(--purple);border:1px solid var(--purple);color:#fff;cursor:pointer;min-height:42px;transition:all .15s;">Truth</button>
+              <button id="ct2" onclick="setCT('dare')" aria-pressed="false"
+                style="flex:1;border-radius:10px;padding:9px;font-size:13px;font-weight:600;background:transparent;border:1px solid var(--border);color:var(--text3);cursor:pointer;min-height:42px;transition:all .15s;">Dare</button>
+            </div>
+            <label for="cq" class="input-label">Type your question</label>
+            <textarea id="cq" rows="2" maxlength="200" placeholder="Type your own truth question…"
+              aria-label="Custom question text"
+              style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--text);margin-bottom:12px;transition:border-color .15s,box-shadow .15s;"></textarea>
+            <button onclick="sendCQ()" aria-label="Send custom question to everyone"
+              style="width:100%;background:var(--amber);color:#000;font-weight:700;border-radius:12px;padding:13px;font-size:14px;cursor:pointer;min-height:48px;transition:all .15s;">
+              Send to everyone 🚀
+            </button>
+          </div>
         </div>
-      </div>
-
-      <div id="qcard" style="display:none;" role="region" aria-label="Current question" aria-live="polite"></div>
-      <button onclick="resetSpin()" aria-label="Spin again"
-        style="border:1.5px solid var(--border);border-radius:14px;padding:12px;font-size:14px;color:var(--text3);background:transparent;cursor:pointer;font-weight:600;min-height:48px;transition:border-color .15s;">
-        🔄 Spin again
-      </button>
-    </div>
-  </div>
-
-  <!-- CHAT TAB -->
-  <div id="t2" role="tabpanel" aria-labelledby="tb2" style="display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;">
-    <div id="chatbox" class="sy" aria-label="Chat messages" aria-live="polite"
-      style="flex:1;padding:10px 14px;display:flex;flex-direction:column;gap:6px;"></div>
-    <div style="padding:4px 14px;min-height:22px;display:flex;align-items:center;">
-      <div id="typing-dots" style="display:none;align-items:center;gap:6px;background:var(--bg3);border-radius:20px;padding:5px 12px;" aria-live="polite">
-        <span id="typing-who" style="font-size:12px;color:var(--text2);"></span>
-        <span class="td" aria-hidden="true"></span><span class="td" aria-hidden="true"></span><span class="td" aria-hidden="true"></span>
-      </div>
-    </div>
-    <div style="background:var(--bg2);border-top:1px solid var(--border);padding:10px 12px;flex-shrink:0;padding-bottom:calc(var(--safe-bot));">
-      <div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:8px;">
-        <div style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:24px;padding:10px 16px;display:flex;align-items:center;min-height:48px;transition:border-color .15s;">
-          <input id="mi" type="text" maxlength="300" placeholder="Message…"
-            autocorrect="off" autocomplete="off" aria-label="Type a message"
-            oninput="onTyping()" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"
-            style="flex:1;background:transparent;font-size:15px;color:var(--text);min-height:26px;"/>
-        </div>
-        <button id="ptt"
-          onmousedown="startRec(event)" onmouseup="stopRec(event)" onmouseleave="if(isRec)stopRec(event)"
-          ontouchstart="startRec(event)" ontouchend="stopRec(event)" ontouchcancel="stopRec(event)"
-          aria-label="Hold to record voice note"
-          style="width:48px;height:48px;min-height:48px;border-radius:50%;background:var(--purple);font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .15s;">🎤</button>
-        <button onclick="sendMsg()" aria-label="Send message"
-          style="width:48px;height:48px;min-height:48px;border-radius:50%;background:var(--purple);font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .15s;">➤</button>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px;">
-        <button id="omBtn" onclick="toggleOpenMic()" aria-pressed="false" aria-label="Toggle open microphone"
-          style="display:flex;align-items:center;gap:7px;border:1px solid var(--border);border-radius:20px;padding:7px 14px;font-size:12px;color:var(--text2);background:transparent;cursor:pointer;min-height:36px;transition:all .15s;">
-          <span id="omDot" style="width:8px;height:8px;border-radius:50%;background:var(--text3);display:inline-block;flex-shrink:0;" aria-hidden="true"></span>
-          <span id="omTxt">Open mic: Off</span>
+        <div id="qcard" style="display:none;" role="region" aria-label="Current question" aria-live="polite"></div>
+        <button onclick="resetSpin()" aria-label="Spin again"
+          style="border:1.5px solid var(--border);border-radius:14px;padding:12px;font-size:14px;color:var(--text3);background:transparent;cursor:pointer;font-weight:600;min-height:48px;transition:border-color .15s;">
+          🔄 Spin again
         </button>
-        <span style="font-size:11px;color:var(--text3);">Hold 🎤 = voice note</span>
+      </div>
+    </div>
+
+    <!-- CHAT TAB -->
+    <div id="t2" role="tabpanel" aria-labelledby="tb2" style="display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;">
+      <div id="chatbox" class="sy" aria-label="Chat messages" aria-live="polite"
+        style="flex:1;padding:10px 14px;display:flex;flex-direction:column;gap:6px;"></div>
+      <div style="padding:4px 14px;min-height:22px;display:flex;align-items:center;">
+        <div id="typing-dots" style="display:none;align-items:center;gap:6px;background:var(--bg3);border-radius:20px;padding:5px 12px;" aria-live="polite">
+          <span id="typing-who" style="font-size:12px;color:var(--text2);"></span>
+          <span class="td" aria-hidden="true"></span><span class="td" aria-hidden="true"></span><span class="td" aria-hidden="true"></span>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border-top:1px solid var(--border);padding:10px 12px;flex-shrink:0;padding-bottom:calc(var(--safe-bot));">
+        <div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:8px;">
+          <div style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:24px;padding:10px 16px;display:flex;align-items:center;min-height:48px;transition:border-color .15s;">
+            <input id="mi" type="text" maxlength="300" placeholder="Message…"
+              autocorrect="off" autocomplete="off" aria-label="Type a message"
+              oninput="onTyping()" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"
+              style="flex:1;background:transparent;font-size:15px;color:var(--text);min-height:26px;"/>
+          </div>
+          <button id="ptt"
+            onmousedown="startRec(event)" onmouseup="stopRec(event)" onmouseleave="if(isRec)stopRec(event)"
+            ontouchstart="startRec(event)" ontouchend="stopRec(event)" ontouchcancel="stopRec(event)"
+            aria-label="Hold to record voice note"
+            style="width:48px;height:48px;min-height:48px;border-radius:50%;background:var(--purple);font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .15s;">🎤</button>
+          <button onclick="sendMsg()" aria-label="Send message"
+            style="width:48px;height:48px;min-height:48px;border-radius:50%;background:var(--purple);font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .15s;">➤</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px;">
+          <button id="omBtn" onclick="toggleOpenMic()" aria-pressed="false" aria-label="Toggle open microphone"
+            style="display:flex;align-items:center;gap:7px;border:1px solid var(--border);border-radius:20px;padding:7px 14px;font-size:12px;color:var(--text2);background:transparent;cursor:pointer;min-height:36px;transition:all .15s;">
+            <span id="omDot" style="width:8px;height:8px;border-radius:50%;background:var(--text3);display:inline-block;flex-shrink:0;" aria-hidden="true"></span>
+            <span id="omTxt">Open mic: Off</span>
+          </button>
+          <span style="font-size:11px;color:var(--text3);">Hold 🎤 = voice note</span>
+        </div>
       </div>
     </div>
   </div>
 </div>
-
-</div><!-- #app -->
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script>
-'use strict';
-
-/* ══════════════════════════════════════════
-   UTILITIES
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// UTILITIES
+// ──────────────────────────────────────────────
 function esc(s){
   const d=document.createElement('div');
   d.appendChild(document.createTextNode(String(s||'')));
   return d.innerHTML;
 }
-
 let toastTimer=null;
 function toast(msg,dur=2800){
   const t=document.getElementById('toast');
@@ -607,7 +425,6 @@ function toast(msg,dur=2800){
   clearTimeout(toastTimer);
   toastTimer=setTimeout(()=>t.classList.remove('show'),dur);
 }
-
 function showErr(id,msg){
   const el=document.getElementById(id);
   if(el){el.textContent=msg;el.style.display='block';}
@@ -621,18 +438,16 @@ function clearErr(id){
   if(inp) inp.style.borderColor=var_('--border');
 }
 function var_(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
-
 function setBtn(id,loading,text){
   const b=document.getElementById(id);if(!b)return;
   b.disabled=loading;
   b.innerHTML=loading?`<span class="spinner" aria-hidden="true"></span>${text}`:text;
 }
-
 function tn(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
 
-/* ══════════════════════════════════════════
-   AUDIO — ringing + sound effects
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// AUDIO — ringing + sound effects
+// ──────────────────────────────────────────────
 let audioCtx=null;
 function getAC(){
   if(!audioCtx){
@@ -642,7 +457,6 @@ function getAC(){
   return audioCtx;
 }
 function resumeAC(){const ac=getAC();if(ac&&ac.state==='suspended')ac.resume();}
-
 function playSound(type){
   const ac=getAC();if(!ac)return;
   resumeAC();
@@ -681,8 +495,7 @@ function playSound(type){
     }
   }catch(e){}
 }
-
-/* Ringing tone for incoming call — oscillator-based loop */
+// Ringing tone
 let ringInterval=null;
 function startRingTone(){
   stopRingTone();
@@ -712,9 +525,9 @@ function stopRingTone(){
   if(ringInterval){clearInterval(ringInterval);ringInterval=null;}
 }
 
-/* ══════════════════════════════════════════
-   FIREBASE CONFIG
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// FIREBASE CONFIG
+// ──────────────────────────────────────────────
 firebase.initializeApp({
   apiKey:"AIzaSyBFVlktJ3vSBxRsLRY_3CPBPX6UKH6g5Uo",
   authDomain:"truth-dare-app-95ce8.firebaseapp.com",
@@ -724,14 +537,11 @@ firebase.initializeApp({
   messagingSenderId:"698378458947",
   appId:"1:698378458947:web:aa6dcb626803205c1701f6"
 });
-
-/* Enable Firebase offline persistence for 100ms-class updates */
 const db=firebase.database();
-db.ref('.info/connected'); // warm up connection
 
-/* ══════════════════════════════════════════
-   QUESTIONS BANK
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// QUESTIONS BANK
+// ──────────────────────────────────────────────
 const TRUTHS=[
   "What's the most embarrassing thing you've done on a date?",
   "Have you ever had a crush on someone in this room?",
@@ -777,9 +587,9 @@ const DARES=[
   "Recreate your best selfie pose right now."
 ];
 
-/* ══════════════════════════════════════════
-   APPLICATION STATE
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// APPLICATION STATE
+// ──────────────────────────────────────────────
 let myName='', code='';
 let myId='u'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 let fbRef=null, fbListeners=[], players={};
@@ -791,14 +601,14 @@ const seenEvents=new Set();
 const MAX_SEEN=150;
 let unreadChat=0, onChatTab=false;
 let currentCardKey=null;
-let deferredPrompt=null, installBtnTapped=false;
+let deferredPrompt=null;
 let roomHealthTimer=null;
 let hostId=null;
 let attendNotified=false;
 let creatorId=null;
 let isCreator=false;
 
-/* Voice note state */
+// Voice note state
 function getSupportedMimeType(){
   const types=['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'];
   for(const t of types) if(typeof MediaRecorder!=='undefined'&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t)) return t;
@@ -807,7 +617,7 @@ function getSupportedMimeType(){
 let mrec=null, achunks=[], isRec=false, recTimer=null, recSecs=0, pttReleased=false;
 let omStream=null, omOn=false;
 
-/* WebRTC state */
+// WebRTC state
 const ICE={iceServers:[
   {urls:'stun:stun.l.google.com:19302'},
   {urls:'stun:stun1.l.google.com:19302'},
@@ -817,50 +627,56 @@ const ICE={iceServers:[
 let pcs={}, localStream=null, inCall=false, mutedMic=false, pendingCallFrom=null;
 let callTimerInt=null, callSeconds=0;
 
-/* ══════════════════════════════════════════
-   PWA INSTALL
-══════════════════════════════════════════ */
-window.addEventListener('beforeinstallprompt',e=>{
-  // Do not call `preventDefault()` so browsers can show the native install banner.
-  // We still capture the event so the custom install button can call `prompt()` later.
-  deferredPrompt=e;
-  if(installBtnTapped){installBtnTapped=false;triggerInstall();}
+// ──────────────────────────────────────────────
+// PWA INSTALL
+// ──────────────────────────────────────────────
+function isMobileDevice() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+if (!isMobileDevice()) {
+  const ibar = document.getElementById('ibar');
+  if (ibar) ibar.classList.add('gone');
+}
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (isMobileDevice()) {
+    document.getElementById('ibar')?.classList.remove('gone');
+  }
 });
-window.addEventListener('appinstalled',()=>{document.getElementById('ibar').classList.add('gone');deferredPrompt=null;});
-function doInstall(){
-  if(deferredPrompt){triggerInstall();}
-  else{
-    installBtnTapped=true;
-    const b=document.getElementById('ib-btn');
-    b.innerHTML='<span class="spinner"></span>Installing…';b.disabled=true;
-    setTimeout(()=>{if(installBtnTapped){installBtnTapped=false;b.innerHTML='📲 Install';b.disabled=false;}},7000);
+
+async function doInstall() {
+  if (!deferredPrompt) {
+    toast("Install not available in this browser");
+    return;
+  }
+  const promptEvent = deferredPrompt;
+  deferredPrompt = null;
+  promptEvent.prompt();
+  const { outcome } = await promptEvent.userChoice;
+  if (outcome === 'accepted') {
+    document.getElementById('ibar')?.classList.add('gone');
   }
 }
-function triggerInstall(){
-  if(!deferredPrompt)return;
-  deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(r=>{
-    deferredPrompt=null;installBtnTapped=false;
-    const b=document.getElementById('ib-btn');
-    if(r.outcome==='accepted') document.getElementById('ibar').classList.add('gone');
-    else{b.innerHTML='📲 Install';b.disabled=false;}
-  });
+
+function showIOSModal() {
+  document.getElementById('ios-modal').classList.add('on');
 }
-function showIOSModal(){document.getElementById('ios-modal').classList.add('on');}
-function closeIOSModal(){document.getElementById('ios-modal').classList.remove('on');}
+
+function closeIOSModal() {
+  document.getElementById('ios-modal').classList.remove('on');
+}
+
 document.addEventListener('click',e=>{if(e.target===document.getElementById('ios-modal'))closeIOSModal();});
 
-/* ══════════════════════════════════════════
-   INIT
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// INIT
+// ──────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
   const standalone=navigator.standalone===true||matchMedia('(display-mode:standalone)').matches;
   if(standalone) document.getElementById('ibar').classList.add('gone');
-  else{
-    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
-    if(isIOS){document.getElementById('ib-btn').style.display='none';document.getElementById('ib-ios-btn').style.display='block';}
-  }
-  /* Pre-fill room code from URL */
   const r=new URLSearchParams(location.search).get('room');
   if(r){
     document.getElementById('jc').value=r.toUpperCase().replace(/[^A-Z0-9]/g,'');
@@ -870,18 +686,16 @@ window.addEventListener('DOMContentLoaded',()=>{
   initCanvas();
   if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
   updateTitle();
-  /* Touch events don't need passive:false on buttons, but add to body to capture release events */
   document.addEventListener('touchend',resumeAC,{once:true,passive:true});
 });
-
 window.addEventListener('beforeunload',()=>{
   cleanupFB();
   cleanupCall(false);
 });
 
-/* ══════════════════════════════════════════
-   NAVIGATION
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// NAVIGATION
+// ──────────────────────────────────────────────
 function showPg(id){document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));document.getElementById(id).classList.add('on');}
 function curPg(){const el=document.querySelector('.pg.on');return el?el.id:'';}
 function updateTitle(){
@@ -890,9 +704,9 @@ function updateTitle(){
   else document.title='Truth or Dare 🍾';
 }
 
-/* ══════════════════════════════════════════
-   FIREBASE HELPERS
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// FIREBASE HELPERS
+// ──────────────────────────────────────────────
 function randCode(){
   const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let c='';for(let i=0;i<6;i++) c+=chars[Math.floor(Math.random()*chars.length)];
@@ -900,26 +714,23 @@ function randCode(){
 }
 function detachListeners(){fbListeners.forEach(({ref:r,event,fn})=>{try{r.off(event,fn);}catch(e){}});fbListeners=[];}
 function addListener(r,event,fn){r.on(event,fn);fbListeners.push({ref:r,event,fn});}
-
 function cleanupFB(){
   if(fbRef){
     try{fbRef.child('players/'+myId).remove();}catch(e){}
     try{fbRef.child('online/'+myId).remove();}catch(e){}
     try{fbRef.child('typing/'+myId).remove();}catch(e){}
-    try{fbRef.child('spinning').transaction(v=>v===myId?null:v);}catch(e){}
+    try{fbRef.child('spinning').set(null);}catch(e){}
   }
   detachListeners();
 }
-
 function pushEv(data){
   if(!fbRef)return;
   const now=Date.now();
   const critical=['spin','chosen','card','call-invite','call-decline','attend'].includes(data.type);
-  if(!critical&&now-lastEvTime<100)return; // 100ms debounce for non-critical
+  if(!critical&&now-lastEvTime<100)return;
   lastEvTime=now;
   return fbRef.child('events').push({...data,_f:myId,_t:now});
 }
-
 function setStatus(text,type){
   const cls=type==='ok'?'status-ok':type==='err'?'status-err':'status-idle';
   ['spill','spill2'].forEach(id=>{
@@ -928,89 +739,64 @@ function setStatus(text,type){
   });
 }
 
-/* ══════════════════════════════════════════
-   FIREBASE ROOM — MAIN LOOP
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// FIREBASE ROOM — MAIN LOOP
+// ──────────────────────────────────────────────
 function startFB(){
   detachListeners();
   seenEvents.clear();
   joinTime=Date.now();
   fbRef=db.ref('rooms/'+code);
-
   if(isCreator) creatorId=myId;
 
-  // Connection quality indicator
   addListener(db.ref('.info/connected'),'value',snap=>{
     const ok=!!snap.val();
     setStatus(ok?'● Live':'Reconnecting…',ok?'ok':'err');
   });
 
-  // Immediately register self so UI is instant
   players[myId]=myName;
   renderPlayers();
 
   fbRef.child('players/'+myId).set({name:myName,id:myId})
     .catch(err=>{
       console.error('FB players write failed:',err);
-      const msg=(err&& (err.code||err.message))?String(err.code||err.message):'unknown error';
-      toast('Could not join room: Firebase write failed ('+msg+').');
+      toast('Could not join room: Firebase write failed.');
       showPg('pg-lobby');
     });
+
   fbRef.child('players/'+myId).onDisconnect().remove();
-  fbRef.child('online/'+myId).set(true).catch(err=>{
-    console.error('FB online write failed:',err);
-  });
+  fbRef.child('online/'+myId).set(true).catch(()=>{});
   fbRef.child('online/'+myId).onDisconnect().remove();
   fbRef.child('typing/'+myId).onDisconnect().remove();
-  // `onDisconnect().transaction(...)` isn't supported in some Firebase compat builds.
-  // Unlock when this client disconnects; avoids leaving the room stuck.
-  try{
-    fbRef.child('spinning').onDisconnect().set(null);
-  }catch(e){
-    // Non-fatal: room gameplay will still work, just might keep the lock longer.
-    console.warn('onDisconnect spinning unlock not supported:',e);
-  }
 
-  // If the other player never shows up, surface a likely cause.
+  try{fbRef.child('spinning').onDisconnect().set(null);}catch(e){}
+
   if(roomHealthTimer) clearTimeout(roomHealthTimer);
   roomHealthTimer=setTimeout(()=>{
-    const ids=Object.keys(players||{});
-    if(ids.length<=1){
-      toast('Only you are visible in this room. If the other player used the same code, check Firebase rules (look for PERMISSION_DENIED) and confirm both codes match.');
+    if(Object.keys(players).length<=1){
+      toast('Only you are visible. Check Firebase rules if the other player used the same code.');
     }
   },6500);
 
-  // One-time health read to confirm we can see the shared room data.
   fbRef.child('players').once('value').then(snap=>{
-    const d=snap.val()||{};
-    const count=Array.isArray(d)?d.length:Object.keys(d).length;
-    if(count<=1){
-      // Wait for the listener too; this message is just to aid debugging.
-      toast('Room data check: only '+count+' player record found for code '+code+'.');
-    }
+    const count=Object.keys(snap.val()||{}).length;
+    if(count<=1) toast('Room check: only '+count+' player visible.');
   }).catch(err=>{
     console.error('FB players read failed:',err);
-    const msg=(err&& (err.code||err.message))?String(err.code||err.message):'unknown error';
-    toast('Could not read room players ('+msg+'). Check DB rules/permissions.');
+    toast('Could not read room players.');
   });
 
-  // Room creator id (set once by the creator)
   addListener(fbRef.child('meta/creatorId'),'value',snap=>{
     creatorId=snap.val()||creatorId;
   });
   if(isCreator){
-    try{
-      fbRef.child('meta/creatorId').transaction(curr=>curr||myId);
-    }catch(e){}
+    fbRef.child('meta/creatorId').transaction(curr=>curr||myId);
   }
 
-  // Players list — authoritative
   addListener(fbRef.child('players'),'value',snap=>{
     const d=snap.val()||{};
     const prev=Object.keys(players).length;
     players={};
-    // Some historical rooms may store `players/<pid>` without a nested `id` field.
-    // Treat the RTDB key as the fallback player id so late joiners still appear.
     Object.entries(d).forEach(([pid,p])=>{
       if(!p || !p.name) return;
       const id=p.id || pid;
@@ -1018,12 +804,11 @@ function startFB(){
     });
     if(!players[myId]) players[myId]=myName;
     const curr=Object.keys(players).length;
-    if(curr>prev&&prev>0) playSound('join'); // new player joined
+    if(curr>prev&&prev>0) playSound('join');
     if(curr>=2 && roomHealthTimer){clearTimeout(roomHealthTimer);roomHealthTimer=null;}
     renderPlayers();
   });
 
-  // Typing indicators
   addListener(fbRef.child('typing'),'value',snap=>{
     const d=snap.val()||{};
     const who=Object.entries(d).filter(([id,v])=>id!==myId&&v).map(([id])=>players[id]||'Someone');
@@ -1036,7 +821,6 @@ function startFB(){
     });
   });
 
-  // Events stream — deduplicated, time-gated
   addListener(fbRef.child('events').limitToLast(30),'child_added',snap=>{
     if(seenEvents.has(snap.key))return;
     seenEvents.add(snap.key);
@@ -1044,32 +828,20 @@ function startFB(){
     const e=snap.val();
     if(!e||e._f===myId)return;
     const isCritical=['spin','chosen','card','call-invite','call-decline'].includes(e.type);
-    // Avoid replaying old chat/voice events, but keep critical gameplay events so
-    // late joiners can reconstruct the current turn state.
-    if(e._t&&e._t<joinTime-500&&!isCritical)return; // skip stale pre-join non-critical events
+    if(e._t&&e._t<joinTime-500&&!isCritical)return;
     handleEv(e);
   });
 
-  // Game state (started trigger)
   addListener(fbRef.child('state'),'value',snap=>{
     const v=snap.val();
     if(!v || !v.started) return;
-
-    // Merge authoritative players list if provided.
     if(v.players){Object.entries(v.players).forEach(([id,name])=>{if(!players[id])players[id]=name;});}
-
     if(v.hostId && v.hostId!==hostId) hostId=v.hostId;
-
-    // Ensure we transition into the game when the host starts.
-    // If the room is effectively empty/stale (e.g., everyone left but state.started
-    // remained true), only start when at least 2 players are actually present.
     if(curPg()==='pg-wait'){
       fbRef.child('players').once('value').then(s=>{
-        const d=s.val()||{};
-        const liveCount=Array.isArray(d)?d.length:Object.keys(d).length;
+        const liveCount=Object.keys(s.val()||{}).length;
         if(liveCount>=2){
           startGame();
-          // Apply persisted turn/question immediately for late joiners.
           if(v.chosen && v.chosen!==chosen){
             chosen=v.chosen;
             if(!postSpinFading){
@@ -1092,49 +864,32 @@ function startFB(){
               showCard(card.ct,card.q,!!card.cx);
             }
           }
-
-          // Notify the room creator that someone is attending mid-game.
-          // Only the host uses this to grant permission / allow joining.
           if(hostId && myId!==hostId && !attendNotified){
             attendNotified=true;
             pushEv({type:'attend',from:myId,name:myName});
           }
-        } else {
-          // If everyone is out (room is truly empty), clear stale started state
-          // so the room becomes joinable/open again.
-          if(liveCount===0){
-            fbRef.child('state').update({
-              started:false,
-              hostId:null,
-              chosen:null,
-              currentCard:null,
-              turnAt:null,
-              cardAt:null
-            }).catch(()=>{});
-          }
+        } else if(liveCount===0){
+          fbRef.child('state').update({
+            started:false,hostId:null,chosen:null,currentCard:null,turnAt:null,cardAt:null
+          }).catch(()=>{});
         }
       }).catch(()=>{});
-      return; // don't apply chosen/currentCard UI until we confirm liveCount
+      return;
     }
-
-    // Late joiners: reconstruct current turn/question from persisted state.
     if(v.chosen && v.chosen!==chosen){
-      const turnPlayer=v.chosen;
-      chosen=turnPlayer;
+      chosen=v.chosen;
       if(!postSpinFading){
-        showPostSpin(turnPlayer);
-        sysMsg('🍾 '+esc(turnPlayer)+"'s turn!");
+        showPostSpin(v.chosen);
+        sysMsg('🍾 '+esc(v.chosen)+"'s turn!");
       } else {
-        // If the host updates `chosen` quickly, wait for the fade to finish.
         setTimeout(()=>{
-          if(chosen===turnPlayer && !postSpinFading){
-            showPostSpin(turnPlayer);
-            sysMsg('🍾 '+esc(turnPlayer)+"'s turn!");
+          if(chosen===v.chosen && !postSpinFading){
+            showPostSpin(v.chosen);
+            sysMsg('🍾 '+esc(v.chosen)+"'s turn!");
           }
         },380);
       }
     }
-
     if(v.currentCard && v.currentCard.q && v.currentCard.ct){
       const card=v.currentCard;
       const key=(card.ct||'')+'|'+(card.q||'')+'|'+(card.who||'')+'|'+(card.cx?'1':'0');
@@ -1145,10 +900,8 @@ function startFB(){
     }
   });
 
-  // Online presence dots
   addListener(fbRef.child('online'),'value',snap=>{updateDots(Object.keys(snap.val()||{}));});
 
-  // Spin lock
   addListener(fbRef.child('spinning'),'value',snap=>{
     spinLocked=!!snap.val()&&snap.val()!==myId;
     const b=document.getElementById('spin-btn');
@@ -1158,9 +911,9 @@ function startFB(){
   setupWebRTC();
 }
 
-/* ══════════════════════════════════════════
-   LOBBY ACTIONS
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// LOBBY ACTIONS
+// ──────────────────────────────────────────────
 function createRoom(){
   const n=document.getElementById('cn').value.trim();
   if(!n){showErr('cn-err','Please enter your name');return;}
@@ -1173,7 +926,6 @@ function createRoom(){
   updateTitle();
   showPg('pg-wait'); startFB();
 }
-
 function joinRoom(){
   isCreator=false;
   const n=document.getElementById('jn').value.trim();
@@ -1182,7 +934,7 @@ function joinRoom(){
   if(!n){showErr('jn-err','Please enter your name');ok=false;}
   else if(n.length<2){showErr('jn-err','Name must be at least 2 characters');ok=false;}
   if(!c){showErr('jc-err','Please enter a room code');ok=false;}
-  else if(c.length<4){showErr('jc-err','Room code too short — check and try again');ok=false;}
+  else if(c.length<4){showErr('jc-err','Room code too short');ok=false;}
   if(!ok)return;
   resumeAC();
   setBtn('join-btn',true,'Joining…');
@@ -1191,7 +943,6 @@ function joinRoom(){
   updateTitle();
   showPg('pg-wait'); startFB();
 }
-
 function goBack(){
   cleanupFB();
   cleanupCall(false);
@@ -1199,20 +950,15 @@ function goBack(){
   seenEvents.clear(); joinTime=0; lastEvTime=0;
   currentCardKey=null;
   if(roomHealthTimer){clearTimeout(roomHealthTimer);roomHealthTimer=null;}
-  hostId=null;
-  creatorId=null;
-  attendNotified=false;
-  isCreator=false;
+  hostId=null; creatorId=null; attendNotified=false; isCreator=false;
   unreadChat=0; onChatTab=false;
   setBtn('create-btn',false,'Create room →');
   setBtn('join-btn',false,'Join room →');
   ['cn','jn','jc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  // Clear chat
   const cb=document.getElementById('chatbox');if(cb)cb.innerHTML='';
   showPg('pg-lobby');
   setTimeout(()=>document.getElementById('cn').focus(),50);
 }
-
 function copyCode(){
   navigator.clipboard.writeText(code).then(()=>toast('✅ Room code copied!')).catch(()=>toast('Code: '+code));
 }
@@ -1221,9 +967,9 @@ function copyLink(){
   navigator.clipboard.writeText(url).then(()=>toast('✅ Invite link copied!')).catch(()=>toast('Room: '+code));
 }
 
-/* ══════════════════════════════════════════
-   GAME START
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// GAME START
+// ──────────────────────────────────────────────
 function broadcastStart(){
   if(Object.keys(players).length<2){toast('Need at least 2 players. Share the code!');return;}
   fbRef.child('state').set({
@@ -1237,7 +983,6 @@ function broadcastStart(){
   });
   startGame();
 }
-
 function startGame(){
   document.getElementById('rtag').textContent='Room: '+code;
   document.getElementById('post-spin').style.display='none';
@@ -1254,9 +999,9 @@ function startGame(){
   sysMsg('Game started! Spin the bottle 🍾');
 }
 
-/* ══════════════════════════════════════════
-   EVENT HANDLER
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// EVENT HANDLER
+// ──────────────────────────────────────────────
 function handleEv(e){
   switch(e.type){
     case 'chat':
@@ -1269,7 +1014,6 @@ function handleEv(e){
       if(!onChatTab){unreadChat++;updateTitle();showChatBadge();}
       break;
     case 'attend':
-      // Only host shows this as a room-level notification.
       if((creatorId && myId===creatorId && e.from!==myId) || (hostId && myId===hostId && e.from!==myId)){
         toast(esc(e.name||'Someone')+' is attending the game');
       }
@@ -1278,7 +1022,7 @@ function handleEv(e){
       animSpin(e.seed);
       break;
     case 'chosen':
-      if(e.player===chosen) break; // already in sync (e.g. via persisted state)
+      if(e.player===chosen) break;
       chosen=e.player;
       if(!postSpinFading) showPostSpin(e.player);
       sysMsg('🍾 '+esc(e.player)+"'s turn!");
@@ -1298,9 +1042,12 @@ function handleEv(e){
     case 'call-decline':
       if(e.to===myId) sysMsg(esc(e.name)+' declined the call');
       break;
+    case 'call-ended':
+      cleanupCall(false);
+      toast('The voice call has ended');
+      break;
   }
 }
-
 function showChatBadge(){
   const b=document.getElementById('chat-badge');
   if(!b)return;
@@ -1308,9 +1055,9 @@ function showChatBadge(){
   else{b.style.display='none';}
 }
 
-/* ══════════════════════════════════════════
-   TABS
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// TABS
+// ──────────────────────────────────────────────
 function showTab(n){
   const t1=document.getElementById('t1'),t2=document.getElementById('t2');
   const b1=document.getElementById('tb1'),b2=document.getElementById('tb2');
@@ -1329,9 +1076,9 @@ function showTab(n){
   }
 }
 
-/* ══════════════════════════════════════════
-   SPIN WHEEL — CANVAS
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// SPIN WHEEL — CANVAS
+// ──────────────────────────────────────────────
 function initCanvas(){
   const cv=document.getElementById('spin-canvas');if(!cv)return;
   const dpr=Math.min(window.devicePixelRatio||1,3);
@@ -1346,7 +1093,6 @@ function resetCanvasTransform(){
   const dpr=Math.min(window.devicePixelRatio||1,3);
   cv.getContext('2d').setTransform(dpr,0,0,dpr,0,0);
 }
-
 const WHEEL_COLORS=['#7F5AF0','#E45C8B','#1D9E75','#F0A030','#378ADD','#D85A30','#9E1D75','#5DCAA5'];
 function drawWheel(angle,pl){
   const cv=document.getElementById('spin-canvas');if(!cv)return;
@@ -1355,13 +1101,10 @@ function drawWheel(angle,pl){
   const cx=size/2,cy=size/2,r=(size/2)-8,n=list.length;
   const a=angle!==undefined?angle:spinAngle;
   ctx.clearRect(0,0,size,size);
-
-  // Outer glow ring
   ctx.beginPath();ctx.arc(cx,cy,r+8,0,Math.PI*2);
   ctx.strokeStyle='rgba(127,90,240,.12)';ctx.lineWidth=10;ctx.stroke();
   ctx.beginPath();ctx.arc(cx,cy,r+2,0,Math.PI*2);
   ctx.strokeStyle='#2a2650';ctx.lineWidth=2;ctx.stroke();
-
   for(let i=0;i<n;i++){
     const s=(2*Math.PI/n)*i-Math.PI/2, e=s+2*Math.PI/n;
     ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,s,e);
@@ -1377,13 +1120,9 @@ function drawWheel(angle,pl){
     ctx.restore();
   }
   ctx.shadowBlur=0;
-
-  // Center hub
   ctx.beginPath();ctx.arc(cx,cy,22,0,Math.PI*2);
   ctx.fillStyle='#0a0914';ctx.fill();
   ctx.strokeStyle=var_('--purple');ctx.lineWidth=2.5;ctx.stroke();
-
-  // Needle
   const bx=cx+Math.cos(a)*82,by=cy+Math.sin(a)*82;
   const g=ctx.createLinearGradient(cx,cy,bx,by);
   g.addColorStop(0,'#4a3a9e');g.addColorStop(1,'#c4beff');
@@ -1395,16 +1134,14 @@ function drawWheel(angle,pl){
   ctx.beginPath();ctx.arc(cx,cy,7,0,Math.PI*2);
   ctx.fillStyle=var_('--purple');ctx.fill();
 }
-
 function orderedPlayerNames(){
-  // Stable ordering by RTDB player id so all clients draw the wheel consistently.
   const ids=Object.keys(players).sort((a,b)=>a<b?-1:a>b?1:0);
   return ids.map(id=>players[id]).filter(Boolean);
 }
 
-/* ══════════════════════════════════════════
-   SPIN LOGIC
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// SPIN LOGIC
+// ──────────────────────────────────────────────
 function doSpin(){
   const now=Date.now();
   if(spinning||spinLocked||(now-lastSpinTime<600))return;
@@ -1415,7 +1152,6 @@ function doSpin(){
   pushEv({type:'spin',seed});
   animSpin(seed);
 }
-
 function animSpin(seed){
   if(spinning)return;
   spinning=true;
@@ -1452,7 +1188,6 @@ function animSpin(seed){
   }
   requestAnimationFrame(fr);
 }
-
 function showPostSpin(player){
   if(postSpinFading)return;
   postSpinFading=true;
@@ -1481,7 +1216,6 @@ function showPostSpin(player){
     }
   },350);
 }
-
 function resetSpin(){
   document.getElementById('post-spin').style.display='none';
   document.getElementById('qcard').style.display='none';
@@ -1489,14 +1223,13 @@ function resetSpin(){
   const ss=document.getElementById('spin-section');
   ss.style.display='flex';
   chosen=null;postSpinFading=false;
-  // Clear dedupe key so the next card/chosen UI can render for a new round.
   currentCardKey=null;
   drawWheel(spinAngle,orderedPlayerNames());
 }
 
-/* ══════════════════════════════════════════
-   QUESTION CARDS
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// QUESTION CARDS
+// ──────────────────────────────────────────────
 function doCard(type){
   const pool=type==='truth'?TRUTHS:DARES;
   const q=pool[Math.floor(Math.random()*pool.length)];
@@ -1509,7 +1242,6 @@ function doCard(type){
   sysMsg(esc(who)+' picked '+type.toUpperCase()+': "'+esc(q)+'"');
   playSound('card');
 }
-
 function setCT(t){
   ctab=t;
   const c1=document.getElementById('ct1'),c2=document.getElementById('ct2');
@@ -1519,7 +1251,6 @@ function setCT(t){
   c1.setAttribute('aria-pressed',t==='truth');c2.setAttribute('aria-pressed',t==='dare');
   document.getElementById('cq').placeholder=t==='truth'?'Type your own truth question…':'Type your own dare…';
 }
-
 function sendCQ(){
   const text=document.getElementById('cq').value.trim();
   if(!text){toast('Type a question first!');return;}
@@ -1533,7 +1264,6 @@ function sendCQ(){
   document.getElementById('cq').value='';
   playSound('card');
 }
-
 function showCard(type,q,isCustom){
   const card=document.getElementById('qcard');
   card.className='fu';card.style.display='block';
@@ -1555,9 +1285,9 @@ function showCard(type,q,isCustom){
   card.appendChild(wrap);
 }
 
-/* ══════════════════════════════════════════
-   CHAT
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// CHAT
+// ──────────────────────────────────────────────
 function sendMsg(){
   const inp=document.getElementById('mi');
   const text=inp.value.trim();if(!text)return;
@@ -1565,7 +1295,6 @@ function sendMsg(){
   addBubble(true,myName,text);
   inp.value='';clearTyp();
 }
-
 function onTyping(){
   if(!fbRef)return;
   const now=Date.now();
@@ -1577,7 +1306,6 @@ function onTyping(){
   typTimer=setTimeout(clearTyp,2500);
 }
 function clearTyp(){clearTimeout(typTimer);if(fbRef)fbRef.child('typing/'+myId).remove();}
-
 function addBubble(isMe,name,text){
   const box=document.getElementById('chatbox');if(!box)return;
   const wrap=document.createElement('div');
@@ -1598,41 +1326,77 @@ function addBubble(isMe,name,text){
   box.appendChild(wrap);
   requestAnimationFrame(()=>box.scrollTop=box.scrollHeight);
 }
+function addVoice(isMe, name, data) {
+  const box = document.getElementById('chatbox'); if (!box) return;
+  const audio = new Audio(data);
+  audio.preload = 'metadata';
 
-function addVoice(isMe,name,data){
-  const box=document.getElementById('chatbox');if(!box)return;
-  const audio=new Audio(data);
-  const wrap=document.createElement('div');
-  wrap.className='fu';
-  wrap.style.cssText='display:flex;flex-direction:column;max-width:82%;'+(isMe?'align-self:flex-end;align-items:flex-end;':'align-self:flex-start;align-items:flex-start;');
-  if(!isMe){const nm=document.createElement('span');nm.style.cssText='font-size:11px;color:var(--text2);margin-bottom:2px;padding:0 4px;';nm.textContent=name;wrap.appendChild(nm);}
-  const bub=document.createElement('div');
-  bub.className=isMe?'bm':'bt';
-  bub.style.cssText='padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;min-width:170px;min-height:50px;';
-  bub.setAttribute('role','button');bub.setAttribute('tabindex','0');bub.setAttribute('aria-label','Play voice note');
-  const wv=document.createElement('div');wv.style.cssText='display:flex;gap:2px;align-items:flex-end;height:22px;flex:1;';
-  for(let i=0;i<6;i++){
-    const b=document.createElement('div');
-    b.style.cssText=`width:3px;background:${isMe?'#b0a8ff':'var(--green)'};border-radius:2px;height:${4+Math.random()*14}px;`;
+  const wrap = document.createElement('div');
+  wrap.className = 'fu';
+  wrap.style.cssText = 'display:flex;flex-direction:column;max-width:82%;' +
+    (isMe ? 'align-self:flex-end;align-items:flex-end;' : 'align-self:flex-start;align-items:flex-start;');
+
+  if (!isMe) {
+    const nm = document.createElement('span');
+    nm.style.cssText = 'font-size:11px;color:var(--text2);margin-bottom:2px;padding:0 4px;';
+    nm.textContent = name;
+    wrap.appendChild(nm);
+  }
+
+  const bub = document.createElement('div');
+  bub.className = isMe ? 'bm' : 'bt';
+  bub.style.cssText = 'padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;min-width:170px;min-height:50px;';
+  bub.setAttribute('role', 'button');
+  bub.setAttribute('tabindex', '0');
+
+  const wv = document.createElement('div');
+  wv.style.cssText = 'display:flex;gap:2px;align-items:flex-end;height:22px;flex:1;';
+  for (let i = 0; i < 6; i++) {
+    const b = document.createElement('div');
+    b.style.cssText = `width:3px;background:${isMe ? '#b0a8ff' : 'var(--green)'};border-radius:2px;height:${4 + Math.random() * 14}px;`;
     wv.appendChild(b);
   }
-  const ts=document.createElement('span');ts.style.cssText='font-size:12px;color:var(--text2);min-width:36px;';ts.textContent='🎵';
-  audio.addEventListener('loadedmetadata',()=>{const d=Math.round(audio.duration);if(isFinite(d)&&d>0)ts.textContent=Math.floor(d/60)+':'+(d%60+'').padStart(2,'0');});
-  bub.appendChild(wv);bub.appendChild(ts);
-  const playFn=()=>{
-    audio.currentTime=0;
-    audio.play().catch(()=>toast('Tap again to play'));
-    ts.style.color=var_('--purple');
-    audio.onended=()=>ts.style.color=var_('--text2');
-  };
-  bub.addEventListener('click',playFn);
-  bub.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')playFn();});
-  wrap.appendChild(bub);
-  const t=document.createElement('span');t.style.cssText='font-size:10px;color:var(--text3);margin-top:3px;padding:0 4px;';t.textContent=tn();wrap.appendChild(t);
-  box.appendChild(wrap);
-  requestAnimationFrame(()=>box.scrollTop=box.scrollHeight);
-}
 
+  const ts = document.createElement('span');
+  ts.style.cssText = 'font-size:12px;color:var(--text2);min-width:36px;';
+  ts.textContent = '0:00';
+
+  audio.addEventListener('loadedmetadata', () => {
+    const dur = Math.round(audio.duration || 0);
+    if (dur > 0) ts.textContent = `${Math.floor(dur / 60)}:${(dur % 60 + '').padStart(2, '0')}`;
+  });
+
+  const tryPlay = async () => {
+    try {
+      audio.currentTime = 0;
+      await audio.play();
+      ts.style.color = 'var(--purple)';
+    } catch (err) {
+      toast('Tap again — mobile browsers often require a second tap');
+    }
+  };
+
+  audio.onplay = () => ts.style.color = 'var(--purple)';
+  audio.onended = () => ts.style.color = 'var(--text2)';
+  audio.onpause = () => ts.style.color = 'var(--text2)';
+
+  bub.addEventListener('click', tryPlay);
+  bub.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tryPlay(); }
+  });
+
+  bub.appendChild(wv);
+  bub.appendChild(ts);
+  wrap.appendChild(bub);
+
+  const time = document.createElement('span');
+  time.style.cssText = 'font-size:10px;color:var(--text3);margin-top:3px;padding:0 4px;';
+  time.textContent = tn();
+  wrap.appendChild(time);
+
+  box.appendChild(wrap);
+  requestAnimationFrame(() => box.scrollTop = box.scrollHeight);
+}
 function sysMsg(text){
   const box=document.getElementById('chatbox');if(!box)return;
   const d=document.createElement('div');d.style.cssText='align-self:center;text-align:center;padding:3px 0;';
@@ -1642,14 +1406,14 @@ function sysMsg(text){
   requestAnimationFrame(()=>box.scrollTop=box.scrollHeight);
 }
 
-/* ══════════════════════════════════════════
-   VOICE NOTES (PTT)
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// VOICE NOTES (PTT)
+// ──────────────────────────────────────────────
 async function startRec(e){
   e.preventDefault();if(isRec)return;
   resumeAC();
   const mimeType=getSupportedMimeType();
-  if(!mimeType){toast('Voice notes not supported in this browser. Try Chrome.');return;}
+  if(!mimeType){toast('Voice notes not supported in this browser.');return;}
   pttReleased=false;
   try{
     const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,sampleRate:48000}});
@@ -1688,7 +1452,7 @@ async function startRec(e){
   }catch(err){
     clearInterval(recTimer);recTimer=null;isRec=false;
     if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError')
-      toast('Microphone denied — allow it in browser settings');
+      toast('Microphone access denied — allow it in browser settings');
     else
       toast('Could not start recording: '+err.message);
   }
@@ -1705,9 +1469,9 @@ function stopRec(e){
 function showRecIndicator(){const el=document.getElementById('rec-indicator');if(el){el.style.display='flex';document.getElementById('rec-time').textContent='0:00';}}
 function hideRecIndicator(){const el=document.getElementById('rec-indicator');if(el)el.style.display='none';}
 
-/* ══════════════════════════════════════════
-   OPEN MIC
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// OPEN MIC
+// ──────────────────────────────────────────────
 async function toggleOpenMic(){
   const btn=document.getElementById('omBtn');
   if(!omOn){
@@ -1733,22 +1497,34 @@ async function toggleOpenMic(){
   }
 }
 
-/* ══════════════════════════════════════════
-   WebRTC — VOICE CALL
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// WebRTC — VOICE CALL (fixed)
+// ──────────────────────────────────────────────
 function setupWebRTC(){
   if(!fbRef)return;
   const sig=fbRef.child('webrtc');
   fbRef.child('call-invites/'+myId).onDisconnect().remove();
 
-  // Incoming call invites via dedicated path (faster + no event stream dedup needed)
   addListener(fbRef.child('call-invites/'+myId),'child_added',snap=>{
     const d=snap.val();if(!d)return;
     snap.ref.remove();
     if(d.from!==myId) showIncomingCall(d.name,d.from);
   });
 
-  // WebRTC signalling
+  addListener(fbRef.child('webrtc/accepts'),'child_added',snap=>{
+    const d=snap.val();if(!d||d.to!==myId)return;
+    snap.ref.remove();
+    const pid=d.from;
+    if(inCall&&localStream){
+      const pc=getPC(pid);
+      localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+      pc.createOffer({offerToReceiveAudio:true}).then(offer=>{
+        pc.setLocalDescription(offer);
+        sig.child('offers/'+pid).push({from:myId,sdp:{type:offer.type,sdp:offer.sdp}});
+      }).catch(console.warn);
+    }
+  });
+
   addListener(sig.child('offers/'+myId),'child_added',async snap=>{
     const d=snap.val();if(!d)return;snap.ref.remove();
     try{
@@ -1812,64 +1588,40 @@ async function startCall(){
   const otherIds=Object.keys(players).filter(id=>id!==myId);
   if(!otherIds.length)return;
   resumeAC();
-  // Broadcast ring invites to all
+
   otherIds.forEach(pid=>{
     if(fbRef) fbRef.child('call-invites/'+pid).push({from:myId,name:myName,ts:Date.now()});
   });
-  if(inCall){openCallScreen();return;}
+
   try{
     localStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,sampleRate:48000}});
   }catch(e){toast('Microphone access needed for voice calls');return;}
+
   inCall=true;openCallScreen();
-  for(const pid of otherIds){
-    const pc=getPC(pid);
-    localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
-    try{
-      const offer=await pc.createOffer({offerToReceiveAudio:true});
-      await pc.setLocalDescription(offer);
-      if(fbRef) fbRef.child('webrtc/offers/'+pid).push({from:myId,sdp:{type:offer.type,sdp:offer.sdp}});
-    }catch(e){console.warn('Offer error:',e);}
-  }
   sysMsg(esc(myName)+' started a voice call 📞');
-}
-
-function showIncomingCall(callerName,callerId){
-  pendingCallFrom=callerId;
-  document.getElementById('ring-name').textContent=esc(callerName);
-  document.getElementById('ring-av').textContent=callerName.slice(0,1).toUpperCase();
-  document.getElementById('ring-ov').classList.add('on');
-  startRingTone();
-  if(navigator.vibrate) navigator.vibrate([300,150,300,150,300]);
-}
-
-function declineCall(){
-  stopRingTone();
-  document.getElementById('ring-ov').classList.remove('on');
-  if(pendingCallFrom&&fbRef){
-    // Notify caller of decline
-    pushEv({type:'call-decline',to:pendingCallFrom,name:myName});
-  }
-  pendingCallFrom=null;
 }
 
 async function acceptCall(){
   stopRingTone();
   document.getElementById('ring-ov').classList.remove('on');
   if(!localStream){
-    try{localStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});}
+    try{localStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,sampleRate:48000}});}
     catch(e){toast('Microphone access needed to accept call');return;}
   }
   inCall=true;openCallScreen();
-  if(pendingCallFrom){
-    try{
-      const pc=getPC(pendingCallFrom);
-      localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
-      const offer=await pc.createOffer({offerToReceiveAudio:true});
-      await pc.setLocalDescription(offer);
-      if(fbRef) fbRef.child('webrtc/offers/'+pendingCallFrom).push({from:myId,sdp:{type:offer.type,sdp:offer.sdp}});
-    }catch(e){console.warn('acceptCall error:',e);}
-    pendingCallFrom=null;
+  if(pendingCallFrom&&fbRef){
+    fbRef.child('webrtc/accepts').push({from:myId,to:pendingCallFrom,name:myName});
   }
+  pendingCallFrom=null;
+}
+
+function declineCall(){
+  stopRingTone();
+  document.getElementById('ring-ov').classList.remove('on');
+  if(pendingCallFrom&&fbRef){
+    pushEv({type:'call-decline',to:pendingCallFrom,name:myName});
+  }
+  pendingCallFrom=null;
 }
 
 function openCallScreen(){
@@ -1888,21 +1640,21 @@ function openCallScreen(){
 }
 
 function endCall(){
+  if(fbRef) pushEv({type:'call-ended'});
   cleanupCall(true);
 }
 
-function cleanupCall(notify){
+function cleanupCall(notify=true){
   stopRingTone();
   clearInterval(callTimerInt);callTimerInt=null;
-  const myPids=Object.keys(pcs);
-  myPids.forEach(pid=>{
+  Object.keys(pcs).forEach(pid=>{
     try{pcs[pid].close();}catch(e){}
     delete pcs[pid];
     const el=document.getElementById('ra_'+pid);if(el)el.remove();
     if(fbRef){
-      try{fbRef.child('webrtc/offers/'+pid).remove();}catch(e){}
-      try{fbRef.child('webrtc/answers/'+myId).remove();}catch(e){}
-      try{fbRef.child('webrtc/ice/'+pid+'/'+myId).remove();}catch(e){}
+      fbRef.child('webrtc/offers/'+pid).remove();
+      fbRef.child('webrtc/answers/'+myId).remove();
+      fbRef.child('webrtc/ice/'+pid+'/'+myId).remove();
     }
   });
   if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
@@ -1921,16 +1673,21 @@ function toggleMute(){
     btn.textContent=mutedMic?'🔇':'🎤';
     btn.style.borderColor=mutedMic?var_('--pink'):var_('--border2');
     btn.setAttribute('aria-pressed',mutedMic);
-    btn.setAttribute('aria-label',mutedMic?'Unmute microphone':'Mute microphone');
   }
 }
+
 function toggleSpeaker(){
-  const spk=document.getElementById('spk-btn');
-  const isOn=spk.getAttribute('aria-pressed')!=='false';
-  document.querySelectorAll('#remote-audios audio').forEach(a=>{a.muted=isOn;});
-  spk.textContent=isOn?'🔈':'🔊';
-  spk.setAttribute('aria-pressed',!isOn);
-  spk.setAttribute('aria-label',isOn?'Enable speaker':'Disable speaker');
+  const btn=document.getElementById('spk-btn');
+  const wasMuted=btn.getAttribute('aria-pressed')==='true';
+  const nowMuted=!wasMuted;
+
+  document.querySelectorAll('#remote-audios audio').forEach(audio=>{
+    audio.muted=nowMuted;
+  });
+
+  btn.textContent=nowMuted?'🔈':'🔊';
+  btn.setAttribute('aria-pressed',nowMuted?'true':'false');
+  btn.setAttribute('aria-label',nowMuted?'Turn speaker on':'Turn speaker off');
 }
 
 function renderCallAvs(){
@@ -1955,17 +1712,13 @@ function renderCallAvs(){
   });
 }
 
-/* ══════════════════════════════════════════
-   PLAYER RENDERING
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// PLAYER RENDERING
+// ──────────────────────────────────────────────
 function renderPlayers(){
   const names=orderedPlayerNames();
-
-  // Call button
   const callBtn=document.getElementById('call-btn');
   if(callBtn) callBtn.style.display=names.length>1?'flex':'none';
-
-  // Waiting room list
   const pl=document.getElementById('plist');
   if(pl){
     pl.innerHTML='';
@@ -1986,8 +1739,6 @@ function renderPlayers(){
       });
     }
   }
-
-  // Game header chips
   const pc=document.getElementById('pchips');
   if(pc){
     Array.from(pc.querySelectorAll('[data-pid]')).forEach(c=>c.remove());
@@ -2003,10 +1754,8 @@ function renderPlayers(){
       typDiv?pc.insertBefore(chip,typDiv):pc.appendChild(chip);
     });
   }
-
   if(curPg()==='pg-game') drawWheel(spinAngle,names);
 }
-
 function updateDots(onlineIds){
   document.querySelectorAll('[data-pid]').forEach(el=>{
     const pid=el.getAttribute('data-pid');
@@ -2019,9 +1768,9 @@ function updateDots(onlineIds){
   });
 }
 
-/* ══════════════════════════════════════════
-   STATUS BAR
-══════════════════════════════════════════ */
+// ──────────────────────────────────────────────
+// STATUS BAR
+// ──────────────────────────────────────────────
 function setStatus(text,type){
   const cls=type==='ok'?'status-ok':type==='err'?'status-err':'status-idle';
   ['spill','spill2'].forEach(id=>{
@@ -2032,10 +1781,6 @@ function setStatus(text,type){
     el.textContent=text;
   });
 }
-
-/* ══════════════════════════════════════════
-   PWA INSTALL INIT
-══════════════════════════════════════════ */
 </script>
 </body>
 </html>
