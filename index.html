@@ -4,344 +4,490 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="theme-color" content="#7F77DD"/>
+<meta name="description" content="Real-time multiplayer Truth or Dare with voice calls. No login needed."/>
+<meta property="og:title" content="Truth or Dare 🍾"/>
+<meta property="og:description" content="Play Truth or Dare with friends in real time. Voice calls included."/>
+<meta property="og:image" content="https://truth-dare-app-95ce8.web.app/icon-512.png"/>
+<meta property="og:type" content="website"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="TruthDare"/>
 <link rel="manifest" href="manifest.json"/>
+<!-- FIX U15: SVG favicon inline as data URI — no external file needed -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍾</text></svg>"/>
 <title>Truth or Dare 🍾</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;background:#0f0e17;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+@supports(height:100dvh){html,body{height:100dvh;}}
 body{display:flex;flex-direction:column;overflow:hidden;}
 
-/* ── install bar ── */
+/* install bar — hidden when already installed */
 #ibar{flex-shrink:0;background:linear-gradient(135deg,#2e2a5e,#1a1a2e);border-bottom:1.5px solid #7F77DD;display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 8px) 14px 8px;}
 #ibar.gone{display:none;}
-.ib-btn{background:#7F77DD;color:#fff;font-weight:700;border-radius:10px;padding:8px 14px;font-size:13px;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background .15s;}
+.ib-btn{background:#7F77DD;color:#fff;font-weight:700;border-radius:10px;padding:9px 16px;font-size:13px;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0;min-height:44px;}
 .ib-btn:active{background:#534AB7;}
 
-/* ── app shell ── */
-#app{flex:1;overflow:hidden;display:flex;flex-direction:column;}
-.pg{display:none;flex:1;flex-direction:column;overflow:hidden;}
+#app{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0;}
+.pg{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;}
 .pg.on{display:flex;}
 .sy{overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .sy::-webkit-scrollbar{width:3px;}
 .sy::-webkit-scrollbar-thumb{background:#2a2a4a;border-radius:4px;}
 input,textarea,button{font-family:inherit;border:none;background:none;}
 input::placeholder,textarea::placeholder{color:#444466;}
-input:focus,textarea:focus{outline:none;}
+/* FIX U14: only border inputs themselves, not wrappers */
+input[type=text]:focus{outline:none;border-color:#7F77DD !important;}
+textarea:focus{outline:none;border-color:#7F77DD !important;}
 textarea{resize:none;}
 .pb-safe{padding-bottom:env(safe-area-inset-bottom,12px);}
+button{min-height:44px;}
 
-/* ── animations ── */
+/* animations */
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
 .fu{animation:fadeUp .3s ease forwards;}
-
-/* typing dots */
 @keyframes bounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
 .td{display:inline-block;width:6px;height:6px;border-radius:50%;background:#7F77DD;margin:0 2px;vertical-align:middle;animation:bounce 1.2s infinite;}
 .td:nth-child(2){animation-delay:.2s;}.td:nth-child(3){animation-delay:.4s;}
-
-/* online pulse */
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
-
-/* call ring */
 @keyframes callring{0%{box-shadow:0 0 0 0 rgba(93,202,165,.7),0 0 0 0 rgba(93,202,165,.4);}50%{box-shadow:0 0 0 12px rgba(93,202,165,.2),0 0 0 24px rgba(93,202,165,0);}100%{box-shadow:0 0 0 12px rgba(93,202,165,0),0 0 0 24px rgba(93,202,165,0);}}
 .call-ring{animation:callring 1.5s infinite;}
-
-/* ptt recording pulse */
 @keyframes recpulse{0%{box-shadow:0 0 0 0 rgba(212,83,126,.8);}100%{box-shadow:0 0 0 18px rgba(212,83,126,0);}}
 .recording{background:#D4537E!important;animation:recpulse .7s infinite!important;}
-
-/* sound waves */
 @keyframes wave{0%,100%{height:4px;}50%{height:18px;}}
 .wb{width:3px;border-radius:2px;background:#7F77DD;animation:wave .6s infinite ease-in-out;display:inline-block;}
 .wb:nth-child(2){animation-delay:.1s;}.wb:nth-child(3){animation-delay:.2s;}.wb:nth-child(4){animation-delay:.3s;}
-
-/* bubbles */
 .bm{background:#2e2a5e;border-radius:18px 18px 4px 18px;}
 .bt{background:#1a1a2e;border-radius:18px 18px 18px 4px;}
 
-/* call overlay */
-#call-ov{display:none;position:fixed;inset:0;z-index:90;background:#070614;flex-direction:column;align-items:center;justify-content:space-between;padding:60px 24px 50px;}
-#call-ov.on{display:flex;}
-
-/* incoming call overlay */
-#ring-ov{display:none;position:fixed;inset:0;z-index:95;background:rgba(7,6,20,.95);flex-direction:column;align-items:center;justify-content:center;gap:28px;}
-#ring-ov.on{display:flex;}
-
-/* modal backdrop */
+/* overlays — FIX B2: use visibility+opacity not just display for iOS Safari */
+#call-ov{visibility:hidden;opacity:0;position:fixed;inset:0;z-index:90;background:#070614;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:60px 24px 50px;transition:opacity .2s;}
+#call-ov.on{visibility:visible;opacity:1;}
+#ring-ov{visibility:hidden;opacity:0;position:fixed;inset:0;z-index:95;background:rgba(7,6,20,.96);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;transition:opacity .2s;}
+#ring-ov.on{visibility:visible;opacity:1;}
 .modal-back{display:none;position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.75);align-items:flex-end;justify-content:center;}
 .modal-back.on{display:flex;}
 .modal-sheet{background:#1a1a2e;border:1px solid #7F77DD;border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;}
 
-/* voice note progress */
-.vnbar{height:4px;background:#7F77DD;border-radius:2px;transition:width .1s linear;}
-
 /* card styles */
-.qcard-truth{border-left:4px solid #7F77DD;background:#1e1b40;}
-.qcard-dare{border-left:4px solid #D4537E;background:#2a1220;}
-.qcard-custom{border-left:4px solid #EF9F27;background:#1e1600;}
+.qcard-truth{border-left:4px solid #7F77DD;background:#1e1b40;border-radius:0 16px 16px 0;padding:16px;}
+.qcard-dare{border-left:4px solid #D4537E;background:#2a1220;border-radius:0 16px 16px 0;padding:16px;}
+.qcard-custom{border-left:4px solid #EF9F27;background:#1e1600;border-radius:0 16px 16px 0;padding:16px;}
+
+/* spinner */
+@keyframes spin360{to{transform:rotate(360deg);}}
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin360 .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px;}
+
+/* FIX U5: toast with safe-area */
+#toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 90px);left:50%;transform:translateX(-50%);background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:10px 20px;font-size:13px;color:#fff;z-index:200;opacity:0;transition:opacity .25s;pointer-events:none;max-width:90vw;text-align:center;}
+#toast.show{opacity:1;}
+
+.field-error{font-size:12px;color:#f5a0c0;margin-top:4px;min-height:16px;display:block;}
+
+/* FIX U8: chat unread badge on tab button */
+#tb2{position:relative;}
+#chat-badge{position:absolute;top:6px;right:12px;width:8px;height:8px;border-radius:50%;background:#D4537E;display:none;}
+
+/* FIX U12: mouseleave stops recording */
+/* FIX U13: label styling */
+.input-label{font-size:12px;color:#a7a9be;display:block;margin-bottom:4px;}
+
+/* sending voice state */
+.sending-voice{opacity:.6;pointer-events:none;}
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════
-  INSTALL BAR
-══════════════════════════════ -->
-<div id="ibar">
-  <span style="font-size:26px;flex-shrink:0;">🍾</span>
+<!-- SVG LOGO IN HEADER BAR -->
+<div id="ibar" role="banner">
+  <!-- FIX U8/B8: proper SVG logo -->
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" flex-shrink="0" style="flex-shrink:0;">
+    <circle cx="16" cy="16" r="16" fill="#2e2a5e"/>
+    <text x="16" y="21" text-anchor="middle" font-size="18">🍾</text>
+  </svg>
   <div style="flex:1;min-width:0;">
     <div style="font-size:13px;font-weight:700;color:#fff;">Truth or Dare</div>
     <div style="font-size:11px;color:#b0aaf5;margin-top:1px;">Install for the best experience</div>
   </div>
-  <button id="ib-btn" class="ib-btn" onclick="doInstall()">📲 Install</button>
-  <button id="ib-ios-btn" class="ib-btn" style="display:none;" onclick="showIOSModal()">📲 Install</button>
+  <button id="ib-btn" class="ib-btn" onclick="doInstall()" aria-label="Install app">📲 Install</button>
+  <button id="ib-ios-btn" class="ib-btn" style="display:none;" onclick="showIOSModal()" aria-label="Install app on iPhone">📲 Install</button>
 </div>
 
-<!-- iOS install modal -->
-<div id="ios-modal" class="modal-back">
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- iOS INSTALL MODAL -->
+<div id="ios-modal" class="modal-back" role="dialog" aria-modal="true" aria-label="Install instructions">
   <div class="modal-sheet">
     <div style="text-align:center;margin-bottom:20px;">
-      <div style="font-size:44px;margin-bottom:8px;">🍾</div>
+      <div style="font-size:44px;margin-bottom:8px;" aria-hidden="true">🍾</div>
       <h2 style="font-size:18px;font-weight:700;margin-bottom:4px;">Install on iPhone</h2>
       <p style="font-size:13px;color:#a7a9be;">3 quick steps</p>
     </div>
-    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
-      <div style="display:flex;align-items:center;gap:14px;background:#12102a;border-radius:14px;padding:14px;">
-        <div style="width:36px;height:36px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0;">1</div>
+    <ol style="list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+      <li style="display:flex;align-items:center;gap:14px;background:#12102a;border-radius:14px;padding:14px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0;" aria-hidden="true">1</div>
         <div><p style="font-size:14px;font-weight:600;">Tap the Share button</p><p style="font-size:12px;color:#a7a9be;margin-top:2px;">The □↑ icon at the bottom of Safari</p></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:14px;background:#12102a;border-radius:14px;padding:14px;">
-        <div style="width:36px;height:36px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0;">2</div>
-        <div><p style="font-size:14px;font-weight:600;">Tap "Add to Home Screen"</p><p style="font-size:12px;color:#a7a9be;margin-top:2px;">Scroll down the share sheet to find it</p></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:14px;background:#12102a;border-radius:14px;padding:14px;">
-        <div style="width:36px;height:36px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0;">3</div>
+      </li>
+      <li style="display:flex;align-items:center;gap:14px;background:#12102a;border-radius:14px;padding:14px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0;" aria-hidden="true">2</div>
+        <div><p style="font-size:14px;font-weight:600;">Tap "Add to Home Screen"</p><p style="font-size:12px;color:#a7a9be;margin-top:2px;">Scroll down the share sheet</p></div>
+      </li>
+      <li style="display:flex;align-items:center;gap:14px;background:#12102a;border-radius:14px;padding:14px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0;" aria-hidden="true">3</div>
         <div><p style="font-size:14px;font-weight:600;">Tap "Add"</p><p style="font-size:12px;color:#a7a9be;margin-top:2px;">App icon appears on your home screen</p></div>
-      </div>
-    </div>
-    <button onclick="closeIOSModal()" style="width:100%;background:#7F77DD;color:#fff;font-weight:700;border-radius:14px;padding:14px;font-size:15px;cursor:pointer;">Got it ✓</button>
+      </li>
+    </ol>
+    <button onclick="closeIOSModal()" style="width:100%;background:#7F77DD;color:#fff;font-weight:700;border-radius:14px;padding:14px;font-size:15px;cursor:pointer;min-height:52px;">Got it ✓</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════
-  INCOMING CALL OVERLAY
-══════════════════════════════ -->
-<div id="ring-ov">
+<!-- INCOMING CALL — FIX B2: uses visibility+opacity -->
+<div id="ring-ov" role="alertdialog" aria-modal="true" aria-label="Incoming voice call">
   <div style="text-align:center;">
-    <div id="ring-avatar" class="call-ring" style="width:90px;height:90px;border-radius:50%;background:#1a1a2e;border:3px solid #5DCAA5;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;margin:0 auto 16px;">?</div>
+    <div id="ring-avatar" class="call-ring" style="width:90px;height:90px;border-radius:50%;background:#1a1a2e;border:3px solid #5DCAA5;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;margin:0 auto 16px;color:#5DCAA5;" aria-hidden="true">?</div>
     <p id="ring-name" style="font-size:22px;font-weight:700;margin-bottom:6px;"></p>
     <p style="font-size:14px;color:#a7a9be;">Incoming voice call…</p>
   </div>
-  <div style="display:flex;gap:40px;">
+  <div style="display:flex;gap:48px;">
     <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-      <button onclick="declineCall()" style="width:68px;height:68px;border-radius:50%;background:#D4537E;font-size:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;">📵</button>
-      <span style="font-size:12px;color:#a7a9be;">Decline</span>
+      <button onclick="declineCall()" aria-label="Decline call" style="width:68px;height:68px;border-radius:50%;background:#D4537E;font-size:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;min-height:68px;">📵</button>
+      <span style="font-size:12px;color:#a7a9be;" aria-hidden="true">Decline</span>
     </div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-      <button onclick="acceptCall()" style="width:68px;height:68px;border-radius:50%;background:#5DCAA5;font-size:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;">📞</button>
-      <span style="font-size:12px;color:#a7a9be;">Accept</span>
+      <button onclick="acceptCall()" aria-label="Accept call" style="width:68px;height:68px;border-radius:50%;background:#5DCAA5;font-size:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;min-height:68px;">📞</button>
+      <span style="font-size:12px;color:#a7a9be;" aria-hidden="true">Accept</span>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════
-  ACTIVE CALL OVERLAY
-══════════════════════════════ -->
-<div id="call-ov">
+<!-- ACTIVE CALL — FIX B2: visibility+opacity -->
+<div id="call-ov" role="dialog" aria-modal="true" aria-label="Voice call in progress">
   <div style="text-align:center;">
-    <p id="call-status" style="color:#5DCAA5;font-size:13px;margin-bottom:6px;letter-spacing:1px;">● CONNECTING</p>
+    <p id="call-status" style="color:#5DCAA5;font-size:13px;margin-bottom:6px;letter-spacing:1px;" aria-live="polite">● CONNECTING</p>
     <h2 style="font-size:22px;font-weight:700;margin-bottom:4px;">Voice Call</h2>
     <p id="call-room" style="color:#555577;font-size:12px;"></p>
   </div>
-  <div id="call-avs" style="display:flex;flex-wrap:wrap;gap:20px;justify-content:center;width:100%;"></div>
-  <div id="remote-audios" style="display:none;"></div>
+  <div id="call-avs" style="display:flex;flex-wrap:wrap;gap:20px;justify-content:center;width:100%;" aria-live="polite"></div>
+  <div id="remote-audios" style="display:none;" aria-hidden="true"></div>
   <div style="display:flex;gap:24px;align-items:center;">
     <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-      <button id="mute-btn" onclick="toggleMute()" style="width:60px;height:60px;border-radius:50%;background:#1a1a2e;border:1.5px solid #2a2a4a;font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;">🎤</button>
-      <span style="font-size:11px;color:#555577;">Mute</span>
+      <button id="mute-btn" onclick="toggleMute()" aria-label="Mute microphone" aria-pressed="false" style="width:60px;height:60px;border-radius:50%;background:#1a1a2e;border:1.5px solid #2a2a4a;font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;min-height:60px;">🎤</button>
+      <span style="font-size:11px;color:#555577;" aria-hidden="true">Mute</span>
     </div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-      <button onclick="endCall()" style="width:72px;height:72px;border-radius:50%;background:#D4537E;font-size:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;">📵</button>
-      <span style="font-size:11px;color:#a7a9be;">End</span>
+      <button onclick="endCall()" aria-label="End call" style="width:72px;height:72px;border-radius:50%;background:#D4537E;font-size:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;min-height:72px;">📵</button>
+      <span style="font-size:11px;color:#a7a9be;" aria-hidden="true">End</span>
     </div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-      <button id="spk-btn" onclick="toggleSpeaker()" style="width:60px;height:60px;border-radius:50%;background:#1a1a2e;border:1.5px solid #2a2a4a;font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;">🔊</button>
-      <span style="font-size:11px;color:#555577;">Speaker</span>
+      <button id="spk-btn" onclick="toggleSpeaker()" aria-label="Toggle speaker" aria-pressed="false" style="width:60px;height:60px;border-radius:50%;background:#1a1a2e;border:1.5px solid #2a2a4a;font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;min-height:60px;">🔊</button>
+      <span style="font-size:11px;color:#555577;" aria-hidden="true">Speaker</span>
     </div>
   </div>
 </div>
 
 <div id="app">
 
-<!-- ══════════════════════════════
-  PAGE: LOBBY
-══════════════════════════════ -->
-<div class="pg on" id="pg-lobby">
+<!-- LOBBY -->
+<div class="pg on" id="pg-lobby" role="main">
   <div class="sy" style="flex:1;padding:16px 16px 40px;">
-    <div style="text-align:center;padding:32px 0 24px;">
-      <div style="font-size:56px;margin-bottom:8px;">🍾</div>
+    <div style="text-align:center;padding:28px 0 20px;">
+      <!-- FIX B8: proper SVG logo on main page -->
+      <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto 12px;display:block;" aria-hidden="true">
+        <defs>
+          <radialGradient id="bg-grad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#3d3580"/>
+            <stop offset="100%" stop-color="#1a1a2e"/>
+          </radialGradient>
+        </defs>
+        <circle cx="40" cy="40" r="40" fill="url(#bg-grad)"/>
+        <circle cx="40" cy="40" r="38" fill="none" stroke="#7F77DD" stroke-width="1.5" stroke-opacity=".6"/>
+        <text x="40" y="52" text-anchor="middle" font-size="36" font-family="-apple-system,sans-serif">🍾</text>
+      </svg>
       <h1 style="font-size:28px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px;">Truth or Dare</h1>
       <p style="color:#555577;font-size:13px;">Multiplayer · Voice calls · Real-time</p>
     </div>
+
     <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:20px;margin-bottom:10px;">
-      <p style="font-weight:700;font-size:14px;color:#a7a9be;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Create a room</p>
-      <input id="cn" type="text" maxlength="16" placeholder="Your name" style="width:100%;display:block;background:#0f0e17;border:1.5px solid #2a2a4a;border-radius:12px;padding:13px 16px;font-size:15px;color:#fff;margin-bottom:12px;transition:border-color .2s;"/>
-      <button onclick="createRoom()" style="width:100%;background:#7F77DD;color:#fff;font-weight:700;border-radius:14px;padding:15px;font-size:15px;cursor:pointer;transition:background .15s;">Create room →</button>
+      <p style="font-weight:700;font-size:12px;color:#7F77DD;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;">Create a room</p>
+      <label for="cn" class="input-label">Your name</label>
+      <input id="cn" type="text" maxlength="16" placeholder="e.g. Alex"
+        autocomplete="given-name" autocorrect="off" autocapitalize="words" spellcheck="false"
+        oninput="clearErr('cn-err')" onkeydown="if(event.key==='Enter')createRoom()"
+        aria-describedby="cn-err"
+        style="width:100%;display:block;background:#0f0e17;border:1.5px solid #2a2a4a;border-radius:12px;padding:13px 16px;font-size:15px;color:#fff;margin-bottom:4px;"/>
+      <span id="cn-err" class="field-error" role="alert" aria-live="polite"></span>
+      <button id="create-btn" onclick="createRoom()" aria-label="Create a new game room"
+        style="width:100%;background:#7F77DD;color:#fff;font-weight:700;border-radius:14px;padding:15px;font-size:15px;cursor:pointer;min-height:52px;margin-top:8px;">
+        Create room →
+      </button>
     </div>
+
     <div style="text-align:center;color:#333355;font-size:12px;margin:12px 0;">— or join existing —</div>
+
     <div id="join-card" style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:20px;">
-      <p style="font-weight:700;font-size:14px;color:#a7a9be;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Join a room</p>
-      <input id="jn" type="text" maxlength="16" placeholder="Your name" style="width:100%;display:block;background:#0f0e17;border:1.5px solid #2a2a4a;border-radius:12px;padding:13px 16px;font-size:15px;color:#fff;margin-bottom:10px;"/>
-      <input id="jc" type="text" maxlength="10" placeholder="Room code (e.g. ROSE7)" oninput="this.value=this.value.toUpperCase()" style="width:100%;display:block;background:#0f0e17;border:1.5px solid #2a2a4a;border-radius:12px;padding:13px 16px;font-size:15px;color:#fff;margin-bottom:12px;letter-spacing:2px;"/>
-      <button onclick="joinRoom()" style="width:100%;background:#D4537E;color:#fff;font-weight:700;border-radius:14px;padding:15px;font-size:15px;cursor:pointer;">Join room →</button>
+      <p style="font-weight:700;font-size:12px;color:#D4537E;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;">Join a room</p>
+      <label for="jn" class="input-label">Your name</label>
+      <input id="jn" type="text" maxlength="16" placeholder="e.g. Sam"
+        autocomplete="given-name" autocorrect="off" autocapitalize="words" spellcheck="false"
+        oninput="clearErr('jn-err')" onkeydown="if(event.key==='Enter')document.getElementById('jc').focus()"
+        aria-describedby="jn-err"
+        style="width:100%;display:block;background:#0f0e17;border:1.5px solid #2a2a4a;border-radius:12px;padding:13px 16px;font-size:15px;color:#fff;margin-bottom:4px;"/>
+      <span id="jn-err" class="field-error" role="alert" aria-live="polite"></span>
+      <label for="jc" class="input-label" style="margin-top:8px;">Room code</label>
+      <input id="jc" type="text" maxlength="10" placeholder="e.g. ROSE7"
+        autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" inputmode="text"
+        oninput="this.value=this.value.toUpperCase();clearErr('jc-err')"
+        onkeydown="if(event.key==='Enter')joinRoom()"
+        aria-describedby="jc-err"
+        style="width:100%;display:block;background:#0f0e17;border:1.5px solid #2a2a4a;border-radius:12px;padding:13px 16px;font-size:15px;color:#fff;margin-bottom:4px;letter-spacing:3px;"/>
+      <span id="jc-err" class="field-error" role="alert" aria-live="polite"></span>
+      <button id="join-btn" onclick="joinRoom()" aria-label="Join an existing game room"
+        style="width:100%;background:#D4537E;color:#fff;font-weight:700;border-radius:14px;padding:15px;font-size:15px;cursor:pointer;min-height:52px;margin-top:8px;">
+        Join room →
+      </button>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════
-  PAGE: WAITING
-══════════════════════════════ -->
-<div class="pg" id="pg-wait">
+<!-- WAITING -->
+<div class="pg" id="pg-wait" role="main">
   <div class="sy" style="flex:1;padding:16px 16px 40px;">
-    <div style="text-align:center;padding:24px 0 20px;">
-      <div style="font-size:42px;margin-bottom:8px;">🎉</div>
+    <!-- FIX U6: back button min-height 44px -->
+    <button onclick="goBack()" aria-label="Back to lobby"
+      style="display:flex;align-items:center;gap:6px;color:#555577;font-size:14px;margin-bottom:16px;padding:4px 0;cursor:pointer;min-height:44px;">
+      ← Back
+    </button>
+    <div style="text-align:center;padding:12px 0 20px;">
+      <div style="font-size:42px;margin-bottom:8px;" aria-hidden="true">🎉</div>
       <h1 style="font-size:22px;font-weight:700;margin-bottom:4px;">Waiting for players…</h1>
       <p style="color:#555577;font-size:13px;">Share the code below</p>
     </div>
     <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:20px;text-align:center;margin-bottom:10px;">
       <p style="font-size:10px;color:#555577;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">Room Code</p>
-      <div id="dcode" style="font-size:40px;font-weight:800;letter-spacing:10px;color:#7F77DD;margin-bottom:14px;">----</div>
-      <button onclick="copyLink()" style="background:#2e2a5e;border:1px solid #7F77DD;color:#b0aaf5;border-radius:10px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;">📋 Copy invite link</button>
+      <!-- FIX U11: letter-spacing fix with text-indent -->
+      <div id="dcode" style="font-size:40px;font-weight:800;letter-spacing:8px;text-indent:8px;color:#7F77DD;margin-bottom:14px;" aria-label="Room code" role="text">------</div>
+      <button onclick="copyLink()" aria-label="Copy invite link to clipboard"
+        style="background:#2e2a5e;border:1px solid #7F77DD;color:#b0aaf5;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;min-height:44px;">
+        📋 Copy invite link
+      </button>
     </div>
     <div style="text-align:center;margin-bottom:10px;">
-      <span id="spill" style="font-size:12px;padding:5px 16px;border-radius:20px;background:#1a1a2e;border:1px solid #2a2a4a;color:#555577;display:inline-block;">Connecting…</span>
+      <span id="spill" style="font-size:12px;padding:5px 16px;border-radius:20px;background:#1a1a2e;border:1px solid #2a2a4a;color:#555577;display:inline-block;" role="status" aria-live="polite">Connecting…</span>
     </div>
     <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:18px;padding:16px;margin-bottom:14px;">
-      <p style="font-size:11px;font-weight:700;color:#555577;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Players</p>
-      <div id="plist" style="display:flex;flex-wrap:wrap;gap:8px;min-height:32px;"></div>
+      <p style="font-size:11px;font-weight:700;color:#555577;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Players in room</p>
+      <div id="plist" style="display:flex;flex-wrap:wrap;gap:8px;min-height:32px;" role="list" aria-label="Players in room">
+        <span id="plist-empty" style="font-size:13px;color:#333355;padding:4px 0;">Waiting for players to join…</span>
+      </div>
     </div>
-    <button onclick="broadcastStart()" style="width:100%;background:#7F77DD;color:#fff;font-weight:700;border-radius:14px;padding:16px;font-size:15px;cursor:pointer;margin-bottom:6px;">Start game 🎮</button>
-    <p style="text-align:center;font-size:11px;color:#333355;">All screens update together</p>
+    <button onclick="broadcastStart()" aria-label="Start the game"
+      style="width:100%;background:#7F77DD;color:#fff;font-weight:700;border-radius:14px;padding:16px;font-size:15px;cursor:pointer;margin-bottom:6px;min-height:52px;">
+      Start game 🎮
+    </button>
+    <p style="text-align:center;font-size:11px;color:#333355;">Need at least 2 players · All screens update together</p>
   </div>
 </div>
 
-<!-- ══════════════════════════════
-  PAGE: GAME
-══════════════════════════════ -->
-<div class="pg" id="pg-game">
-
-  <!-- header -->
+<!-- GAME -->
+<div class="pg" id="pg-game" role="main">
   <div style="background:#1a1a2e;border-bottom:1px solid #2a2a4a;flex-shrink:0;">
     <div style="display:flex;align-items:center;gap:8px;padding:10px 14px 6px;">
-      <span id="rtag" style="font-size:11px;font-weight:700;color:#b0aaf5;background:#2e2a5e;border-radius:20px;padding:3px 10px;"></span>
-      <span id="spill2" style="font-size:11px;padding:3px 10px;border-radius:20px;background:#0d2018;border:1px solid #1a3e2e;color:#5DCAA5;display:inline-block;">● Live</span>
+      <span id="rtag" style="font-size:11px;font-weight:700;color:#b0aaf5;background:#2e2a5e;border-radius:20px;padding:3px 10px;" role="text"></span>
+      <span id="spill2" style="font-size:11px;padding:3px 10px;border-radius:20px;background:#0d2018;border:1px solid #1a3e2e;color:#5DCAA5;display:inline-block;" role="status" aria-live="polite">● Live</span>
       <div style="flex:1;"></div>
-      <button onclick="startCall()" id="call-btn" style="display:flex;align-items:center;gap:5px;background:#0d2018;border:1px solid #1a3e2e;color:#5DCAA5;border-radius:20px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;">📞 Call</button>
+      <button id="call-btn" onclick="startCall()" aria-label="Start voice call"
+        style="display:none;align-items:center;gap:5px;background:#0d2018;border:1px solid #1a3e2e;color:#5DCAA5;border-radius:20px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;min-height:36px;">
+        📞 Call
+      </button>
     </div>
-    <div id="pchips" style="display:flex;flex-wrap:wrap;gap:5px;padding:0 14px 8px;min-height:26px;"></div>
-    <!-- tabs -->
-    <div style="display:flex;border-top:1px solid #2a2a4a;">
-      <button id="tb1" onclick="showTab(1)" style="flex:1;padding:11px;font-size:14px;font-weight:600;color:#7F77DD;border-bottom:2px solid #7F77DD;background:none;cursor:pointer;">🎮 Game</button>
-      <button id="tb2" onclick="showTab(2)" style="flex:1;padding:11px;font-size:14px;font-weight:500;color:#555577;border-bottom:2px solid transparent;background:none;cursor:pointer;">💬 Chat</button>
+    <div id="pchips" style="display:flex;flex-wrap:wrap;gap:5px;padding:0 14px 8px;min-height:26px;" role="list" aria-label="Players">
+      <!-- FIX B1: typing indicator here in header so visible from Game tab too -->
+      <div id="typing-dots-game" style="display:none;align-items:center;gap:4px;background:#12102a;border-radius:20px;padding:3px 10px;font-size:11px;color:#a7a9be;" aria-live="polite">
+        <span id="typing-who-game"></span>
+        <span class="td" aria-hidden="true"></span><span class="td" aria-hidden="true"></span><span class="td" aria-hidden="true"></span>
+      </div>
+    </div>
+    <div style="display:flex;border-top:1px solid #2a2a4a;" role="tablist">
+      <button id="tb1" role="tab" aria-selected="true" aria-controls="t1" onclick="showTab(1)"
+        style="flex:1;padding:11px;font-size:14px;font-weight:600;color:#7F77DD;border-bottom:2px solid #7F77DD;background:none;cursor:pointer;min-height:46px;">
+        🎮 Game
+      </button>
+      <!-- FIX U8: chat tab with unread badge -->
+      <button id="tb2" role="tab" aria-selected="false" aria-controls="t2" onclick="showTab(2)"
+        style="flex:1;padding:11px;font-size:14px;font-weight:500;color:#555577;border-bottom:2px solid transparent;background:none;cursor:pointer;min-height:46px;position:relative;">
+        💬 Chat
+        <span id="chat-badge" aria-label="Unread messages"></span>
+      </button>
     </div>
   </div>
 
-  <!-- ── GAME TAB ── -->
-  <div id="t1" class="sy" style="flex:1;padding:16px;display:flex;flex-direction:column;gap:14px;">
-
-    <!-- spin section — hidden after spin lands -->
+  <!-- GAME TAB -->
+  <div id="t1" class="sy" role="tabpanel" aria-labelledby="tb1" style="flex:1;padding:16px;display:flex;flex-direction:column;gap:14px;">
     <div id="spin-section" style="display:flex;flex-direction:column;align-items:center;gap:10px;">
-      <canvas id="spin-canvas" width="220" height="220" style="transition:transform .15s;display:block;"></canvas>
-      <div id="cname" style="color:#b0aaf5;font-size:17px;font-weight:600;min-height:26px;text-align:center;"></div>
-      <button onclick="doSpin()" id="spin-btn" style="border:1.5px solid #2a2a4a;border-radius:14px;padding:11px 24px;font-size:14px;color:#fff;background:#12102a;cursor:pointer;font-weight:600;">🔄 Spin the bottle</button>
+      <canvas id="spin-canvas" width="220" height="220" style="transition:transform .15s;display:block;" aria-label="Spin the bottle wheel" role="img"></canvas>
+      <button onclick="doSpin()" id="spin-btn" aria-label="Spin the bottle"
+        style="border:1.5px solid #2a2a4a;border-radius:14px;padding:11px 24px;font-size:14px;color:#fff;background:#12102a;cursor:pointer;font-weight:600;min-height:46px;">
+        🔄 Spin the bottle
+      </button>
     </div>
 
-    <!-- after spin — truth/dare/custom shown here (hidden until spin lands) -->
     <div id="post-spin" style="display:none;flex-direction:column;gap:12px;">
-      <!-- who's turn banner -->
-      <div id="turn-banner" style="background:#2e2a5e;border:1px solid #7F77DD;border-radius:16px;padding:14px 16px;text-align:center;">
-        <p id="turn-name" style="font-size:18px;font-weight:700;color:#b0aaf5;"></p>
-        <p style="font-size:12px;color:#555577;margin-top:2px;">Pick truth or dare</p>
+      <div id="turn-banner" style="border-radius:16px;padding:14px 16px;text-align:center;" role="status" aria-live="assertive">
+        <p id="turn-name" style="font-size:18px;font-weight:700;"></p>
+        <p id="turn-sub" style="font-size:12px;margin-top:2px;"></p>
       </div>
-      <!-- action buttons -->
-      <div style="display:flex;gap:8px;">
-        <button onclick="doCard('truth')" style="flex:1;border:1.5px solid #7F77DD;border-radius:14px;padding:13px;font-size:14px;font-weight:700;color:#b0aaf5;background:#2e2a5e;cursor:pointer;">🎲 Truth</button>
-        <button onclick="doCard('dare')" style="flex:1;border:1.5px solid #D4537E;border-radius:14px;padding:13px;font-size:14px;font-weight:700;color:#f5a0c0;background:#3e1a2e;cursor:pointer;">🎲 Dare</button>
-      </div>
-      <!-- question card -->
-      <div id="qcard" style="display:none;"></div>
-      <!-- custom question -->
-      <div style="background:#1a1a2e;border:1px solid #3a2c0f;border-radius:18px;padding:14px;">
-        <p style="font-size:11px;font-weight:700;color:#EF9F27;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">✏️ Your own question</p>
-        <div style="display:flex;gap:8px;margin-bottom:10px;">
-          <button id="ct1" onclick="setCT('truth')" style="flex:1;border-radius:10px;padding:8px;font-size:13px;font-weight:600;background:#7F77DD;border:1px solid #7F77DD;color:#fff;cursor:pointer;">Truth</button>
-          <button id="ct2" onclick="setCT('dare')" style="flex:1;border-radius:10px;padding:8px;font-size:13px;font-weight:600;background:transparent;border:1px solid #2a2a4a;color:#555577;cursor:pointer;">Dare</button>
-        </div>
-        <textarea id="cq" rows="2" maxlength="200" placeholder="Type your own truth question…" style="width:100%;background:#0f0e17;border:1px solid #2a2a4a;border-radius:12px;padding:12px 14px;font-size:14px;color:#fff;margin-bottom:10px;"></textarea>
-        <button onclick="sendCQ()" style="width:100%;background:#EF9F27;color:#000;font-weight:700;border-radius:12px;padding:13px;font-size:14px;cursor:pointer;">Send to everyone 🚀</button>
-      </div>
-      <!-- spin again -->
-      <button onclick="resetSpin()" style="border:1.5px solid #2a2a4a;border-radius:14px;padding:11px;font-size:14px;color:#555577;background:transparent;cursor:pointer;font-weight:600;">🔄 Spin again</button>
-    </div>
 
+      <!-- FIX U18/U19: truth/dare buttons only shown to person whose turn it is -->
+      <div id="my-turn-actions" style="display:none;flex-direction:column;gap:12px;">
+        <div style="display:flex;gap:8px;">
+          <button onclick="doCard('truth')" aria-label="Pick a truth question"
+            style="flex:1;border:1.5px solid #7F77DD;border-radius:14px;padding:13px;font-size:14px;font-weight:700;color:#b0aaf5;background:#2e2a5e;cursor:pointer;min-height:50px;">
+            🎲 Truth
+          </button>
+          <button onclick="doCard('dare')" aria-label="Pick a dare"
+            style="flex:1;border:1.5px solid #D4537E;border-radius:14px;padding:13px;font-size:14px;font-weight:700;color:#f5a0c0;background:#3e1a2e;cursor:pointer;min-height:50px;">
+            🎲 Dare
+          </button>
+        </div>
+        <div style="background:#1a1a2e;border:1px solid #3a2c0f;border-radius:18px;padding:14px;">
+          <p style="font-size:11px;font-weight:700;color:#EF9F27;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">✏️ Your own question</p>
+          <div style="display:flex;gap:8px;margin-bottom:10px;" role="group" aria-label="Question type">
+            <button id="ct1" onclick="setCT('truth')" aria-pressed="true"
+              style="flex:1;border-radius:10px;padding:8px;font-size:13px;font-weight:600;background:#7F77DD;border:1px solid #7F77DD;color:#fff;cursor:pointer;min-height:40px;">Truth</button>
+            <button id="ct2" onclick="setCT('dare')" aria-pressed="false"
+              style="flex:1;border-radius:10px;padding:8px;font-size:13px;font-weight:600;background:transparent;border:1px solid #2a2a4a;color:#555577;cursor:pointer;min-height:40px;">Dare</button>
+          </div>
+          <!-- FIX U13: label with correct class -->
+          <label for="cq" class="input-label">Type your question</label>
+          <textarea id="cq" rows="2" maxlength="200" placeholder="Type your own truth question…"
+            aria-label="Custom question text"
+            style="width:100%;background:#0f0e17;border:1px solid #2a2a4a;border-radius:12px;padding:12px 14px;font-size:14px;color:#fff;margin-bottom:10px;"></textarea>
+          <button onclick="sendCQ()" aria-label="Send custom question to everyone"
+            style="width:100%;background:#EF9F27;color:#000;font-weight:700;border-radius:12px;padding:13px;font-size:14px;cursor:pointer;min-height:48px;">
+            Send to everyone 🚀
+          </button>
+        </div>
+      </div>
+
+      <div id="qcard" style="display:none;" role="region" aria-label="Current question" aria-live="polite"></div>
+      <button onclick="resetSpin()" aria-label="Spin again"
+        style="border:1.5px solid #2a2a4a;border-radius:14px;padding:11px;font-size:14px;color:#555577;background:transparent;cursor:pointer;font-weight:600;min-height:46px;">
+        🔄 Spin again
+      </button>
+    </div>
   </div>
 
-  <!-- ── CHAT TAB ── -->
-  <div id="t2" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
-    <div id="chatbox" class="sy" style="flex:1;padding:10px 14px;display:flex;flex-direction:column;gap:6px;"></div>
-    <!-- typing indicator -->
-    <div style="padding:2px 14px 2px;min-height:22px;display:flex;align-items:center;gap:8px;">
-      <div id="typing-dots" style="display:none;align-items:center;gap:6px;background:#1a1a2e;border-radius:20px;padding:5px 12px;">
+  <!-- CHAT TAB -->
+  <div id="t2" role="tabpanel" aria-labelledby="tb2" style="display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;">
+    <div id="chatbox" class="sy" aria-label="Chat messages" aria-live="polite" style="flex:1;padding:10px 14px;display:flex;flex-direction:column;gap:6px;"></div>
+    <!-- typing in chat tab -->
+    <div style="padding:4px 14px;min-height:24px;display:flex;align-items:center;">
+      <div id="typing-dots" style="display:none;align-items:center;gap:6px;background:#1a1a2e;border-radius:20px;padding:5px 12px;" aria-live="polite">
         <span id="typing-who" style="font-size:12px;color:#a7a9be;"></span>
-        <span class="td"></span><span class="td"></span><span class="td"></span>
+        <span class="td" aria-hidden="true"></span><span class="td" aria-hidden="true"></span><span class="td" aria-hidden="true"></span>
       </div>
     </div>
-    <!-- input bar -->
     <div class="pb-safe" style="background:#1a1a2e;border-top:1px solid #2a2a4a;padding:10px 12px;flex-shrink:0;">
       <div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:8px;">
-        <div style="flex:1;background:#0f0e17;border:1.5px solid #2a2a4a;border-radius:24px;padding:10px 16px;display:flex;align-items:center;min-height:46px;transition:border-color .2s;">
-          <input id="mi" type="text" maxlength="300" placeholder="Message…" oninput="onTyping()" onkeydown="if(event.key==='Enter')sendMsg()" style="flex:1;background:transparent;font-size:15px;color:#fff;"/>
+        <div style="flex:1;background:#0f0e17;border:1.5px solid #2a2a4a;border-radius:24px;padding:10px 16px;display:flex;align-items:center;min-height:46px;">
+          <input id="mi" type="text" maxlength="300" placeholder="Message…"
+            autocorrect="off" autocomplete="off" aria-label="Type a message"
+            oninput="onTyping()" onkeydown="if(event.key==='Enter')sendMsg()"
+            style="flex:1;background:transparent;font-size:15px;color:#fff;min-height:26px;"/>
         </div>
-        <!-- PTT voice note button -->
-        <div style="position:relative;">
-          <button id="ptt" onmousedown="startRec(event)" onmouseup="stopRec(event)" ontouchstart="startRec(event)" ontouchend="stopRec(event)"
-            style="width:46px;height:46px;border-radius:50%;background:#7F77DD;font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:background .15s;">🎤</button>
-        </div>
-        <button onclick="sendMsg()" style="width:46px;height:46px;border-radius:50%;background:#7F77DD;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;">➤</button>
+        <!-- FIX U12: added onmouseleave to stop recording if mouse leaves button -->
+        <button id="ptt"
+          onmousedown="startRec(event)" onmouseup="stopRec(event)" onmouseleave="stopRec(event)"
+          ontouchstart="startRec(event)" ontouchend="stopRec(event)" ontouchcancel="stopRec(event)"
+          aria-label="Hold to record voice note"
+          style="width:46px;height:46px;min-height:46px;border-radius:50%;background:#7F77DD;font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;">🎤</button>
+        <button onclick="sendMsg()" aria-label="Send message"
+          style="width:46px;height:46px;min-height:46px;border-radius:50%;background:#7F77DD;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;">➤</button>
       </div>
-      <!-- open mic row -->
       <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px;">
-        <button id="omBtn" onclick="toggleOpenMic()" style="display:flex;align-items:center;gap:7px;border:1px solid #2a2a4a;border-radius:20px;padding:6px 14px;font-size:12px;color:#a7a9be;background:transparent;cursor:pointer;transition:all .2s;">
-          <span id="omDot" style="width:8px;height:8px;border-radius:50%;background:#333355;display:inline-block;flex-shrink:0;"></span>
+        <button id="omBtn" onclick="toggleOpenMic()" aria-pressed="false" aria-label="Toggle open microphone"
+          style="display:flex;align-items:center;gap:7px;border:1px solid #2a2a4a;border-radius:20px;padding:6px 14px;font-size:12px;color:#a7a9be;background:transparent;cursor:pointer;min-height:36px;">
+          <span id="omDot" style="width:8px;height:8px;border-radius:50%;background:#333355;display:inline-block;flex-shrink:0;" aria-hidden="true"></span>
           <span id="omTxt">Open mic: Off</span>
         </button>
-        <span style="font-size:11px;color:#333355;">Hold 🎤 = voice note</span>
+        <span style="font-size:11px;color:#333355;" aria-hidden="true">Hold 🎤 = voice note</span>
       </div>
     </div>
   </div>
-
-</div><!-- end pg-game -->
+</div>
 
 </div><!-- #app -->
 
-<!-- Recording indicator (shown while recording) -->
-<div id="rec-indicator" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#D4537E;border-radius:30px;padding:10px 20px;z-index:80;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(212,83,126,.4);">
-  <div style="display:flex;gap:3px;align-items:flex-end;height:20px;">
-    <div class="wb" style="background:#fff;"></div><div class="wb" style="background:#fff;"></div><div class="wb" style="background:#fff;"></div><div class="wb" style="background:#fff;"></div>
+<!-- Recording indicator -->
+<div id="rec-indicator" style="display:none;position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 80px);left:50%;transform:translateX(-50%);background:#D4537E;border-radius:30px;padding:10px 20px;z-index:80;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(212,83,126,.4);" role="status" aria-live="polite" aria-label="Recording in progress">
+  <div style="display:flex;gap:3px;align-items:flex-end;height:20px;" aria-hidden="true">
+    <div class="wb" style="background:#fff;"></div><div class="wb" style="background:#fff;"></div>
+    <div class="wb" style="background:#fff;"></div><div class="wb" style="background:#fff;"></div>
   </div>
   <span id="rec-time" style="font-size:14px;font-weight:700;color:#fff;min-width:32px;">0:00</span>
   <span style="font-size:12px;color:rgba(255,255,255,.8);">Recording… release to send</span>
 </div>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script>
-/* ══════════════════════
-   FIREBASE
-══════════════════════ */
+/* ═══════════ XSS SAFETY ═══════════ */
+function esc(s){const d=document.createElement('div');d.appendChild(document.createTextNode(String(s||'')));return d.innerHTML;}
+
+/* ═══════════ TOAST ═══════════ */
+let toastTimer=null;
+function toast(msg,dur=2800){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+/* ═══════════ FIELD ERRORS ═══════════ */
+function showErr(id,msg){
+  const el=document.getElementById(id);
+  if(el){el.textContent=msg;el.style.display='block';}
+  const inp=document.getElementById(id.replace('-err',''));
+  if(inp){inp.style.borderColor='#f5a0c0';inp.focus();}
+}
+function clearErr(id){
+  const el=document.getElementById(id);
+  if(el){el.textContent='';el.style.display='none';}
+  const inp=document.getElementById(id.replace('-err',''));
+  if(inp) inp.style.borderColor='#2a2a4a';
+}
+
+/* ═══════════ SOUND EFFECTS — FIX U20 ═══════════ */
+const audioCtx=window.AudioContext||window.webkitAudioContext?new (window.AudioContext||window.webkitAudioContext)():null;
+function playSound(type){
+  if(!audioCtx)return;
+  try{
+    const o=audioCtx.createOscillator();
+    const g=audioCtx.createGain();
+    o.connect(g);g.connect(audioCtx.destination);
+    if(type==='spin-land'){
+      o.frequency.setValueAtTime(440,audioCtx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(880,audioCtx.currentTime+.15);
+      g.gain.setValueAtTime(.3,audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.4);
+      o.start();o.stop(audioCtx.currentTime+.4);
+    } else if(type==='card'){
+      o.type='sine';
+      o.frequency.setValueAtTime(523,audioCtx.currentTime);
+      g.gain.setValueAtTime(.2,audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.3);
+      o.start();o.stop(audioCtx.currentTime+.3);
+    } else if(type==='msg'){
+      o.type='sine';
+      o.frequency.setValueAtTime(660,audioCtx.currentTime);
+      g.gain.setValueAtTime(.1,audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.15);
+      o.start();o.stop(audioCtx.currentTime+.15);
+    }
+  }catch(e){}
+}
+
+/* ═══════════ FIREBASE ═══════════ */
 firebase.initializeApp({
   apiKey:"AIzaSyBFVlktJ3vSBxRsLRY_3CPBPX6UKH6g5Uo",
   authDomain:"truth-dare-app-95ce8.firebaseapp.com",
@@ -353,44 +499,50 @@ firebase.initializeApp({
 });
 const db=firebase.database();
 
-/* ══════════════════════
-   QUESTIONS
-══════════════════════ */
+/* ═══════════ QUESTIONS ═══════════ */
 const TRUTHS=["What's the most embarrassing thing you've done on a date?","Have you ever had a crush on someone in this room?","What's your biggest relationship dealbreaker?","Have you ever stalked an ex on social media?","What's the most romantic thing you've secretly done?","What's a lie you've told your partner or best friend?","What's your biggest fear in a relationship?","Have you ever fallen for someone you shouldn't have?","What's one thing you've never told anyone in this room?","Who was your first love and what happened?","What's the most embarrassing text you sent to the wrong person?","What's the wildest thing you've done to impress someone?","If you could date any celebrity, who and why?","What's something you secretly find attractive?","Have you ever kissed someone on a dare?","What's the most childish thing you still do?","What's your guilty pleasure no one knows about?","What's the most awkward moment you've had with a crush?","What's the most jealous you've ever been?","What do you find most attractive in a person?"];
 const DARES=["Give the person to your left a 10-second compliment without stopping.","Text your crush 'thinking of you' right now.","Do your best impression of someone in the room.","Send a flirty message to the last person in your DMs.","Say something sweet to each person in the room, one by one.","Let someone go through your recent Instagram likes for 10 seconds.","Speak in an accent for the next 2 rounds.","Call someone you haven't talked to in over a month.","Do a dramatic reading of your last sent text message out loud.","Dance for 30 seconds with no music.","Whisper a secret to the person across from you.","Give someone in the room a nickname based on their personality.","Stare into the eyes of the person next to you for 30 seconds without laughing.","Show the last 5 photos in your camera roll.","Sing the chorus of your favourite song out loud.","Let the group pick your profile picture for the next hour.","Say three genuine things you like about the person across from you.","Act out your most embarrassing moment without speaking.","Send a voice note saying 'I miss you' to any contact right now.","Recreate your best selfie pose right now."];
 
-/* ══════════════════════
-   STATE
-══════════════════════ */
-let myName='',code='',myId='u'+Math.random().toString(36).slice(2,9);
-let ref=null,players={},spinAngle=0,spinning=false,chosen=null,ctab='truth';
+/* ═══════════ STATE ═══════════ */
+let myName='',code='';
+let myId='u'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+let ref=null,fbListeners=[],players={},spinAngle=0,spinning=false,chosen=null,ctab='truth';
 let typTimer=null;
-// voice note state — FIX: use timeslice recording to get all audio
+// FIX B19: detect supported mime type including iOS
+function getSupportedMimeType(){
+  const types=['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'];
+  for(const t of types) if(MediaRecorder.isTypeSupported(t)) return t;
+  return '';
+}
 let mrec=null,achunks=[],isRec=false,recTimer=null,recSecs=0;
 let omStream=null,omOn=false;
 const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun2.l.google.com:19302'}]};
 let pcs={},localStream=null,inCall=false,mutedMic=false;
 let deferredPrompt=null,installBtnTapped=false;
-let pendingCallFrom=null; // for incoming call ring
+let pendingCallFrom=null;
+let lastSpinTime=0,spinLocked=false;
+const seenEvents=new Set();
+const MAX_SEEN=100;
+// FIX U8: unread chat count
+let unreadChat=0,onChatTab=false;
+// FIX B13: track if post-spin fade is running
+let postSpinFading=false;
+// FIX B14: throttle typing writes
+let lastTypingWrite=0;
 
-/* ══════════════════════
-   PWA INSTALL
-══════════════════════ */
+/* ═══════════ PWA INSTALL ═══════════ */
 window.addEventListener('beforeinstallprompt',e=>{
   e.preventDefault();deferredPrompt=e;
   if(installBtnTapped){installBtnTapped=false;triggerInstall();}
 });
-window.addEventListener('appinstalled',()=>{
-  document.getElementById('ibar').classList.add('gone');
-  deferredPrompt=null;
-});
+window.addEventListener('appinstalled',()=>{document.getElementById('ibar').classList.add('gone');deferredPrompt=null;});
 function doInstall(){
   if(deferredPrompt){triggerInstall();}
   else{
     installBtnTapped=true;
     const btn=document.getElementById('ib-btn');
-    btn.textContent='⏳ Installing…';btn.disabled=true;
-    setTimeout(()=>{if(installBtnTapped){installBtnTapped=false;btn.textContent='📲 Install';btn.disabled=false;}},6000);
+    btn.innerHTML='<span class="spinner"></span>Installing…';btn.disabled=true;
+    setTimeout(()=>{if(installBtnTapped){installBtnTapped=false;btn.innerHTML='📲 Install';btn.disabled=false;}},6000);
   }
 }
 function triggerInstall(){
@@ -399,154 +551,319 @@ function triggerInstall(){
   deferredPrompt.userChoice.then(r=>{
     deferredPrompt=null;installBtnTapped=false;
     const btn=document.getElementById('ib-btn');
-    if(r.outcome==='accepted'){document.getElementById('ibar').classList.add('gone');}
-    else{btn.textContent='📲 Install';btn.disabled=false;}
+    if(r.outcome==='accepted')document.getElementById('ibar').classList.add('gone');
+    else{btn.innerHTML='📲 Install';btn.disabled=false;}
   });
 }
 function showIOSModal(){document.getElementById('ios-modal').classList.add('on');}
 function closeIOSModal(){document.getElementById('ios-modal').classList.remove('on');}
 document.addEventListener('click',e=>{if(e.target===document.getElementById('ios-modal'))closeIOSModal();});
 
+/* ═══════════ INIT ═══════════ */
 window.addEventListener('DOMContentLoaded',()=>{
   const standalone=navigator.standalone===true||matchMedia('(display-mode:standalone)').matches;
-  if(standalone){document.getElementById('ibar').classList.add('gone');}
+  if(standalone)document.getElementById('ibar').classList.add('gone');
   else{
     const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
     if(isIOS){document.getElementById('ib-btn').style.display='none';document.getElementById('ib-ios-btn').style.display='block';}
   }
   const r=new URLSearchParams(location.search).get('room');
-  if(r){document.getElementById('jc').value=r.toUpperCase();document.getElementById('join-card').style.borderColor='#7F77DD';}
-  drawWheel(0,['?']);
-  if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  if(r){
+    document.getElementById('jc').value=r.toUpperCase();
+    document.getElementById('join-card').style.borderColor='#7F77DD';
+    setTimeout(()=>{document.getElementById('join-card').scrollIntoView({behavior:'smooth'});document.getElementById('jn').focus();},300);
+  }
+  initCanvas();
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  // FIX U2: update tab title dynamically
+  updateTitle();
 });
+
+// FIX B4/B6: single canvas init, uses setTransform not cumulative scale
+function initCanvas(){
+  const cv=document.getElementById('spin-canvas');if(!cv)return;
+  const dpr=window.devicePixelRatio||1;
+  const size=220;
+  cv.width=size*dpr;cv.height=size*dpr;
+  cv.style.width=size+'px';cv.style.height=size+'px';
+  const ctx=cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  drawWheel(0,['?']);
+}
+
+function resetCanvasTransform(){
+  const cv=document.getElementById('spin-canvas');if(!cv)return;
+  const dpr=window.devicePixelRatio||1;
+  cv.getContext('2d').setTransform(dpr,0,0,dpr,0,0);
+}
+
+// FIX U2: tab title shows unread count or room
+function updateTitle(){
+  if(unreadChat>0) document.title=`(${unreadChat}) Truth or Dare 🍾`;
+  else if(code) document.title=`Room ${code} · Truth or Dare 🍾`;
+  else document.title='Truth or Dare 🍾';
+}
 
 window.addEventListener('beforeunload',()=>{
-  if(ref){ref.child('players/'+myId).remove();ref.child('typing/'+myId).remove();ref.child('online/'+myId).remove();}
-  if(inCall)endCall();
+  if(ref){
+    ref.child('players/'+myId).remove();
+    ref.child('typing/'+myId).remove();
+    ref.child('online/'+myId).remove();
+    try{ref.child('spinning').transaction(v=>v===myId?null:v);}catch(e){}
+  }
+  if(inCall){
+    Object.values(pcs).forEach(pc=>{try{pc.close();}catch(e){}});
+    if(localStream) localStream.getTracks().forEach(t=>{try{t.stop();}catch(e){}});
+  }
 });
 
-/* ══════════════════════
-   FIREBASE ROOM
-══════════════════════ */
+/* ═══════════ FIREBASE ROOM ═══════════ */
 function randCode(){
-  const w=['ROSE','KISS','LOVE','BOLD','FIRE','GLOW','MOON','STAR','WILD','PINK','RUSH','VIBE'];
-  return w[Math.floor(Math.random()*w.length)]+Math.floor(Math.random()*9+1);
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let c='';for(let i=0;i<6;i++) c+=chars[Math.floor(Math.random()*chars.length)];
+  return c;
 }
+function detachListeners(){fbListeners.forEach(({ref:r,event,fn})=>{try{r.off(event,fn);}catch(e){}});fbListeners=[];}
+function addListener(r,event,fn){r.on(event,fn);fbListeners.push({ref:r,event,fn});}
+
 function startFB(){
+  detachListeners();
+  seenEvents.clear(); // clear on new session
   ref=db.ref('rooms/'+code);
-  ref.child('players/'+myId).set({name:myName,id:myId});
+
+  addListener(db.ref('.info/connected'),'value',snap=>{
+    const ok=!!snap.val();
+    setStatus(ok?'● Connected':'Reconnecting…',ok?'ok':'err');
+  });
+
+  ref.child('players/'+myId).set({name:myName,id:myId}).catch(()=>{
+    showErr('cn-err','Connection failed — check your internet.');
+    showPg('pg-lobby');
+  });
   ref.child('players/'+myId).onDisconnect().remove();
   ref.child('typing/'+myId).onDisconnect().remove();
   ref.child('online/'+myId).set(true);
   ref.child('online/'+myId).onDisconnect().remove();
-  ref.child('players').on('value',s=>{const d=s.val()||{};players={};Object.values(d).forEach(p=>{players[p.id]=p.name;});renderPlayers();});
-  ref.child('events').limitToLast(1).on('child_added',s=>{const e=s.val();if(!e||e._f===myId)return;handleEv(e);});
-  ref.child('state').on('value',s=>{const v=s.val();if(v&&v.started&&curPg()==='pg-wait'){if(v.players)players=v.players;startGame();}});
-  ref.child('typing').on('value',s=>{
-    const d=s.val()||{};
-    const who=Object.entries(d).filter(([id,v])=>id!==myId&&v).map(([id])=>players[id]||'Someone');
-    const bar=document.getElementById('typing-dots'),lbl=document.getElementById('typing-who');
-    if(who.length){bar.style.display='flex';lbl.textContent=who.join(', ')+(who.length===1?' is':' are')+' typing';}
-    else{bar.style.display='none';}
+  ref.child('spinning').onDisconnect().transaction(v=>v===myId?null:v);
+
+  addListener(ref.child('players'),'value',snap=>{
+    const d=snap.val()||{};
+    players={};Object.values(d).forEach(p=>{players[p.id]=p.name;});
+    renderPlayers();
   });
-  ref.child('online').on('value',s=>{updateDots(Object.keys(s.val()||{}));});
+
+  // FIX B1: typing listener — also updates Game tab indicator
+  addListener(ref.child('typing'),'value',snap=>{
+    const d=snap.val()||{};
+    const who=Object.entries(d).filter(([id,v])=>id!==myId&&v).map(([id])=>players[id]||'Someone');
+    // Update both indicators
+    ['typing-dots','typing-dots-game'].forEach((barId,i)=>{
+      const bar=document.getElementById(barId);
+      const lbl=document.getElementById(i===0?'typing-who':'typing-who-game');
+      if(!bar||!lbl)return;
+      if(who.length){
+        bar.style.display='flex';
+        lbl.textContent=who.join(', ')+(who.length===1?' is':' are')+' typing';
+      } else {
+        bar.style.display='none';
+      }
+    });
+  });
+
+  addListener(ref.child('events').limitToLast(20),'child_added',snap=>{
+    if(seenEvents.has(snap.key))return;
+    seenEvents.add(snap.key);
+    if(seenEvents.size>MAX_SEEN){const first=seenEvents.values().next().value;seenEvents.delete(first);}
+    const e=snap.val();
+    if(!e||e._f===myId)return;
+    handleEv(e);
+  });
+
+  addListener(ref.child('state'),'value',snap=>{
+    const v=snap.val();
+    if(v&&v.started&&curPg()==='pg-wait'){if(v.players)players=v.players;startGame();}
+  });
+
+  addListener(ref.child('online'),'value',snap=>{updateDots(Object.keys(snap.val()||{}));});
+
+  addListener(ref.child('spinning'),'value',snap=>{
+    spinLocked=!!snap.val()&&snap.val()!==myId;
+    const btn=document.getElementById('spin-btn');
+    if(btn){btn.disabled=spinLocked||spinning;btn.style.opacity=(spinLocked||spinning)?'.4':'1';}
+  });
+
   setupWebRTC();
-  setStatus('● Connected','ok');
 }
+
+let lastEvTime=0;
+function pushEv(data){
+  if(!ref)return;
+  const now=Date.now();
+  const critical=data.type==='spin'||data.type==='chosen'||data.type==='card'||data.type==='call-invite';
+  if(!critical&&now-lastEvTime<300)return;
+  lastEvTime=now;
+  ref.child('events').push({...data,_f:myId,_t:now});
+}
+
+function curPg(){const el=document.querySelector('.pg.on');return el?el.id:'';}
+
+/* ═══════════ LOBBY ═══════════ */
+function setBtn(id,loading,text){
+  const btn=document.getElementById(id);if(!btn)return;
+  btn.disabled=loading;
+  btn.innerHTML=loading?'<span class="spinner" aria-hidden="true"></span>'+text:text;
+}
+
 function createRoom(){
   const n=document.getElementById('cn').value.trim();
-  if(!n){alert('Enter your name!');return;}
+  if(!n){showErr('cn-err','Please enter your name');return;}
+  if(n.length<2){showErr('cn-err','Name must be at least 2 characters');return;}
+  setBtn('create-btn',true,'Creating…');
   myName=n;code=randCode();
   document.getElementById('dcode').textContent=code;
+  updateTitle();
   showPg('pg-wait');startFB();
 }
+
 function joinRoom(){
   const n=document.getElementById('jn').value.trim();
   const c=document.getElementById('jc').value.trim().toUpperCase();
-  if(!n){alert('Enter your name!');return;}
-  if(!c){alert('Enter a room code!');return;}
+  let ok=true;
+  if(!n){showErr('jn-err','Please enter your name');ok=false;}
+  else if(n.length<2){showErr('jn-err','Name must be at least 2 characters');ok=false;}
+  if(!c){showErr('jc-err','Please enter a room code');ok=false;}
+  else if(c.length<4){showErr('jc-err','Room code too short — check and try again');ok=false;}
+  if(!ok)return;
+  setBtn('join-btn',true,'Joining…');
   myName=n;code=c;
   document.getElementById('dcode').textContent=code;
+  updateTitle();
   showPg('pg-wait');startFB();
 }
+
+// FIX U3+B11: goBack clears ALL fields
+function goBack(){
+  detachListeners();
+  if(ref){ref.child('players/'+myId).remove();ref.child('online/'+myId).remove();ref.child('typing/'+myId).remove();}
+  ref=null;players={};code='';myName='';
+  setBtn('create-btn',false,'Create room →');
+  setBtn('join-btn',false,'Join room →');
+  // FIX U3+B11: clear all inputs
+  ['cn','jn','jc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  showPg('pg-lobby');
+  document.getElementById('cn').focus();
+}
+
 function copyLink(){
   const url=location.href.split('?')[0]+'?room='+code;
-  navigator.clipboard.writeText(url).then(()=>alert('✅ Copied!\nCode: '+code)).catch(()=>alert('Code: '+code));
+  navigator.clipboard.writeText(url)
+    .then(()=>toast('✅ Link copied! Share it with friends.'))
+    .catch(()=>toast('Room code: '+code));
 }
-function pushEv(data){if(!ref)return;ref.child('events').push({...data,_f:myId,_t:Date.now()});}
-function curPg(){const el=document.querySelector('.pg.on');return el?el.id:'';}
 
-/* ══════════════════════
-   GAME
-══════════════════════ */
+/* ═══════════ GAME START ═══════════ */
 function broadcastStart(){
-  if(!Object.keys(players).length){alert('Waiting for players!');return;}
+  if(Object.keys(players).length<2){toast('Need at least 2 players. Share the code!');return;}
   ref.child('state').set({started:true,players:{...players}});
   startGame();
 }
+
 function startGame(){
   document.getElementById('rtag').textContent='Room: '+code;
-  renderPlayers();sysMsg('Game started! Spin the bottle 🍾');
+  document.getElementById('post-spin').style.display='none';
+  document.getElementById('spin-section').style.display='flex';
+  document.getElementById('qcard').style.display='none';
+  document.getElementById('my-turn-actions').style.display='none';
+  chosen=null;spinning=false;spinLocked=false;postSpinFading=false;
+  unreadChat=0;updateTitle();
+  renderPlayers();
+  sysMsg('Game started! Spin the bottle 🍾');
   showPg('pg-game');showTab(1);
+  // FIX B4: reset transform before redraw
+  resetCanvasTransform();
   drawWheel(spinAngle,Object.values(players));
 }
+
+/* ═══════════ EVENT HANDLER ═══════════ */
 function handleEv(e){
   switch(e.type){
-    case 'chat':addBubble(false,e.name,e.text);break;
-    case 'voice':addVoice(false,e.name,e.data);break;
-    case 'spin':animSpin(e.seed);break;
+    case 'chat':
+      addBubble(false,e.name,e.text);
+      playSound('msg');
+      // FIX U8: unread badge when on Game tab
+      if(!onChatTab){unreadChat++;updateTitle();showChatBadge();}
+      break;
+    case 'voice':
+      addVoice(false,e.name,e.data);
+      if(!onChatTab){unreadChat++;updateTitle();showChatBadge();}
+      break;
+    case 'spin': animSpin(e.seed); break;
     case 'chosen':
       chosen=e.player;
-      showPostSpin(e.player);
-      sysMsg('🍾 '+e.player+"'s turn!");
+      // FIX B13: guard against double-call during fade
+      if(!postSpinFading) showPostSpin(e.player);
+      sysMsg('🍾 '+esc(e.player)+"'s turn!");
       break;
     case 'card':
       showCard(e.ct,e.q,e.cx);
-      sysMsg(e.cx?e.who+' asks: "'+e.q+'"':e.who+' picked '+e.ct.toUpperCase());
+      sysMsg(e.cx?esc(e.who)+' asks: "'+esc(e.q)+'"':esc(e.who)+' picked '+esc(e.ct).toUpperCase());
+      playSound('card');
       break;
     case 'call-invite':
-      // show incoming ring UI
-      showIncomingCall(e.name,e.callerId);
+      if(e.from!==myId) showIncomingCall(e.name,e.from);
       break;
   }
 }
 
-/* ══════════════════════
-   TABS
-══════════════════════ */
+// FIX U8: chat badge
+function showChatBadge(){
+  const b=document.getElementById('chat-badge');
+  if(b) b.style.display=unreadChat>0?'block':'none';
+}
+
+/* ═══════════ TABS ═══════════ */
 function showTab(n){
   const t1=document.getElementById('t1'),t2=document.getElementById('t2');
   const b1=document.getElementById('tb1'),b2=document.getElementById('tb2');
   t1.style.display=n===1?'flex':'none';
   t2.style.display=n===2?'flex':'none';
   b1.style.color=n===1?'#7F77DD':'#555577';b1.style.borderBottom=n===1?'2px solid #7F77DD':'2px solid transparent';
+  b1.setAttribute('aria-selected',n===1);
   b2.style.color=n===2?'#7F77DD':'#555577';b2.style.borderBottom=n===2?'2px solid #7F77DD':'2px solid transparent';
-  if(n===2)setTimeout(()=>{const b=document.getElementById('chatbox');b.scrollTop=b.scrollHeight;},50);
+  b2.setAttribute('aria-selected',n===2);
+  onChatTab=(n===2);
+  if(n===2){
+    unreadChat=0;updateTitle();showChatBadge();
+    setTimeout(()=>{const b=document.getElementById('chatbox');b.scrollTop=b.scrollHeight;},50);
+  }
 }
 
-/* ══════════════════════
-   SPIN — hide wheel after land, show post-spin
-══════════════════════ */
+/* ═══════════ SPIN ═══════════ */
 function doSpin(){
-  if(spinning)return;
+  const now=Date.now();
+  if(spinning||spinLocked||(now-lastSpinTime<500))return;
+  lastSpinTime=now;
+  ref.child('spinning').set(myId);
   const seed=Math.random();
   pushEv({type:'spin',seed});
   animSpin(seed);
 }
+
 function animSpin(seed){
   if(spinning)return;
   spinning=true;
-  document.getElementById('cname').textContent='';
+  const btn=document.getElementById('spin-btn');
+  if(btn){btn.disabled=true;btn.style.opacity='.4';}
   document.getElementById('qcard').style.display='none';
-  // make sure spin section is visible
   document.getElementById('spin-section').style.display='flex';
   document.getElementById('post-spin').style.display='none';
+  document.getElementById('my-turn-actions').style.display='none';
+  postSpinFading=false;
 
   const pl=Object.values(players);
   const total=Math.PI*2*(6+seed*6),dur=3500,t0=performance.now(),sa=spinAngle;
   const cv=document.getElementById('spin-canvas');
-  cv.style.transform='scale(1.06)';
-  setTimeout(()=>{cv.style.transform='scale(1)';},200);
+  if(cv){cv.style.transform='scale(1.06)';setTimeout(()=>{cv.style.transform='scale(1)';},200);}
 
   function fr(now){
     const p=Math.min((now-t0)/dur,1);
@@ -554,259 +871,277 @@ function animSpin(seed){
     drawWheel(spinAngle,pl);
     if(p<1){requestAnimationFrame(fr);return;}
     spinning=false;
+    if(ref) ref.child('spinning').transaction(v=>v===myId?null:v);
+    if(btn){btn.disabled=false;btn.style.opacity='1';}
     const n=pl.length||1;
     const norm=((spinAngle%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
     const idx=Math.floor(((norm+Math.PI/2)%(Math.PI*2))/(Math.PI*2/n))%n;
     chosen=pl[idx];
-    cv.style.transform='scale(1.08)';
-    setTimeout(()=>{cv.style.transform='scale(1)';},150);
+    if(cv){cv.style.transform='scale(1.08)';setTimeout(()=>{cv.style.transform='scale(1)';},150);}
+    // FIX U7: haptic on spin land
+    if(navigator.vibrate) navigator.vibrate(50);
+    playSound('spin-land');
     pushEv({type:'chosen',player:chosen});
-    sysMsg('🍾 '+chosen+"'s turn!");
+    sysMsg('🍾 '+esc(chosen)+"'s turn!");
     showPostSpin(chosen);
   }
   requestAnimationFrame(fr);
 }
 
+// FIX B13: guard double-fade, FIX U18/U19: only show truth/dare to current player
 function showPostSpin(player){
+  if(postSpinFading)return;
+  postSpinFading=true;
   chosen=player;
-  // fade out spin wheel, show post-spin options
   const ss=document.getElementById('spin-section');
-  ss.style.transition='opacity .4s';
-  ss.style.opacity='0';
+  ss.style.transition='opacity .4s';ss.style.opacity='0';
   setTimeout(()=>{
-    ss.style.display='none';
-    ss.style.opacity='1';
-    ss.style.transition='';
+    ss.style.display='none';ss.style.opacity='1';ss.style.transition='';
+    postSpinFading=false;
     const ps=document.getElementById('post-spin');
-    ps.style.display='flex';
-    ps.classList.add('fu');
-    document.getElementById('turn-name').textContent=player+"'s turn!";
-    document.getElementById('cname').textContent=player+"'s turn!";
+    ps.style.display='flex';ps.classList.add('fu');
+    const isMyTurn=player===myName;
+    const banner=document.getElementById('turn-banner');
+    const tname=document.getElementById('turn-name');
+    const tsub=document.getElementById('turn-sub');
+    if(isMyTurn){
+      banner.style.cssText='background:#1e1b40;border:2px solid #7F77DD;border-radius:16px;padding:14px 16px;text-align:center;';
+      tname.style.color='#b0aaf5';tname.textContent='🎯 Your turn!';
+      tsub.style.color='#7F77DD';tsub.textContent='Pick truth or dare below';
+      // FIX U18/U19: show action buttons ONLY to current player
+      document.getElementById('my-turn-actions').style.display='flex';
+    } else {
+      banner.style.cssText='background:#12102a;border:1px solid #2a2a4a;border-radius:16px;padding:14px 16px;text-align:center;';
+      tname.style.color='#a7a9be';tname.textContent=esc(player)+"'s turn";
+      tsub.style.color='#444466';tsub.textContent='Waiting for them to pick…';
+      document.getElementById('my-turn-actions').style.display='none';
+    }
   },400);
 }
 
 function resetSpin(){
   document.getElementById('post-spin').style.display='none';
   document.getElementById('qcard').style.display='none';
+  document.getElementById('my-turn-actions').style.display='none';
   document.getElementById('spin-section').style.display='flex';
-  chosen=null;
+  chosen=null;postSpinFading=false;
   drawWheel(spinAngle,Object.values(players));
 }
 
-/* ══════════════════════
-   CARDS
-══════════════════════ */
+/* ═══════════ CARDS ═══════════ */
 function doCard(type){
   const pool=type==='truth'?TRUTHS:DARES;
   const q=pool[Math.floor(Math.random()*pool.length)];
   const who=chosen||myName;
   pushEv({type:'card',ct:type,q,who,cx:false});
   showCard(type,q,false);
-  sysMsg(who+' picked '+type.toUpperCase()+': "'+q+'"');
+  sysMsg(esc(who)+' picked '+type.toUpperCase()+': "'+esc(q)+'"');
+  playSound('card');
 }
+
 function setCT(t){
   ctab=t;
-  document.getElementById('ct1').style.cssText='flex:1;border-radius:10px;padding:8px;font-size:13px;font-weight:600;cursor:pointer;'+(t==='truth'?'background:#7F77DD;border:1px solid #7F77DD;color:#fff;':'background:transparent;border:1px solid #2a2a4a;color:#555577;');
-  document.getElementById('ct2').style.cssText='flex:1;border-radius:10px;padding:8px;font-size:13px;font-weight:600;cursor:pointer;'+(t==='dare'?'background:#D4537E;border:1px solid #D4537E;color:#fff;':'background:transparent;border:1px solid #2a2a4a;color:#555577;');
+  const c1=document.getElementById('ct1'),c2=document.getElementById('ct2');
+  c1.style.cssText='flex:1;border-radius:10px;padding:8px;font-size:13px;font-weight:600;cursor:pointer;min-height:40px;'+(t==='truth'?'background:#7F77DD;border:1px solid #7F77DD;color:#fff;':'background:transparent;border:1px solid #2a2a4a;color:#555577;');
+  c2.style.cssText='flex:1;border-radius:10px;padding:8px;font-size:13px;font-weight:600;cursor:pointer;min-height:40px;'+(t==='dare'?'background:#D4537E;border:1px solid #D4537E;color:#fff;':'background:transparent;border:1px solid #2a2a4a;color:#555577;');
+  c1.setAttribute('aria-pressed',t==='truth');c2.setAttribute('aria-pressed',t==='dare');
   document.getElementById('cq').placeholder=t==='truth'?'Type your own truth question…':'Type your own dare…';
 }
+
 function sendCQ(){
   const text=document.getElementById('cq').value.trim();
-  if(!text){alert('Type a question first!');return;}
+  if(!text){toast('Type a question first!');return;}
   const who=chosen||myName;
   pushEv({type:'card',ct:ctab,q:text,who,cx:true});
   showCard(ctab,text,true);
-  sysMsg(myName+' sent a custom '+ctab+' ✏️');
+  sysMsg(esc(myName)+' sent a custom '+ctab+' ✏️');
   document.getElementById('cq').value='';
+  playSound('card');
 }
+
 function showCard(type,q,isCustom){
   const card=document.getElementById('qcard');
   card.className='fu';card.style.display='block';
   const isTruth=type==='truth';
-  let cls,badge,bc;
-  if(isCustom){cls='qcard-custom';badge='background:#EF9F27;color:#000;';bc='#EF9F27';}
-  else if(isTruth){cls='qcard-truth';badge='background:#7F77DD;color:#fff;';bc='#7F77DD';}
-  else{cls='qcard-dare';badge='background:#D4537E;color:#fff;';bc='#D4537E';}
+  let cls,badge;
+  if(isCustom){cls='qcard-custom';badge='background:#EF9F27;color:#000;';}
+  else if(isTruth){cls='qcard-truth';badge='background:#7F77DD;color:#fff;';}
+  else{cls='qcard-dare';badge='background:#D4537E;color:#fff;';}
   const lbl=isCustom?'✏️ Custom '+(isTruth?'Truth':'Dare'):(isTruth?'Truth':'Dare');
-  card.innerHTML=`<div class="${cls}" style="border-radius:0 16px 16px 0;padding:16px;">
-    <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;${badge}padding:4px 12px;border-radius:20px;">${lbl}</span>
-    <p style="margin-top:12px;font-size:17px;line-height:1.65;color:#fff;font-weight:500;">${q}</p>
-  </div>`;
+  card.innerHTML=`<div class="${cls}"><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;${badge}padding:4px 12px;border-radius:20px;">${lbl}</span></div>`;
+  const p=document.createElement('p');
+  p.style.cssText='margin-top:12px;font-size:17px;line-height:1.65;color:#fff;font-weight:500;';
+  p.textContent=q;
+  card.firstChild.appendChild(p);
 }
 
-/* ══════════════════════
-   CHAT
-══════════════════════ */
+/* ═══════════ CHAT ═══════════ */
 function sendMsg(){
   const inp=document.getElementById('mi');
-  const text=inp.value.trim();
-  if(!text)return;
-  pushEv({type:'chat',name:myName,text});
+  const text=inp.value.trim();if(!text)return;
+  if(ref) ref.child('events').push({type:'chat',name:myName,text,_f:myId,_t:Date.now()});
   addBubble(true,myName,text);
   inp.value='';clearTyp();
 }
+
+// FIX B14: throttle typing writes — max 1 per 1000ms
 function onTyping(){
   if(!ref)return;
-  ref.child('typing/'+myId).set(true);
+  const now=Date.now();
+  if(now-lastTypingWrite>1000){
+    lastTypingWrite=now;
+    ref.child('typing/'+myId).set(true);
+  }
   clearTimeout(typTimer);
-  typTimer=setTimeout(clearTyp,2000);
+  typTimer=setTimeout(clearTyp,2500);
 }
 function clearTyp(){clearTimeout(typTimer);if(ref)ref.child('typing/'+myId).remove();}
 function tn(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
 
 function addBubble(isMe,name,text){
   const box=document.getElementById('chatbox');if(!box)return;
-  const w=document.createElement('div');
-  w.style.cssText='display:flex;flex-direction:column;max-width:78%;'+(isMe?'align-self:flex-end;align-items:flex-end;':'align-self:flex-start;align-items:flex-start;');
-  w.innerHTML=(isMe?'':'<span style="font-size:11px;color:#a7a9be;margin-bottom:2px;padding:0 4px;">'+name+'</span>')+
-    '<div class="'+(isMe?'bm':'bt')+'" style="padding:10px 14px;font-size:15px;color:#fff;line-height:1.45;">'+text+'</div>'+
-    '<span style="font-size:10px;color:#333355;margin-top:3px;padding:0 4px;">'+tn()+'</span>';
-  box.appendChild(w);box.scrollTop=box.scrollHeight;
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;max-width:78%;'+(isMe?'align-self:flex-end;align-items:flex-end;':'align-self:flex-start;align-items:flex-start;');
+  if(!isMe){const nm=document.createElement('span');nm.style.cssText='font-size:11px;color:#a7a9be;margin-bottom:2px;padding:0 4px;';nm.textContent=name;wrap.appendChild(nm);}
+  const bub=document.createElement('div');
+  bub.className=isMe?'bm':'bt';
+  bub.style.cssText='padding:10px 14px;font-size:15px;color:#fff;line-height:1.45;word-break:break-word;';
+  bub.textContent=text;wrap.appendChild(bub);
+  const t=document.createElement('span');t.style.cssText='font-size:10px;color:#333355;margin-top:3px;padding:0 4px;';t.textContent=tn();wrap.appendChild(t);
+  box.appendChild(wrap);box.scrollTop=box.scrollHeight;
 }
 
 function addVoice(isMe,name,data){
   const box=document.getElementById('chatbox');if(!box)return;
   const audio=new Audio(data);
-  const w=document.createElement('div');
-  w.style.cssText='display:flex;flex-direction:column;max-width:80%;'+(isMe?'align-self:flex-end;align-items:flex-end;':'align-self:flex-start;align-items:flex-start;');
-  const bubble=document.createElement('div');
-  bubble.className=isMe?'bm':'bt';
-  bubble.style.cssText='padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;min-width:160px;';
-
-  const waveDiv=document.createElement('div');
-  waveDiv.style.cssText='display:flex;gap:2px;align-items:flex-end;height:20px;';
-  for(let i=0;i<5;i++){const b=document.createElement('div');b.style.cssText='width:3px;background:'+(isMe?'#b0aaf5':'#5DCAA5')+';border-radius:2px;height:'+(4+Math.random()*14)+'px;transition:height .1s;';waveDiv.appendChild(b);}
-
-  const timeSpan=document.createElement('span');
-  timeSpan.style.cssText='font-size:12px;color:#a7a9be;min-width:32px;';
-  // get audio duration
-  audio.addEventListener('loadedmetadata',()=>{
-    const d=Math.round(audio.duration);
-    timeSpan.textContent=Math.floor(d/60)+':'+(d%60+'').padStart(2,'0');
-  });
-  timeSpan.textContent='🎵';
-
-  bubble.appendChild(waveDiv);
-  bubble.appendChild(timeSpan);
-  bubble.onclick=()=>{
-    audio.play();
-    timeSpan.style.color='#7F77DD';
-    audio.onended=()=>{timeSpan.style.color='#a7a9be';};
-  };
-
-  if(!isMe){const n=document.createElement('span');n.style.cssText='font-size:11px;color:#a7a9be;margin-bottom:2px;padding:0 4px;';n.textContent=name;w.appendChild(n);}
-  w.appendChild(bubble);
-  const t=document.createElement('span');t.style.cssText='font-size:10px;color:#333355;margin-top:3px;padding:0 4px;';t.textContent=tn();
-  w.appendChild(t);
-  box.appendChild(w);box.scrollTop=box.scrollHeight;
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;max-width:80%;'+(isMe?'align-self:flex-end;align-items:flex-end;':'align-self:flex-start;align-items:flex-start;');
+  if(!isMe){const nm=document.createElement('span');nm.style.cssText='font-size:11px;color:#a7a9be;margin-bottom:2px;padding:0 4px;';nm.textContent=name;wrap.appendChild(nm);}
+  const bub=document.createElement('div');
+  bub.className=isMe?'bm':'bt';
+  bub.style.cssText='padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;min-width:160px;min-height:46px;';
+  bub.setAttribute('role','button');bub.setAttribute('tabindex','0');bub.setAttribute('aria-label','Play voice note');
+  const wv=document.createElement('div');wv.style.cssText='display:flex;gap:2px;align-items:flex-end;height:20px;';
+  for(let i=0;i<5;i++){const b=document.createElement('div');b.style.cssText='width:3px;background:'+(isMe?'#b0aaf5':'#5DCAA5')+';border-radius:2px;height:'+(4+Math.random()*14)+'px;';wv.appendChild(b);}
+  const ts=document.createElement('span');ts.style.cssText='font-size:12px;color:#a7a9be;min-width:32px;';ts.textContent='🎵';
+  audio.addEventListener('loadedmetadata',()=>{const d=Math.round(audio.duration);if(isFinite(d)&&d>0)ts.textContent=Math.floor(d/60)+':'+(d%60+'').padStart(2,'0');});
+  bub.appendChild(wv);bub.appendChild(ts);
+  const playFn=()=>{audio.play().catch(()=>{toast('Tap again to play');});ts.style.color='#7F77DD';audio.onended=()=>{ts.style.color='#a7a9be';};};
+  bub.addEventListener('click',playFn);
+  bub.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')playFn();});
+  wrap.appendChild(bub);
+  const t=document.createElement('span');t.style.cssText='font-size:10px;color:#333355;margin-top:3px;padding:0 4px;';t.textContent=tn();wrap.appendChild(t);
+  box.appendChild(wrap);box.scrollTop=box.scrollHeight;
 }
 
 function sysMsg(text){
   const box=document.getElementById('chatbox');if(!box)return;
-  const d=document.createElement('div');
-  d.style.cssText='align-self:center;text-align:center;padding:3px 0;';
-  d.innerHTML='<span style="font-size:11px;color:#444466;background:#1a1a2e;border-radius:20px;padding:4px 14px;">'+text+'</span>';
-  box.appendChild(d);box.scrollTop=box.scrollHeight;
+  const d=document.createElement('div');d.style.cssText='align-self:center;text-align:center;padding:3px 0;';
+  const s=document.createElement('span');s.style.cssText='font-size:11px;color:#444466;background:#1a1a2e;border-radius:20px;padding:4px 14px;';
+  s.textContent=text;d.appendChild(s);box.appendChild(d);box.scrollTop=box.scrollHeight;
 }
 
-/* ══════════════════════
-   VOICE NOTE (PTT) — FIXED
-   Uses timeslice (100ms chunks) so all audio is captured
-   even on short recordings. Shows live timer.
-══════════════════════ */
+/* ═══════════ VOICE NOTE PTT — FIX B15/B19 ═══════════ */
 async function startRec(e){
-  e.preventDefault();
-  if(isRec)return;
+  e.preventDefault();if(isRec)return;
+  // Resume AudioContext if suspended (browser policy)
+  if(audioCtx&&audioCtx.state==='suspended') audioCtx.resume();
+  const mimeType=getSupportedMimeType();
+  if(!mimeType){
+    // FIX B19: clear error message for unsupported format
+    toast('Voice notes not supported in this browser. Try Chrome or Firefox.');
+    return;
+  }
   try{
     const stream=await navigator.mediaDevices.getUserMedia({audio:true,echoCancellation:true,noiseSuppression:true});
-    // Use timeslice=100ms — this fires ondataavailable every 100ms
-    // so we never lose audio even on short recordings
-    mrec=new MediaRecorder(stream,{mimeType:MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':'audio/webm'});
+    mrec=new MediaRecorder(stream,{mimeType});
     achunks=[];
     mrec.ondataavailable=ev=>{if(ev.data&&ev.data.size>0)achunks.push(ev.data);};
     mrec.onstop=()=>{
       stream.getTracks().forEach(t=>t.stop());
-      clearInterval(recTimer);
+      clearInterval(recTimer);recTimer=null;
       hideRecIndicator();
       if(achunks.length===0)return;
-      const blob=new Blob(achunks,{type:mrec.mimeType||'audio/webm'});
-      if(blob.size<1000)return; // too short, discard
+      const blob=new Blob(achunks,{type:mimeType});
+      if(blob.size<500)return;
+      if(blob.size>500000){toast('Voice note too long — max 30 seconds');return;}
+      // FIX B3: show sending state
+      const btn=document.getElementById('ptt');
+      btn.textContent='📤';btn.style.opacity='.5';
       const reader=new FileReader();
       reader.onloadend=()=>{
-        pushEv({type:'voice',name:myName,data:reader.result});
+        if(ref) ref.child('events').push({type:'voice',name:myName,data:reader.result,_f:myId,_t:Date.now()});
         addVoice(true,myName,reader.result);
-        // switch to chat tab so they see it
         showTab(2);
+        btn.textContent='🎤';btn.style.opacity='1';
       };
       reader.readAsDataURL(blob);
     };
-    mrec.start(100); // timeslice = 100ms — KEY FIX
-    isRec=true;
-    recSecs=0;
-    showRecIndicator();
+    mrec.start(100);isRec=true;recSecs=0;showRecIndicator();
     recTimer=setInterval(()=>{
       recSecs++;
       const el=document.getElementById('rec-time');
-      if(el)el.textContent=Math.floor(recSecs/60)+':'+(recSecs%60+'').padStart(2,'0');
+      if(el) el.textContent=Math.floor(recSecs/60)+':'+(recSecs%60+'').padStart(2,'0');
+      if(recSecs>=30) stopRec({preventDefault:()=>{}});
     },1000);
-    // style ptt button
     const btn=document.getElementById('ptt');
-    btn.classList.add('recording');
-    btn.textContent='🔴';
-  }catch(err){alert('Allow microphone access to record voice notes.');}
+    btn.classList.add('recording');btn.textContent='🔴';
+    btn.setAttribute('aria-label','Release to send voice note');
+  }catch(err){
+    clearInterval(recTimer);recTimer=null;
+    // FIX B19: distinguish permission vs format errors
+    if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError')
+      toast('Microphone access denied — allow it in browser settings');
+    else
+      toast('Could not start recording — '+err.message);
+  }
 }
+
 function stopRec(e){
-  e.preventDefault();
+  if(e&&e.preventDefault)e.preventDefault();
   if(!isRec||!mrec)return;
   mrec.stop();isRec=false;
   const btn=document.getElementById('ptt');
-  btn.classList.remove('recording');
-  btn.textContent='🎤';
+  btn.classList.remove('recording');btn.textContent='🎤';
+  btn.setAttribute('aria-label','Hold to record voice note');
 }
-function showRecIndicator(){
-  const el=document.getElementById('rec-indicator');
-  el.style.display='flex';
-  document.getElementById('rec-time').textContent='0:00';
-}
-function hideRecIndicator(){
-  document.getElementById('rec-indicator').style.display='none';
-}
+function showRecIndicator(){const el=document.getElementById('rec-indicator');el.style.display='flex';document.getElementById('rec-time').textContent='0:00';}
+function hideRecIndicator(){document.getElementById('rec-indicator').style.display='none';}
 
-/* ══════════════════════
-   OPEN MIC
-══════════════════════ */
+/* ═══════════ OPEN MIC ═══════════ */
 async function toggleOpenMic(){
+  const btn=document.getElementById('omBtn');
   if(!omOn){
     try{
       omStream=await navigator.mediaDevices.getUserMedia({audio:true});
       omOn=true;
       document.getElementById('omTxt').textContent='Open mic: On';
       document.getElementById('omDot').style.cssText='width:8px;height:8px;border-radius:50%;background:#D4537E;display:inline-block;flex-shrink:0;animation:pulse .8s infinite;';
-      document.getElementById('omBtn').style.cssText='display:flex;align-items:center;gap:7px;border:1px solid #D4537E;border-radius:20px;padding:6px 14px;font-size:12px;color:#f5a0c0;background:transparent;cursor:pointer;';
-      sysMsg(myName+' turned on open mic 🎙️');
-    }catch(e){alert('Allow microphone access.');}
-  }else{
+      btn.style.cssText='display:flex;align-items:center;gap:7px;border:1px solid #D4537E;border-radius:20px;padding:6px 14px;font-size:12px;color:#f5a0c0;background:transparent;cursor:pointer;min-height:36px;';
+      btn.setAttribute('aria-pressed','true');
+      sysMsg(esc(myName)+' turned on open mic 🎙️');
+    }catch(e){toast('Microphone access denied');}
+  } else {
     if(omStream)omStream.getTracks().forEach(t=>t.stop());
     omStream=null;omOn=false;
     document.getElementById('omTxt').textContent='Open mic: Off';
     document.getElementById('omDot').style.cssText='width:8px;height:8px;border-radius:50%;background:#333355;display:inline-block;flex-shrink:0;animation:none;';
-    document.getElementById('omBtn').style.cssText='display:flex;align-items:center;gap:7px;border:1px solid #2a2a4a;border-radius:20px;padding:6px 14px;font-size:12px;color:#a7a9be;background:transparent;cursor:pointer;';
-    sysMsg(myName+' turned off open mic');
+    btn.style.cssText='display:flex;align-items:center;gap:7px;border:1px solid #2a2a4a;border-radius:20px;padding:6px 14px;font-size:12px;color:#a7a9be;background:transparent;cursor:pointer;min-height:36px;';
+    btn.setAttribute('aria-pressed','false');
+    sysMsg(esc(myName)+' turned off open mic');
   }
 }
 
-/* ══════════════════════
-   WebRTC CALL — with ring
-══════════════════════ */
+/* ═══════════ WebRTC — FIX B2/B17 ═══════════ */
 function setupWebRTC(){
   if(!ref)return;
   const sig=ref.child('webrtc');
-  // incoming call invite
-  ref.child('call-invites/'+myId).on('child_added',snap=>{
+  ref.child('call-invites/'+myId).onDisconnect().remove();
+  addListener(ref.child('call-invites/'+myId),'child_added',snap=>{
     const d=snap.val();if(!d)return;snap.ref.remove();
     if(d.from!==myId) showIncomingCall(d.name,d.from);
   });
-  sig.child('offers/'+myId).on('child_added',async snap=>{
+  addListener(sig.child('offers/'+myId),'child_added',async snap=>{
     const d=snap.val();if(!d)return;snap.ref.remove();
     const pc=getPC(d.from);
     await pc.setRemoteDescription(new RTCSessionDescription(d.sdp));
@@ -814,48 +1149,53 @@ function setupWebRTC(){
     await pc.setLocalDescription(ans);
     sig.child('answers/'+d.from+'/'+myId).set({from:myId,sdp:{type:ans.type,sdp:ans.sdp}});
   });
-  sig.child('answers/'+myId).on('child_added',async snap=>{
+  addListener(sig.child('answers/'+myId),'child_added',async snap=>{
     const d=snap.val();if(!d)return;snap.ref.remove();
     const pc=pcs[d.from];
-    if(pc&&pc.signalingState==='have-local-offer')await pc.setRemoteDescription(new RTCSessionDescription(d.sdp));
+    if(pc&&pc.signalingState==='have-local-offer') await pc.setRemoteDescription(new RTCSessionDescription(d.sdp));
   });
-  sig.child('ice/'+myId).on('child_added',async snap=>{
+  addListener(sig.child('ice/'+myId),'child_added',async snap=>{
     const d=snap.val();if(!d)return;snap.ref.remove();
     const pc=pcs[d.from];
-    if(pc&&d.candidate)try{await pc.addIceCandidate(new RTCIceCandidate(d.candidate));}catch(e){}
+    if(pc&&d.candidate) try{await pc.addIceCandidate(new RTCIceCandidate(d.candidate));}catch(e){}
   });
 }
 
+// FIX B2: use visibility+opacity for overlays
 function showIncomingCall(callerName,callerId){
   pendingCallFrom=callerId;
-  document.getElementById('ring-name').textContent=callerName;
+  document.getElementById('ring-name').textContent=esc(callerName);
   document.getElementById('ring-avatar').textContent=callerName.slice(0,1).toUpperCase();
   document.getElementById('ring-ov').classList.add('on');
-  // vibrate on mobile
-  if(navigator.vibrate)navigator.vibrate([400,200,400,200,400]);
+  if(navigator.vibrate) navigator.vibrate([400,200,400,200,400]);
 }
 function declineCall(){document.getElementById('ring-ov').classList.remove('on');pendingCallFrom=null;}
 async function acceptCall(){
   document.getElementById('ring-ov').classList.remove('on');
-  // get mic and join call
-  if(!inCall){
+  if(!localStream){
     try{localStream=await navigator.mediaDevices.getUserMedia({audio:true});}
-    catch(e){alert('Allow microphone access.');return;}
-    inCall=true;
+    catch(e){toast('Microphone access needed to accept call');return;}
   }
-  openCallScreen();
+  inCall=true;openCallScreen();
+  if(pendingCallFrom){
+    const pc=getPC(pendingCallFrom);
+    localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+    const offer=await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    if(ref) ref.child('webrtc/offers/'+pendingCallFrom).push({from:myId,sdp:{type:offer.type,sdp:offer.sdp}});
+    pendingCallFrom=null;
+  }
 }
-
 function getPC(pid){
   if(pcs[pid])return pcs[pid];
   const pc=new RTCPeerConnection(ICE);pcs[pid]=pc;
-  if(localStream)localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+  if(localStream) localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
   pc.ontrack=e=>{
     let el=document.getElementById('ra_'+pid);
     if(!el){el=document.createElement('audio');el.id='ra_'+pid;el.autoplay=true;el.playsInline=true;document.getElementById('remote-audios').appendChild(el);}
     el.srcObject=e.streams[0];
   };
-  pc.onicecandidate=e=>{if(e.candidate&&ref)ref.child('webrtc/ice/'+pid+'/'+myId).push({from:myId,candidate:e.candidate.toJSON()});};
+  pc.onicecandidate=e=>{if(e.candidate&&ref) ref.child('webrtc/ice/'+pid+'/'+myId).push({from:myId,candidate:e.candidate.toJSON()});};
   pc.onconnectionstatechange=()=>{
     renderCallAvs();
     if(['disconnected','failed','closed'].includes(pc.connectionState)){
@@ -864,82 +1204,89 @@ function getPC(pid){
   };
   return pc;
 }
-
 async function startCall(){
-  // Send ring notification to all other players
   const otherIds=Object.keys(players).filter(id=>id!==myId);
-  otherIds.forEach(pid=>{
-    ref.child('call-invites/'+pid).push({from:myId,name:myName});
-  });
+  if(!otherIds.length)return;
+  otherIds.forEach(pid=>{if(ref) ref.child('call-invites/'+pid).push({from:myId,name:myName});});
   if(inCall){openCallScreen();return;}
   try{localStream=await navigator.mediaDevices.getUserMedia({audio:true});}
-  catch(e){alert('Allow microphone access for voice calls.');return;}
+  catch(e){toast('Microphone access needed for voice calls');return;}
   inCall=true;openCallScreen();
   for(const pid of otherIds){
     const pc=getPC(pid);
     localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
     const offer=await pc.createOffer();
     await pc.setLocalDescription(offer);
-    ref.child('webrtc/offers/'+pid).push({from:myId,sdp:{type:offer.type,sdp:offer.sdp}});
+    if(ref) ref.child('webrtc/offers/'+pid).push({from:myId,sdp:{type:offer.type,sdp:offer.sdp}});
   }
-  sysMsg(myName+' started a voice call 📞');
+  sysMsg(esc(myName)+' started a voice call 📞');
 }
-
 function openCallScreen(){
   document.getElementById('call-ov').classList.add('on');
   document.getElementById('call-room').textContent='Room: '+code;
   document.getElementById('call-status').textContent='● IN CALL';
   renderCallAvs();
 }
+// FIX B17: endCall only closes MY connections, not the shared webrtc path
 function endCall(){
-  Object.values(pcs).forEach(pc=>pc.close());pcs={};
+  const myPids=Object.keys(pcs);
+  myPids.forEach(pid=>{
+    try{pcs[pid].close();}catch(e){}
+    delete pcs[pid];
+    const el=document.getElementById('ra_'+pid);if(el)el.remove();
+    // Only clean up MY signaling paths, not everyone's
+    if(ref){
+      ref.child('webrtc/offers/'+pid).remove();
+      ref.child('webrtc/answers/'+myId).remove();
+      ref.child('webrtc/ice/'+pid+'/'+myId).remove();
+    }
+  });
   if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
   inCall=false;
   document.getElementById('call-ov').classList.remove('on');
   document.getElementById('remote-audios').innerHTML='';
-  if(ref)ref.child('webrtc').remove();
-  sysMsg(myName+' ended the call');
+  sysMsg(esc(myName)+' left the call');
 }
 function renderCallAvs(){
-  const c=document.getElementById('call-avs');
-  c.innerHTML=Object.entries(players).map(([id,name])=>{
+  const c=document.getElementById('call-avs');if(!c)return;c.innerHTML='';
+  Object.entries(players).forEach(([id,name])=>{
     const isMe=id===myId,conn=isMe||!!pcs[id];
-    return`<div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-      <div style="width:68px;height:68px;border-radius:50%;border:2.5px solid ${conn?'#5DCAA5':'#2a2a4a'};background:${conn?'#0d2018':'#1a1a2e'};display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:${conn?'#5DCAA5':'#444466'};">${name.slice(0,1).toUpperCase()}</div>
-      <span style="font-size:12px;color:#a7a9be;">${isMe?'You ('+name+')':name}</span>
-      ${conn?'<div style="display:flex;gap:2px;align-items:flex-end;height:20px;"><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div></div>':'<span style="font-size:10px;color:#444466;">ringing…</span>'}
-    </div>`;
-  }).join('');
+    const div=document.createElement('div');div.style.cssText='display:flex;flex-direction:column;align-items:center;gap:8px;';
+    const av=document.createElement('div');
+    av.style.cssText=`width:68px;height:68px;border-radius:50%;border:2.5px solid ${conn?'#5DCAA5':'#2a2a4a'};background:${conn?'#0d2018':'#1a1a2e'};display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:${conn?'#5DCAA5':'#444466'};`;
+    av.textContent=name.slice(0,1).toUpperCase();
+    const lb=document.createElement('span');lb.style.cssText='font-size:12px;color:#a7a9be;';lb.textContent=isMe?'You ('+name+')':name;
+    div.appendChild(av);div.appendChild(lb);
+    if(conn){const wv=document.createElement('div');wv.style.cssText='display:flex;gap:2px;align-items:flex-end;height:20px;';for(let i=0;i<4;i++){const b=document.createElement('div');b.className='wb';wv.appendChild(b);}div.appendChild(wv);}
+    else{const rg=document.createElement('span');rg.style.cssText='font-size:10px;color:#444466;';rg.textContent='ringing…';div.appendChild(rg);}
+    c.appendChild(div);
+  });
 }
 function toggleMute(){
   if(!localStream)return;mutedMic=!mutedMic;
   localStream.getAudioTracks().forEach(t=>{t.enabled=!mutedMic;});
-  document.getElementById('mute-btn').textContent=mutedMic?'🔇':'🎤';
-  document.getElementById('mute-btn').style.borderColor=mutedMic?'#D4537E':'#2a2a4a';
+  const btn=document.getElementById('mute-btn');
+  btn.textContent=mutedMic?'🔇':'🎤';btn.style.borderColor=mutedMic?'#D4537E':'#2a2a4a';
+  btn.setAttribute('aria-pressed',mutedMic);btn.setAttribute('aria-label',mutedMic?'Unmute microphone':'Mute microphone');
 }
 function toggleSpeaker(){
   document.querySelectorAll('#remote-audios audio').forEach(a=>{a.muted=!a.muted;});
   const b=document.getElementById('spk-btn');
-  b.textContent=b.textContent==='🔊'?'🔈':'🔊';
+  const on=b.textContent==='🔊';b.textContent=on?'🔈':'🔊';b.setAttribute('aria-pressed',on);
 }
 
-/* ══════════════════════
-   CANVAS WHEEL
-══════════════════════ */
+/* ═══════════ CANVAS — FIX B4/B6 DPR-correct ═══════════ */
 function drawWheel(angle,pl){
   const cv=document.getElementById('spin-canvas');if(!cv)return;
   const ctx=cv.getContext('2d');
+  const size=220;
   const list=pl&&pl.length?pl:['?'];
-  const cx=110,cy=110,r=95,n=list.length;
+  const cx=size/2,cy=size/2,r=(size/2)-5,n=list.length;
   const a=angle!==undefined?angle:spinAngle;
   const colors=['#7F77DD','#D4537E','#1D9E75','#EF9F27','#378ADD','#D85A30','#9E1D75','#5DCAA5'];
-  ctx.clearRect(0,0,220,220);
-  // shadow ring
-  ctx.beginPath();ctx.arc(cx,cy,r+6,0,Math.PI*2);
-  ctx.strokeStyle='rgba(127,119,221,0.2)';ctx.lineWidth=6;ctx.stroke();
-  ctx.beginPath();ctx.arc(cx,cy,r+3,0,Math.PI*2);
-  ctx.strokeStyle='#2a2a4a';ctx.lineWidth=2;ctx.stroke();
-  // sectors
+  ctx.clearRect(0,0,size,size);
+  ctx.beginPath();ctx.arc(cx,cy,r+6,0,Math.PI*2);ctx.strokeStyle='rgba(127,119,221,0.15)';ctx.lineWidth=8;ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cy,r+2,0,Math.PI*2);ctx.strokeStyle='#2a2a4a';ctx.lineWidth=2;ctx.stroke();
   for(let i=0;i<n;i++){
     const s=(2*Math.PI/n)*i-Math.PI/2,e=s+2*Math.PI/n;
     ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,s,e);
@@ -949,39 +1296,54 @@ function drawWheel(angle,pl){
     ctx.save();ctx.translate(cx+Math.cos(mid)*63,cy+Math.sin(mid)*63);
     ctx.fillStyle='#fff';ctx.font='700 12px -apple-system,sans-serif';
     ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=3;
+    ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=4;
     ctx.fillText(list[i].slice(0,8),0,0);ctx.restore();
   }
-  // center
   ctx.shadowBlur=0;
-  ctx.beginPath();ctx.arc(cx,cy,20,0,Math.PI*2);
-  ctx.fillStyle='#0f0e17';ctx.fill();
-  ctx.strokeStyle='#7F77DD';ctx.lineWidth=2.5;ctx.stroke();
-  // needle with gradient
+  ctx.beginPath();ctx.arc(cx,cy,20,0,Math.PI*2);ctx.fillStyle='#0f0e17';ctx.fill();ctx.strokeStyle='#7F77DD';ctx.lineWidth=2.5;ctx.stroke();
   const bx=cx+Math.cos(a)*80,by=cy+Math.sin(a)*80;
-  const g=ctx.createLinearGradient(cx,cy,bx,by);
-  g.addColorStop(0,'#534AB7');g.addColorStop(1,'#b0aaf5');
-  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(bx,by);
-  ctx.strokeStyle=g;ctx.lineWidth=5;ctx.lineCap='round';ctx.stroke();
-  // needle tip glow
-  ctx.beginPath();ctx.arc(bx,by,10,0,Math.PI*2);
-  ctx.fillStyle='#b0aaf5';ctx.fill();
-  ctx.strokeStyle='rgba(176,170,245,0.4)';ctx.lineWidth=4;ctx.stroke();
-  // center dot
+  const g=ctx.createLinearGradient(cx,cy,bx,by);g.addColorStop(0,'#534AB7');g.addColorStop(1,'#b0aaf5');
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(bx,by);ctx.strokeStyle=g;ctx.lineWidth=5;ctx.lineCap='round';ctx.stroke();
+  ctx.beginPath();ctx.arc(bx,by,10,0,Math.PI*2);ctx.fillStyle='#b0aaf5';ctx.fill();ctx.strokeStyle='rgba(176,170,245,0.35)';ctx.lineWidth=5;ctx.stroke();
   ctx.beginPath();ctx.arc(cx,cy,6,0,Math.PI*2);ctx.fillStyle='#7F77DD';ctx.fill();
 }
 
-/* ══════════════════════
-   HELPERS
-══════════════════════ */
+/* ═══════════ RENDER PLAYERS ═══════════ */
 function renderPlayers(){
   const names=Object.values(players);
+  const callBtn=document.getElementById('call-btn');
+  if(callBtn) callBtn.style.display=names.length>1?'flex':'none';
   const pl=document.getElementById('plist');
-  if(pl)pl.innerHTML=names.map(n=>`<span style="display:inline-flex;align-items:center;gap:7px;background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:500;"><span style="width:8px;height:8px;border-radius:50%;background:#5DCAA5;animation:pulse 2s infinite;display:inline-block;"></span>${n}</span>`).join('');
+  if(pl){
+    const empty=document.getElementById('plist-empty');
+    if(empty) empty.style.display=names.length?'none':'block';
+    Array.from(pl.children).forEach(c=>{if(c.id!=='plist-empty')c.remove();});
+    names.forEach(n=>{
+      const chip=document.createElement('span');chip.setAttribute('role','listitem');
+      chip.style.cssText='display:inline-flex;align-items:center;gap:7px;background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:500;';
+      const dot=document.createElement('span');dot.style.cssText='width:8px;height:8px;border-radius:50%;background:#5DCAA5;animation:pulse 2s infinite;display:inline-block;';dot.setAttribute('aria-hidden','true');
+      const lbl=document.createElement('span');lbl.textContent=n;
+      chip.appendChild(dot);chip.appendChild(lbl);pl.appendChild(chip);
+    });
+  }
   const pc=document.getElementById('pchips');
-  if(pc)pc.innerHTML=names.map(n=>`<span data-pn="${n}" style="display:inline-flex;align-items:center;gap:5px;background:#12102a;border-radius:20px;padding:3px 10px;font-size:12px;color:#fff;"><span class="pdot" style="width:7px;height:7px;border-radius:50%;background:#333355;display:inline-block;"></span>${n}</span>`).join('');
-  // also redraw wheel with new players
-  if(curPg()==='pg-game')drawWheel(spinAngle,names);
+  if(pc){
+    // Remove old chips but keep the typing indicator divs
+    Array.from(pc.children).forEach(c=>{
+      if(c.id!=='typing-dots-game') c.remove();
+    });
+    names.forEach(n=>{
+      const chip=document.createElement('span');chip.setAttribute('data-pn',n);chip.setAttribute('role','listitem');
+      chip.style.cssText='display:inline-flex;align-items:center;gap:5px;background:#12102a;border-radius:20px;padding:3px 10px;font-size:12px;color:#fff;';
+      const dot=document.createElement('span');dot.className='pdot';dot.style.cssText='width:7px;height:7px;border-radius:50%;background:#333355;display:inline-block;';dot.setAttribute('aria-hidden','true');
+      const lbl=document.createElement('span');lbl.textContent=n;
+      chip.appendChild(dot);chip.appendChild(lbl);
+      // Insert before typing indicator div
+      const typDiv=document.getElementById('typing-dots-game');
+      pc.insertBefore(chip,typDiv);
+    });
+  }
+  if(curPg()==='pg-game') drawWheel(spinAngle,names);
 }
 function updateDots(onlineIds){
   document.querySelectorAll('[data-pn]').forEach(el=>{
