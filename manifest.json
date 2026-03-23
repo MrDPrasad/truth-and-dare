@@ -1,13 +1,18 @@
 {
   "name": "Truth or Dare",
   "short_name": "TruthDare",
-  "description": "Real-time multiplayer Truth or Dare with voice calling",
+  "description": "Real-time multiplayer Truth or Dare with voice calling and live chat",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f0e17",
-  "theme_color": "#7F77DD",
+  "background_color": "#0a0914",
+  "theme_color": "#7F5AF0",
   "orientation": "portrait",
   "icons": [
-    { "src": "https://api.iconify.design/twemoji/bottle-with-popping-cork.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍾</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
   ]
 }
