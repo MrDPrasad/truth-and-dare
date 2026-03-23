@@ -1,5 +1,4 @@
-const CACHE = 'tord-v5
-  ';
+const CACHE = 'tord-v6';
 const ASSETS = ['/', '/index.html', '/manifest.json'];
 
 self.addEventListener('install', e => {
