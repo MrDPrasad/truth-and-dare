@@ -790,6 +790,7 @@ let joinTime=0, lastEvTime=0;
 const seenEvents=new Set();
 const MAX_SEEN=150;
 let unreadChat=0, onChatTab=false;
+let currentCardKey=null;
 let deferredPrompt=null, installBtnTapped=false;
 
 /* Voice note state */
@@ -952,7 +953,13 @@ function startFB(){
     const d=snap.val()||{};
     const prev=Object.keys(players).length;
     players={};
-    Object.values(d).forEach(p=>{if(p&&p.id&&p.name) players[p.id]=p.name;});
+    // Some historical rooms may store `players/<pid>` without a nested `id` field.
+    // Treat the RTDB key as the fallback player id so late joiners still appear.
+    Object.entries(d).forEach(([pid,p])=>{
+      if(!p || !p.name) return;
+      const id=p.id || pid;
+      if(id) players[id]=p.name;
+    });
     if(!players[myId]) players[myId]=myName;
     const curr=Object.keys(players).length;
     if(curr>prev&&prev>0) playSound('join'); // new player joined
@@ -979,16 +986,49 @@ function startFB(){
     if(seenEvents.size>MAX_SEEN){seenEvents.delete(seenEvents.values().next().value);}
     const e=snap.val();
     if(!e||e._f===myId)return;
-    if(e._t&&e._t<joinTime-500)return; // skip stale pre-join events
+    const isCritical=['spin','chosen','card','call-invite','call-decline'].includes(e.type);
+    // Avoid replaying old chat/voice events, but keep critical gameplay events so
+    // late joiners can reconstruct the current turn state.
+    if(e._t&&e._t<joinTime-500&&!isCritical)return; // skip stale pre-join non-critical events
     handleEv(e);
   });
 
   // Game state (started trigger)
   addListener(fbRef.child('state'),'value',snap=>{
     const v=snap.val();
-    if(v&&v.started&&curPg()==='pg-wait'){
-      if(v.players){Object.entries(v.players).forEach(([id,name])=>{if(!players[id])players[id]=name;});}
-      startGame();
+    if(!v || !v.started) return;
+
+    // Merge authoritative players list if provided.
+    if(v.players){Object.entries(v.players).forEach(([id,name])=>{if(!players[id])players[id]=name;});}
+
+    // Ensure we transition into the game when the host starts.
+    if(curPg()==='pg-wait'){startGame();}
+
+    // Late joiners: reconstruct current turn/question from persisted state.
+    if(v.chosen && v.chosen!==chosen){
+      const turnPlayer=v.chosen;
+      chosen=turnPlayer;
+      if(!postSpinFading){
+        showPostSpin(turnPlayer);
+        sysMsg('🍾 '+esc(turnPlayer)+"'s turn!");
+      } else {
+        // If the host updates `chosen` quickly, wait for the fade to finish.
+        setTimeout(()=>{
+          if(chosen===turnPlayer && !postSpinFading){
+            showPostSpin(turnPlayer);
+            sysMsg('🍾 '+esc(turnPlayer)+"'s turn!");
+          }
+        },380);
+      }
+    }
+
+    if(v.currentCard && v.currentCard.q && v.currentCard.ct){
+      const card=v.currentCard;
+      const key=(card.ct||'')+'|'+(card.q||'')+'|'+(card.who||'')+'|'+(card.cx?'1':'0');
+      if(key!==currentCardKey && curPg()==='pg-game'){
+        currentCardKey=key;
+        showCard(card.ct,card.q,!!card.cx);
+      }
     }
   });
 
@@ -1042,6 +1082,7 @@ function goBack(){
   cleanupCall(false);
   players={}; code=''; myName='';
   seenEvents.clear(); joinTime=0; lastEvTime=0;
+  currentCardKey=null;
   unreadChat=0; onChatTab=false;
   setBtn('create-btn',false,'Create room →');
   setBtn('join-btn',false,'Join room →');
@@ -1065,7 +1106,14 @@ function copyLink(){
 ══════════════════════════════════════════ */
 function broadcastStart(){
   if(Object.keys(players).length<2){toast('Need at least 2 players. Share the code!');return;}
-  fbRef.child('state').set({started:true,players:{...players}});
+  fbRef.child('state').set({
+    started:true,
+    players:{...players},
+    chosen:null,
+    currentCard:null,
+    turnAt:null,
+    cardAt:null
+  });
   startGame();
 }
 
@@ -1076,6 +1124,7 @@ function startGame(){
   document.getElementById('qcard').style.display='none';
   document.getElementById('my-turn-actions').style.display='none';
   chosen=null; spinning=false; spinLocked=false; postSpinFading=false;
+  currentCardKey=null;
   unreadChat=0; updateTitle(); showChatBadge();
   showPg('pg-game'); showTab(1);
   resetCanvasTransform();
@@ -1101,14 +1150,19 @@ function handleEv(e){
       animSpin(e.seed);
       break;
     case 'chosen':
+      if(e.player===chosen) break; // already in sync (e.g. via persisted state)
       chosen=e.player;
       if(!postSpinFading) showPostSpin(e.player);
       sysMsg('🍾 '+esc(e.player)+"'s turn!");
       break;
     case 'card':
-      showCard(e.ct,e.q,e.cx);
-      sysMsg(e.cx?esc(e.who)+' asks: "'+esc(e.q)+'"':esc(e.who)+' picked '+String(e.ct).toUpperCase());
-      playSound('card');
+      const key=(e.ct||'')+'|'+(e.q||'')+'|'+(e.who||'')+'|'+(e.cx?'1':'0');
+      if(key!==currentCardKey){
+        currentCardKey=key;
+        showCard(e.ct,e.q,e.cx);
+        sysMsg(e.cx?esc(e.who)+' asks: "'+esc(e.q)+'"':esc(e.who)+' picked '+String(e.ct).toUpperCase());
+        playSound('card');
+      }
       break;
     case 'call-invite':
       if(e.from!==myId) showIncomingCall(e.name,e.from);
@@ -1214,6 +1268,12 @@ function drawWheel(angle,pl){
   ctx.fillStyle=var_('--purple');ctx.fill();
 }
 
+function orderedPlayerNames(){
+  // Stable ordering by RTDB player id so all clients draw the wheel consistently.
+  const ids=Object.keys(players).sort((a,b)=>a<b?-1:a>b?1:0);
+  return ids.map(id=>players[id]).filter(Boolean);
+}
+
 /* ══════════════════════════════════════════
    SPIN LOGIC
 ══════════════════════════════════════════ */
@@ -1238,7 +1298,7 @@ function animSpin(seed){
   document.getElementById('post-spin').style.display='none';
   document.getElementById('my-turn-actions').style.display='none';
   postSpinFading=false;
-  const pl=Object.values(players);
+  const pl=orderedPlayerNames();
   const total=Math.PI*2*(5+seed*7), dur=3200, t0=performance.now(), sa=spinAngle;
   const cv=document.getElementById('spin-canvas');
   if(cv){cv.style.transform='scale(1.05)';setTimeout(()=>cv.style.transform='scale(1)',180);}
@@ -1258,6 +1318,7 @@ function animSpin(seed){
     if(navigator.vibrate) navigator.vibrate([60,30,30]);
     playSound('spin-land');
     pushEv({type:'chosen',player:chosen});
+    if(fbRef) fbRef.child('state').update({chosen, turnAt:Date.now()});
     sysMsg('🍾 '+esc(chosen)+"'s turn!");
     showPostSpin(chosen);
   }
@@ -1300,7 +1361,7 @@ function resetSpin(){
   const ss=document.getElementById('spin-section');
   ss.style.display='flex';
   chosen=null;postSpinFading=false;
-  drawWheel(spinAngle,Object.values(players));
+  drawWheel(spinAngle,orderedPlayerNames());
 }
 
 /* ══════════════════════════════════════════
@@ -1311,6 +1372,9 @@ function doCard(type){
   const q=pool[Math.floor(Math.random()*pool.length)];
   const who=chosen||myName;
   pushEv({type:'card',ct:type,q,who,cx:false});
+  const key=type+'|'+q+'|'+who+'|0';
+  currentCardKey=key;
+  if(fbRef) fbRef.child('state').update({currentCard:{ct:type,q,who,cx:false}, cardAt:Date.now()});
   showCard(type,q,false);
   sysMsg(esc(who)+' picked '+type.toUpperCase()+': "'+esc(q)+'"');
   playSound('card');
@@ -1331,6 +1395,9 @@ function sendCQ(){
   if(!text){toast('Type a question first!');return;}
   const who=chosen||myName;
   pushEv({type:'card',ct:ctab,q:text,who,cx:true});
+  const key=ctab+'|'+text+'|'+who+'|1';
+  currentCardKey=key;
+  if(fbRef) fbRef.child('state').update({currentCard:{ct:ctab,q:text,who,cx:true}, cardAt:Date.now()});
   showCard(ctab,text,true);
   sysMsg(esc(myName)+' sent a custom '+ctab+' ✏️');
   document.getElementById('cq').value='';
@@ -1762,7 +1829,7 @@ function renderCallAvs(){
    PLAYER RENDERING
 ══════════════════════════════════════════ */
 function renderPlayers(){
-  const names=Object.values(players);
+  const names=orderedPlayerNames();
 
   // Call button
   const callBtn=document.getElementById('call-btn');
