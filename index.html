@@ -8,7 +8,7 @@
 <meta property="og:title" content="Truth or Dare 🍾"/>
 <meta property="og:description" content="Play Truth or Dare with friends. Voice calls, live chat, spin wheel."/>
 <meta property="og:type" content="website"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="TruthDare"/>
 <link rel="manifest" href="manifest.json"/>
@@ -792,6 +792,7 @@ const MAX_SEEN=150;
 let unreadChat=0, onChatTab=false;
 let currentCardKey=null;
 let deferredPrompt=null, installBtnTapped=false;
+let roomHealthTimer=null;
 
 /* Voice note state */
 function getSupportedMimeType(){
@@ -816,7 +817,9 @@ let callTimerInt=null, callSeconds=0;
    PWA INSTALL
 ══════════════════════════════════════════ */
 window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault(); deferredPrompt=e;
+  // Do not call `preventDefault()` so browsers can show the native install banner.
+  // We still capture the event so the custom install button can call `prompt()` later.
+  deferredPrompt=e;
   if(installBtnTapped){installBtnTapped=false;triggerInstall();}
 });
 window.addEventListener('appinstalled',()=>{document.getElementById('ibar').classList.add('gone');deferredPrompt=null;});
@@ -941,12 +944,49 @@ function startFB(){
   renderPlayers();
 
   fbRef.child('players/'+myId).set({name:myName,id:myId})
-    .catch(()=>{showErr('cn-err','Connection failed — check your internet.');showPg('pg-lobby');});
+    .catch(err=>{
+      console.error('FB players write failed:',err);
+      const msg=(err&& (err.code||err.message))?String(err.code||err.message):'unknown error';
+      toast('Could not join room: Firebase write failed ('+msg+').');
+      showPg('pg-lobby');
+    });
   fbRef.child('players/'+myId).onDisconnect().remove();
-  fbRef.child('online/'+myId).set(true).catch(()=>{});
+  fbRef.child('online/'+myId).set(true).catch(err=>{
+    console.error('FB online write failed:',err);
+  });
   fbRef.child('online/'+myId).onDisconnect().remove();
   fbRef.child('typing/'+myId).onDisconnect().remove();
-  fbRef.child('spinning').onDisconnect().transaction(v=>v===myId?null:v);
+  // `onDisconnect().transaction(...)` isn't supported in some Firebase compat builds.
+  // Unlock when this client disconnects; avoids leaving the room stuck.
+  try{
+    fbRef.child('spinning').onDisconnect().set(null);
+  }catch(e){
+    // Non-fatal: room gameplay will still work, just might keep the lock longer.
+    console.warn('onDisconnect spinning unlock not supported:',e);
+  }
+
+  // If the other player never shows up, surface a likely cause.
+  if(roomHealthTimer) clearTimeout(roomHealthTimer);
+  roomHealthTimer=setTimeout(()=>{
+    const ids=Object.keys(players||{});
+    if(ids.length<=1){
+      toast('Only you are visible in this room. If the other player used the same code, check Firebase rules (look for PERMISSION_DENIED) and confirm both codes match.');
+    }
+  },6500);
+
+  // One-time health read to confirm we can see the shared room data.
+  fbRef.child('players').once('value').then(snap=>{
+    const d=snap.val()||{};
+    const count=Array.isArray(d)?d.length:Object.keys(d).length;
+    if(count<=1){
+      // Wait for the listener too; this message is just to aid debugging.
+      toast('Room data check: only '+count+' player record found for code '+code+'.');
+    }
+  }).catch(err=>{
+    console.error('FB players read failed:',err);
+    const msg=(err&& (err.code||err.message))?String(err.code||err.message):'unknown error';
+    toast('Could not read room players ('+msg+'). Check DB rules/permissions.');
+  });
 
   // Players list — authoritative
   addListener(fbRef.child('players'),'value',snap=>{
@@ -963,6 +1003,7 @@ function startFB(){
     if(!players[myId]) players[myId]=myName;
     const curr=Object.keys(players).length;
     if(curr>prev&&prev>0) playSound('join'); // new player joined
+    if(curr>=2 && roomHealthTimer){clearTimeout(roomHealthTimer);roomHealthTimer=null;}
     renderPlayers();
   });
 
@@ -1083,6 +1124,7 @@ function goBack(){
   players={}; code=''; myName='';
   seenEvents.clear(); joinTime=0; lastEvTime=0;
   currentCardKey=null;
+  if(roomHealthTimer){clearTimeout(roomHealthTimer);roomHealthTimer=null;}
   unreadChat=0; onChatTab=false;
   setBtn('create-btn',false,'Create room →');
   setBtn('join-btn',false,'Join room →');
@@ -1361,6 +1403,8 @@ function resetSpin(){
   const ss=document.getElementById('spin-section');
   ss.style.display='flex';
   chosen=null;postSpinFading=false;
+  // Clear dedupe key so the next card/chosen UI can render for a new round.
+  currentCardKey=null;
   drawWheel(spinAngle,orderedPlayerNames());
 }
 
